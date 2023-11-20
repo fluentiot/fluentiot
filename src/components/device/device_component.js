@@ -13,16 +13,25 @@ class DeviceComponent {
         this.typesDirectory = path.join(__dirname, 'types');
     }
 
-    add(name, type) {
+    add(name, attributes) {
         if(this.devices[name]) {
             throw new Error(`Device with ${name} already exists`);
         }
 
-        const DeviceType = this.loadDeviceType(type);
-        this.devices[name] = new DeviceType(this.Event, name);
+        if(!attributes) {
+            attributes = {}
+        }
 
-        this.devices[name].setup();
-        this.devices[name].setupCapabilities();
+        const DeviceType = require('./device');
+        this.devices[name] = new DeviceType(this.Event, name);
+            
+        // Loop through attributes and set them
+        for (const key in attributes) {
+            if (attributes.hasOwnProperty(key)) {
+                const value = attributes[key];
+                this.devices[name].setAttribute(key, value);
+            }
+        }
 
         return this.devices[name];
     }
@@ -32,6 +41,22 @@ class DeviceComponent {
             throw new Error(`Device '${name}' not found.`);
         }
         return this.devices[name];
+    }
+
+    findByAttribute(attribute, value) {
+        for (const deviceName in this.devices) {
+            if (this.devices.hasOwnProperty(deviceName)) {
+                const device = this.devices[deviceName];
+                const attributeValue = device.getAttribute(attribute);
+    
+                if (attributeValue === value) {
+                    return device;
+                }
+            }
+        }
+
+    
+        return null; // Return null if no device with the specified attribute and value is found
     }
 
     loadDeviceType(type) {

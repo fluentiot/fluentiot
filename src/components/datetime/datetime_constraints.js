@@ -20,8 +20,13 @@ class DatetimeConstraints {
         return targetDays.some(day => currentDay === moment(day, 'dddd').format('dddd').toLowerCase() ||
             currentDay === moment(day, 'ddd').format('dddd').toLowerCase());
     }
-
+    
     between(start, end) {
+        // Validate the time format and throw an error if it cannot be parsed
+        if (!moment(start, 'HH:mm', true).isValid() || !moment(end, 'HH:mm', true).isValid()) {
+            throw new Error('Invalid time format. Please use the format HH:mm.');
+        }
+
         const currentTime = moment().format('HH:mm');
         return currentTime >= start && currentTime <= end;
     }

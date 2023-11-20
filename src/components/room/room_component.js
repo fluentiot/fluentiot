@@ -11,8 +11,8 @@ class RoomComponent {
         this.rooms = {};
     }
 
-    add(name) {
-        const newRoom = new Room(this.Event, name);
+    add(name, attributes) {
+        const newRoom = new Room(this.Event, name, attributes);
         this.rooms[name] = newRoom;
     }
 

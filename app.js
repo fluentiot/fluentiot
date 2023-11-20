@@ -1,5 +1,5 @@
 
-const { Fluent, scenario, event, variable, device, room } = require('./src/fluent-iot.js');
+const { Fluent, scenario, event, variable, device, room, capability } = require('./fluent-iot.js');
 
 //--------------------------------
 
@@ -138,59 +138,61 @@ scenario("Light is pink")
         .then(() => {
             console.log('Light is pink')
         });
-
-officeLight.updateAttribute('color', 'pink');
+//officeLight.updateAttribute('color', 'pink');
 
 //--------------------------------
+
+officeLight.capability().add('turnOn', () => {
+    officeLight.updateAttribute('state', true);
+});
+officeLight.capability().add('turnOff', () => {
+    officeLight.updateAttribute('state', false);
+});
 
 scenario("Light turned on with capability")
         .when()
             .device('office-light').attribute('state').is(true)
         .then(() => {
             console.log('Light is on')
-        }).test();
+        });
 
-officeLight.turnOn();
-officeLight.turnOff();
-officeLight.turnOn();
-officeLight.turnOn();
+// officeLight.turnOn();
+// officeLight.turnOff();
+// officeLight.turnOn();
+// officeLight.turnOn();
 
 //--------------------------------
 
-// // Set devices for all scenarios
-// Scenario.setDevices(devices);
+officeLight.capability().add('foobar', (passed) => {
+    console.log('Light foobar called!')
+    console.log(passed);
+});
 
-// // Create scenarios
-// // const scenario1 = new Scenario('turn on office smelly thing if the office-switch state is true');
-// // const scenario2 = new Scenario('office light red');
+scenario("Adding capability")
+        .when()
+            .empty()
+        .then(() => {
+            officeLight.foobar('passed!');
+        })
+        //.assert();
 
-// // Set parameters for devices
-// setTimeout(() => {
-//     officeLight.setAttribute('color', 'red');
-//     officeSwitch.setAttribute('state', 'true');
-// }, 1000);
-
-// setTimeout(() => {
-//     officeLight.setAttribute('color', 'blue');
-// }, 2000);
-
-// setTimeout(() => {
-//     officeLight.setAttribute('color', 'green');
-// }, 3000);
-
-// setTimeout(() => {
-//     officeLight.setAttribute('color', 'red');
-// }, 4000);
+//--------------------------------
 
 
-// Create scenarios
-// new Scenario('office light turns red')
-//     .when().device('office-light').is('color', 'red')
-//     .then(() => { console.log('light is red'); });
+const capTurnOff = capability.add('turnOff', () => { console.log('turned off!'); })
+const capTurnOn = capability.add('turnOn', () => { console.log('turned on'); })
 
-// new Scenario('office light turns blue')
-//     .when().device('office-light').is('color', 'blue')
-//     .then(() => { console.log('light is blue'); });
+// device.add('test');
+// device.get('test').capability().add(capTurnOff);
+// device.get('test').capability().add('@turnOn');
+// device.get('test').turnOff();
+// device.get('test').turnOn();
+
+// device.add('test2');
+// device.get('test2').capability().add(capTurnOff);
+// device.get('test2').turnOff();
+
+
 
 //--------------------------------
 
@@ -220,26 +222,40 @@ scenario('Test method single')
     .when()
         .empty()
     .constraint()
-        .test().is('foo','foo')
+        .expect('foo').to.equal('foo')
     .then((scenario) => { console.log(scenario.description); })
     //.assert()
+    //.test()
 
 scenario('Test method double')
     .when()
         .empty()
     .constraint()
-        .test().is('foo','foo')
-        .test().is('bar','bar')
-    .then((scenario) => { console.log(scenario.description); })
-    //.assert()
+        .expect('foo').to.equal('foo')
+        .expect('bar').to.equal('bar')
+        .then((scenario) => { console.log(scenario.description); })
+    .assert()
+    .test()
 
 scenario('Test method, not match')
     .when()
         .empty()
     .constraint()
-        .test().is('foo','bar')
-    .then((scenario) => { console.log(scenario.description); })
-    //.assert()
+        .expect('foo').to.equal('bar')
+        .then((scenario) => { console.log(scenario.description); })
+    // .assert()
+    // .test()
+
+scenario('Test method, not match with an else')
+    .when()
+        .empty()
+    .constraint()
+        .expect('foo').to.equal('bar')
+        .then((scenario) => { console.log(scenario.description+': If'); })
+    .else()
+        .then((scenario) => { console.log(scenario.description+': Else'); })
+    // .assert()
+    // .test()
 
 //--------------------------------
 
@@ -276,23 +292,6 @@ scenario('Weekend')
     .constraint()
         .day().is('weekday')
     .then((scenario) => { console.log(scenario.description); });
-
-//--------------------------------
-
-scenario('foo or bar events')
-    .when()
-        .event().on('foo')
-        .event().on('bar')
-    .constraint()
-        .day().is('saturday')
-        .test().is('foo','foo')
-    .then((scenario, result) => {
-        console.log(scenario.description);
-        console.log(result);
-    });
-
-// event.emit('foo');
-// event.emit('bar');
 
 //--------------------------------
 

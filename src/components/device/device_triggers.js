@@ -9,7 +9,7 @@ class DeviceTriggers {
     is(device, attributeName, attributeValue) {
         const handler = (changedData) => {
             if (changedData.name === attributeName && changedData.value === attributeValue) {
-                this.Scenario.assert();
+                this.Scenario.assert(device);
             }
         };
         this.Event.on(`device.${device.name}`, handler);
