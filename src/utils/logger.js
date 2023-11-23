@@ -1,6 +1,8 @@
 const path = require('path');
 const appRoot = require('app-root-path');
 
+const config = require('./../config');
+
 class Logger {
     constructor() {
         this.types = {
@@ -16,9 +18,7 @@ class Logger {
         });
 
         // Load config
-        const projectRoot = appRoot.path;
-        const configPath = path.join(projectRoot, 'fluent.config.js');
-        this.config = require(configPath);
+        this.config = config.get('logging') || { 'levels': { 'default':'debug' } };
     }
 
     _getCurrentTimestamp() {
@@ -30,8 +30,17 @@ class Logger {
     }
 
     _getLogLevel(component) {
-        const configLevels = this.config.logging.levels;
+        const configLevels = this.config.levels;
         const type = configLevels[component] ? configLevels[component] : configLevels.default;
+
+        //The defined log type in the config file was not correct
+        if(!this.types[type]) {
+            const timestamp = this._getCurrentTimestamp();
+            const coloredType = this.types.error.color + "ERROR" + "\x1b[0m";
+            console.log(`[${timestamp}] [${coloredType}] Your logging level for ${type} is not correct`);
+            return this.types.debug.level;
+        }
+
         return this.types[type].level;
     }
 

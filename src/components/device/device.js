@@ -27,9 +27,9 @@ class Device {
     }
 
     updateAttribute(name, value) {
-        if(this.attributes[name] === value) {
-            return;
-        }
+        // if(this.attributes[name] === value) {
+        //     return;
+        // }
 
         this.attributes[name] = value;
         logger.debug(`${this.name} attribute ${name} set to "${value}"`,'device');

@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const appRoot = require('app-root-path');
 
-const Scenario = require('./scenario.js');
+const Scenario = require('./scenario');
 const logger = require('./utils/logger');
+const config = require('./config');
 
 class Fluent {
 
@@ -16,23 +17,22 @@ class Fluent {
         Fluent.scenarios = [];          //Scenarios defined
         Fluent.inTestMode = false;      //If in test mode
 
-        //Load config
-        const projectRoot = appRoot.path;
-        const configPath = path.join(projectRoot, 'fluent.config.js');
-        
-        try {
-            // Load the config file
-            Fluent.config = require(configPath);
-            logger.log('Fluent config loaded successfully');
-        } catch (error) {
-            logger.error(error.message);
-            process.exit(1);
-        }
+        let components = config.get('components') || [];
+        Fluent.loadSetupComponents(components);
+    }
 
-        //Load components
-        Fluent.config.components.forEach((component) => {
+    /**
+     * Load components specified in the config file
+     * @private
+     */
+    static loadSetupComponents(components) {
+        //Load components from config
+        const projectRoot = appRoot.path;
+
+        //Load each component
+        components.forEach((component) => {
             const componentName = component.name;
-            let componentPath = component.dir || path.join(__dirname, 'components', componentName);
+            let componentPath = component.path || path.join(__dirname, 'components', componentName);
 
             componentPath = componentPath.replace('<root>', projectRoot);
             
@@ -54,15 +54,24 @@ class Fluent {
 
     /**
      * Component DSL
-     * 
-     * @returns {Object} Component or components
+     * @returns {Object} - Component or components
      */
     static component() {
-        const load = (directory, name, init) => {
-            const file = directory + `/${name}_component.js`;
+        const load = (componentPath, name, init) => {
+            const file = componentPath + `/${name}_component.js`;
+
+            if (!fs.existsSync(file)) {
+                throw new Error(`Component "${name}" not found in ${file}`);
+            }
+
             const ComponentClass = require(file);
             const componentInstance = new ComponentClass();
             Fluent.components[name] = componentInstance;
+            
+            if (typeof componentInstance.init !== 'function') {
+                throw new Error(`Component "${name}" is missing an init() function`);
+            }
+
             logger.info(`Component "${name}" loaded`);
 
             if(init) {
@@ -73,43 +82,63 @@ class Fluent {
         }
 
         return {
-            add: (path, name) => {
-                return load(path, name);
+            add: (componentPath, name, init = true) => {
+                return load(componentPath, name, init);
             },
             get: (name) => {
+                if(!Fluent.components[name]) {
+                    throw new Error(`Component "${name}" not found`);
+                }
                 return Fluent.components[name];
             },
-            all: (name) => {
+            all: () => {
                 return Fluent.components;
             }
         }
     }
 
+
     /**
-     * Create a new scenario
-     * 
-     * @param {string} description - Description of the scenario in human readable format
-     * @returns {Object} - New scenario object
+     * Scenario DSL
+     * @returns {Object} Component or components
      */
-    static createScenario(description) {
-        if(!description) {
-            throw new Error(`Scenario description must be defined`);
+    static scenario() {
+        const create = (description) => {
+            //Description is always needed
+            if(!description) {
+                throw new Error(`Scenario description must be defined`);
+            }
+    
+            // Check if the description has already been used
+            for (const scenario of Fluent.scenarios) {
+                if (scenario.description === description) {
+                    throw new Error(`Scenario with description '${description}' already exists`);
+                }
+            }
+            
+            const scenario = new Scenario(this, description)
+            Fluent.scenarios.push(scenario);
+    
+            //Make sure all future creations of scenario are updated if test mode is on
+            Fluent.updateTestMode();
+    
+            return scenario;
         }
 
-        const scenario = new Scenario(this, description)
-        Fluent.scenarios.push(scenario);
-
-        //Make sure all future creations of scenario are updated if test mode is on
-        Fluent.updateTestMode();
-
-        return scenario;
+        return {
+            create: (description) => {
+                return create(description);
+            },
+            all: () => {
+                return Fluent.scenarios;
+            }
+        }
     }
 
 
     /**
      * Set test mode will switch all other scenarios off from asserting/running
      * Multiple scenarios can have test mode enabled, this is useful for debugging
-     * 
      * @param {Object} scenario - Scenario object
      */
     static updateTestMode(scenario) {
@@ -123,7 +152,6 @@ class Fluent {
         }
 
         Fluent.scenarios.forEach((scenario) => {
-            let runnable = true;
             scenario.runnable = scenario.testMode ? true : false;
         });
     }

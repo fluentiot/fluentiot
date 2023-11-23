@@ -10,7 +10,7 @@ module.exports = {
     Fluent,
     logger,
     scenario: (description) => {
-        return Fluent.createScenario(description)
+        return Fluent.scenario().create(description)
     },
     ...components
 };

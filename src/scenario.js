@@ -33,16 +33,17 @@ class Scenario {
         logger.info(`Scenario "${description}" loaded`);
     }
 
+
     /**
-     * Build triggers and constraints
+     * Build triggers
      */
     build() {
         //Common triggers
         this.triggers.empty = () => {
             return this.when();
         };
-        this.triggers.constraint = () => {
-            return this.constraint();
+        this.triggers.constraint = (...args) => {
+            return this.constraint(...args);
         };
         this.triggers.then = (callback) => {
             return this.then(callback);
@@ -50,19 +51,23 @@ class Scenario {
 
         //Component triggers
         for (const componentName in this.components) {
-          const component = this.components[componentName];
-          if (typeof component.triggers === 'function') {
-            Object.assign(this.triggers, component.triggers(this));
-          }
+            const component = this.components[componentName];
+            if (typeof component.triggers === 'function') {
+                Object.assign(this.triggers, component.triggers(this));
+            }
         }
     }
 
 
     /**
      * When
+     * @param {?Object} callback - Custom trigger
      * @returns {Object} - Trigger scope
      */
-    when() {
+    when(callback) {
+        if(callback) {
+            return callback(this);
+        }
         return this.triggers;
     }
 
@@ -74,6 +79,7 @@ class Scenario {
      * @returns {*}
      */
     constraint(constraints) {
+        //Normal constraints referencing components
         if(!constraints) { constraints = []; }
 
         //Component constraints must be built each time to retain the constraints scope
@@ -83,10 +89,10 @@ class Scenario {
         };
 
         for (const componentName in this.components) {
-          const component = this.components[componentName];
-          if (typeof component.constraints === 'function') {
-            Object.assign(methods, component.constraints(this, constraints));
-          }
+            const component = this.components[componentName];
+            if (typeof component.constraints === 'function') {
+                Object.assign(methods, component.constraints(this, constraints));
+            }
         }
 
         return methods;
