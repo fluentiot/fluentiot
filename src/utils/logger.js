@@ -1,6 +1,3 @@
-const path = require('path');
-const appRoot = require('app-root-path');
-
 const config = require('./../config');
 
 class Logger {

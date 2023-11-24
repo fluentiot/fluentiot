@@ -1,5 +1,5 @@
 
-const { capability, logger } = require('./../../../fluent-iot.js');
+const { capability, logger } = require('./../../../index.js');
 
 class Device {
 
