@@ -17,8 +17,16 @@ class Fluent {
         Fluent.scenarios = [];          //Scenarios defined
         Fluent.inTestMode = false;      //If in test mode
 
+        //Load components defined in the config
         let components = config.get('components') || [];
         Fluent.loadSetupComponents(components);
+
+        //After load
+        for(const key in Fluent.components) {
+            if(typeof Fluent.components[key].afterLoad === 'function') {
+                Fluent.components[key].afterLoad();
+            }
+        }
     }
 
     /**
@@ -40,16 +48,11 @@ class Fluent {
             files.forEach(file => {
                 if(file.endsWith('_component.js')) {
                     const name = path.basename(file, '_component.js');
-                    Fluent.component().add(componentPath, name, false);
+                    Fluent.component().add(componentPath, name);
                 };
             });
 
         });
-
-        //Init each component
-        for(const name in Fluent.components) {
-            Fluent.components[name].init(this);
-        }
     }
 
     /**
@@ -57,7 +60,7 @@ class Fluent {
      * @returns {Object} - Component or components
      */
     static component() {
-        const load = (componentPath, name, init) => {
+        const load = (componentPath, name) => {
             const file = componentPath + `/${name}_component.js`;
 
             if (!fs.existsSync(file)) {
@@ -65,25 +68,17 @@ class Fluent {
             }
 
             const ComponentClass = require(file);
-            const componentInstance = new ComponentClass();
+            const componentInstance = new ComponentClass(this);
             Fluent.components[name] = componentInstance;
             
-            if (typeof componentInstance.init !== 'function') {
-                throw new Error(`Component "${name}" is missing an init() function`);
-            }
-
             logger.info(`Component "${name}" loaded`);
-
-            if(init) {
-                componentInstance.init(this);
-            }
 
             return componentInstance;
         }
 
         return {
-            add: (componentPath, name, init = true) => {
-                return load(componentPath, name, init);
+            add: (componentPath, name) => {
+                return load(componentPath, name);
             },
             get: (name) => {
                 if(!Fluent.components[name]) {

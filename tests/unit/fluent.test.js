@@ -68,12 +68,6 @@ describe('Components management', () => {
         expect(components).toHaveProperty('foobar');
         expect(Object.keys(components)).toHaveLength(1);
     });
-
-    it('loading a component missing an init method', () => {
-        const componentPath = path.join(__dirname, '..', 'components', 'foobar')
-        
-        expect(() => Fluent.component().add(componentPath, 'missing-init')).toThrow(Error);
-    });
     
 });
 

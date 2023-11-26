@@ -1,22 +1,49 @@
-
+const Component = require('./../component');
 const RoomTriggers = require('./room_triggers');
 const Room = require('./room');
+const logger = require('./../../utils/logger');
 
-class RoomComponent {
+/**
+ * Room component
+ *
+ * @extends Component
+ * @class
+ */
+class RoomComponent extends Component {
 
-    init(Fluent) {
-        this.Fluent = Fluent;
-        this.Event = this.Fluent.component().get('event');
-
+    /**
+     * Constructor
+     */
+    constructor(Fluent) {
+        super(Fluent);
         this.rooms = {};
     }
 
+    /**
+     * Adds a new room
+     * @param {string} name - The name of the room.
+     * @param {Object} attributes - Attributes for the room.
+     * @returns {Room} - The room object.
+     */
     add(name, attributes) {
-        const newRoom = new Room(this.Event, name, attributes);
+        if(this.rooms[name]) {
+            logger.error('Name already exists', 'room');
+            return false;
+        }
+        const newRoom = new Room(this.event(), name, attributes);
         this.rooms[name] = newRoom;
+        return newRoom;
     }
 
+    /**
+     * Retrieves a room by its name.
+     * @param {string} name - The name of the room.
+     * @returns {*} - The room object or false if the room was not found by the name.
+     */
     get(name) {
+        if(!this.rooms[name]) {
+            return false;
+        }
         const room = this.rooms[name];
         return room;
     }

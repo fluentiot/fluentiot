@@ -31,8 +31,7 @@ beforeEach(() => {
             "foobar": () => {
                 return {
                     isTrue: (value) => {
-                        constraints.push(() => value === true);
-                        return Scenario.constraint(constraints)
+                        return () => value === true;
                     }
                 }
             }
@@ -168,6 +167,23 @@ describe('Constraints', () => {
             .when()
                 .empty()
             .constraint()
+                .foobar().isTrue(true)
+                .then(mockCallback);
+
+        const result = scenario.assert();
+
+        expect(mockCallback.mock.calls).toHaveLength(1);
+        expect(result).toBe(true);
+    });
+
+    it('calls two constraints and runs', () => {
+        const mockCallback = jest.fn();
+
+        const scenario = new Scenario(Fluent, 'Foobar')
+            .when()
+                .empty()
+            .constraint()
+                .foobar().isTrue(true)
                 .foobar().isTrue(true)
                 .then(mockCallback);
 

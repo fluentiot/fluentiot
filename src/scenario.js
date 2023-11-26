@@ -28,16 +28,17 @@ class Scenario {
 
         this.components = this.Fluent.component().all();
 
-        this.build();
+        this._buildTriggers();
 
         logger.info(`Scenario "${description}" loaded`);
     }
 
 
     /**
-     * Build triggers
+     * Build DSL triggers
+     * @private
      */
-    build() {
+    _buildTriggers() {
         //Common triggers
         this.triggers.empty = () => {
             return this.when();
@@ -90,13 +91,56 @@ class Scenario {
 
         for (const componentName in this.components) {
             const component = this.components[componentName];
-            if (typeof component.constraints === 'function') {
-                Object.assign(methods, component.constraints(this, constraints));
-            }
+            if (typeof component.constraints !== 'function') { return; }
+
+            const componentConstraints = component.constraints(this, constraints);
+            Object.assign(methods, componentConstraints);
         }
 
-        return methods;
+        //Deep search through methods object then proxy each call and console log the method called
+        const methodsProxy = this.createProxyForConstraints(methods, constraints);
+
+        return methodsProxy;
     }
+
+
+    /**
+     * Proxy each constraint method
+     * @param {*} obj 
+     * @param {*} constraints 
+     * @returns 
+     */
+    createProxyForConstraints = (obj, constraints) => {
+        return new Proxy(obj, {
+          get: (target, prop, receiver) => {
+            if (typeof target[prop] === 'function') {
+              return (...args) => {
+                const result = target[prop].apply(target, args);
+      
+                // Check if the result is an object with keys
+                if (result && typeof result === 'object' && Object.keys(result).length > 0) {
+                    // If keys are present, create a proxy for the result
+                    return this.createProxyForConstraints(result, constraints);
+                }
+
+                //Constraint
+                if (typeof result === 'function') {
+                    //console.log(`Method ${prop} called with arguments ${args.join(', ')}. Result: ${result}`);
+                    constraints.push(result);
+                    return this.constraint(constraints);
+                }
+      
+                return result;
+              };
+            } else if (typeof target[prop] === 'object' && target[prop] !== null) {
+                // Recursively create proxy for nested objects
+                return this.createProxyForConstraints(target[prop], constraints);
+            }
+      
+            return target[prop];
+          },
+        });
+    };
 
 
     /**
