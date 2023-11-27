@@ -109,7 +109,7 @@ describe('Variable constraints', () => {
 });
 
 
-describe.only('Variable triggers', () => {
+describe('Variable triggers', () => {
 
     let Scenario;
     

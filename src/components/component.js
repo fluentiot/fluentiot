@@ -3,14 +3,18 @@ class Component {
 
     constructor(Fluent) {
         this.Fluent = Fluent;
+        this._event = null;
     }
 
     event() {
-        return this.Fluent.component().get('event');
+        if(!this._event) {
+            this._event = this.Fluent.component().get('event');
+        }
+        return this._event;
     }
 
     emit(...args) {
-        this.Fluent.component().get('event').emit(...args);
+        this.event().emit(...args);
     }
 
 }

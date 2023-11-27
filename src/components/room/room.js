@@ -1,10 +1,14 @@
 const moment = require('moment');
 const logger = require('./../../utils/logger');
+const AttributeDslMixin = require('./../_mixins/attribute_dsl');
 
 class Room {
-    constructor(Event, name, attributes) {
-        this.Event = Event;
+    constructor(parent, name, attributes) {
+        this.parent = parent;
         this.name = name;
+
+        //Mixins
+        Object.assign(this, AttributeDslMixin(this, 'room'));
 
         // Default attributes
         this.defaultAttributes = {
@@ -18,70 +22,79 @@ class Room {
             ? { ...this.defaultAttributes, ...attributes }
             : { ...this.defaultAttributes };
 
-        this.devices = [];
+        // Last sensor time
+        // For example each time a PIR sensor detects someone this variable will get updated
+        // keeping the occupancy for the room
+        this._sensorValue = null;
+        this._sensorLastTime = null;
+
+        // If default was occupied make sure the sensor is updated so _checkIfVacant does not
+        // set the room immediately back to vacant
+        if(this.attributes.occupied === true) {
+            this.updateOccupancyBySensor(true);
+        }
 
         // Set up the one-minute timer for checkOccupied
-        this.checkOccupiedInterval = setInterval(() => this.checkOccupied(), 60 * 1000); // Every 1 minute
-        this.checkOccupied();
+        this.checkOccupiedTimer = setInterval(() => this._checkIfVacant(), 60 * 1000); // Every 1 minute
     }
 
+    /**
+     * Update the occupancy by sensor value
+     * @param {Boolean} sensorValue - If occupied then true, if no detection then false
+     */
     updateOccupancyBySensor(sensorValue) {
-        const now = moment();
-
+        // Sensor is true, room is occupied
+        // Only trigger the occupied if wasn't previous occupied
         if (sensorValue) {
-            // Sensor is true, room is now occupied
-            this.attributes.occupiedStartTime = now;
-            this.updateAttribute('occupied', true);
+            this._sensorLastTime = moment();
+            if(!this.attribute.get('occupied')) {
+                this.attribute.update('occupied', true);
+            }
         }
 
         // Update the PIR sensor attribute
-        this.setAttribute('_sensor', sensorValue);
+        this._sensorValue = sensorValue;
+
+        // If no threshold duration for vacany then need to trigger occupied=false quickly
+        // rather than waiting for the 1 minute timer
+        if(this.attribute.get('thresholdDuration') <= 0) {
+            this._checkIfVacant();
+        }
     }
 
-    checkOccupied() {
-        const now = moment();
-
+    /**
+     * Check if vacant
+     * @private 
+     */
+    _checkIfVacant() {
         // If the room is vacant, return early
-        if (!this.attributes.occupied) {
+        if (!this.attribute.get('occupied')) {
             return;
         }
 
-        // Pir sensor is in true, no need to check
-        if (this.attributes._sensor === true) {
+        // Sensor is true, no need to check
+        if (this._sensorValue === true) {
             return;
         }
 
-        // Check if the room has been unoccupied for the threshold duration
-        if (now.diff(this.attributes.occupiedStartTime, 'minutes') >= this.attributes.thresholdDuration) {
-            // Now vacant
-            this.attributes.occupiedStartTime = false;
-            logger.debug(`${this.name} is now vacant.`, 'room');
-            this.updateAttribute('occupied', false);
-        } else {
-            logger.debug(`${this.name} is still occupied.`, 'room');
+        // Room sensor is false and under the threshold to set the room to vacant
+        const now = moment();
+        if (now.diff(this._sensorLastTime, 'minutes') < this.attribute.get('thresholdDuration')) {
+            return;
         }
+
+        // Room is now vacant if passed early returns
+        this._sensorLastTime = false;
+        logger.debug(`${this.name} is now vacant.`, 'room');
+        this.attribute.update('occupied', false);
     }
 
+    /**
+     * Is occupied
+     * @returns {Boolean} - if room is occupied
+     */
     isOccupied() {
-        return this.attributes.occupied;
-    }
-
-    setAttribute(name, value) {
-        this.attributes[name] = value;
-    }
-
-    updateAttribute(name, value) {
-        if(this.attributes[name] === value) {
-            return;
-        }
-        
-        this.attributes[name] = value;
-        logger.debug(`${this.name} set ${name} to "${value}"`, 'room');
-        this.Event.emit(`room.${this.name}`, { name, value });
-    }
-
-    addDevice(device) {
-        this.devices.push(device);
+        return this.attribute.get('occupied');
     }
 
 }

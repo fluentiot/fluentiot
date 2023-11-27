@@ -1,33 +1,42 @@
 const schedule = require('node-schedule');
 const moment = require('moment');
+const logger = require('./../../utils/logger');
 
+const Component = require('./../component');
 const DatetimeTriggers = require('./datetime_triggers');
 const DatetimeConstraints = require('./datetime_constraints');
 
-class DatetimeComponent {
+/**
+ * Date time component
+ *
+ * @extends Component
+ * @class
+ */
+class DatetimeComponent extends Component {
 
-    init(Fluent) {
-        this.Fluent = Fluent;
-        this.Event = this.Fluent.component().get('event');
-
+    /**
+     * Constructor
+     */
+    constructor(Fluent) {
+        super(Fluent);
         this.schedules();
     }
 
     schedules() {
         // Schedule an event every minute
         schedule.scheduleJob('*/1 * * * *', () => {
-            this.Event.emit('datetime.minute');
-            this.Event.emit('datetime', moment().format('HH:mm'));
+            this.emit('datetime.minute');
+            this.emit('datetime.time', moment().format('HH:mm'));
         });
 
         // Schedule an event every hour
         schedule.scheduleJob('0 * * * *', () => {
-            this.Event.emit('datetime.hour');
+            this.emit('datetime.hour');
         });
         
         // Schedule an event every second
         schedule.scheduleJob('* * * * * *', () => {
-            this.Event.emit('datetime.second');
+            this.emit('datetime.second');
         });
     }
 
@@ -48,25 +57,75 @@ class DatetimeComponent {
         }
     }
 
-    constraints(Scenario, constraints) {
+    constraints() {
         return {
-            day: () => {
-                return {
-                    is: (targetDay) => {
-                        constraints.push(() => { return new DatetimeConstraints(this).is(targetDay); });
-                        return Scenario.constraint(constraints)
-                    }
+            day: {
+                is: (targetDay) => {
+                    const parsedDays = this._parseDay(targetDay);
+                    const today = moment().format('dddd');
+                    return parsedDays.some((parsedDay) => parsedDay.toLowerCase() === today.toLowerCase());
                 }
             },
-            time: () => {
-                return {
-                    between: (targetStart, targetEnd) => {
-                        constraints.push(() => { return new DatetimeConstraints(this).between(targetStart, targetEnd); });
-                        return Scenario.constraint(constraints)
-                    }
+            time: {
+                between: (targetStart, targetEnd) => {
+                    constraints.push(() => { return new DatetimeConstraints(this).between(targetStart, targetEnd); });
+                    return Scenario.constraint(constraints)
                 }
             }
         }
+    }
+
+    _parseDay(input) {
+        const weekdayMap = {
+            monday: 'Monday',
+            tuesday: 'Tuesday',
+            wednesday: 'Wednesday',
+            thursday: 'Thursday',
+            friday: 'Friday',
+        };
+    
+        const weekendMap = {
+            saturday: 'Saturday',
+            sunday: 'Sunday',
+        };
+    
+        const result = [];
+    
+        const parseSingleDay = (day) => {
+            let parsedDay = null;
+        
+            // Check weekdayMap
+            if (weekdayMap.hasOwnProperty(day.toLowerCase())) {
+                parsedDay = weekdayMap[day.toLowerCase()];
+            }
+        
+            // Check weekendMap
+            if (!parsedDay && weekendMap.hasOwnProperty(day.toLowerCase())) {
+                parsedDay = weekendMap[day.toLowerCase()];
+            }
+        
+            // Check if the day is already a valid day name
+            if (!parsedDay && moment(day, 'dddd', true).isValid()) {
+                parsedDay = moment(day, 'dddd').format('dddd');
+            }
+        
+            // Log an error if the day couldn't be parsed
+            if (!parsedDay) {
+                logger.error(`Could not parse day: ${day}`);
+            } else {
+                result.push(parsedDay);
+            }
+        };
+    
+        if (Array.isArray(input)) {
+            input.forEach((day) => parseSingleDay(day));
+        } else if (typeof input === 'string') {
+            parseSingleDay(input);
+        } else {
+            logger.error('Invalid input. Expected a string or an array of strings.');
+        }
+    
+        return result;
     }
 
 }

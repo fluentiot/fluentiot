@@ -1,5 +1,4 @@
 const Component = require('./../component');
-const RoomTriggers = require('./room_triggers');
 const Room = require('./room');
 const logger = require('./../../utils/logger');
 
@@ -30,7 +29,7 @@ class RoomComponent extends Component {
             logger.error('Name already exists', 'room');
             return false;
         }
-        const newRoom = new Room(this.event(), name, attributes);
+        const newRoom = new Room(this, name, attributes);
         this.rooms[name] = newRoom;
         return newRoom;
     }
@@ -51,25 +50,29 @@ class RoomComponent extends Component {
     triggers(Scenario) {
         return {
             room: (name) => {
+                const room = this.get(name);
+                if(!room) {
+                    throw new Error(`Room ${name} does not exist`, 'room');
+                }
+
                 return {
-                    isOccupied: () => { 
-                        const room = this.get(name);
-                        new RoomTriggers(Scenario, this.Event).occupied(room);
-                        return Scenario.triggers;
-                    },
-                    isVacant: () => { 
-                        const room = this.get(name);
-                        new RoomTriggers(Scenario, this.Event).vacant(room);
-                        return Scenario.triggers;
-                    },
-                    occupied: () => {
-                        return {
-                            is:(...args) => {
-                                const room = this.get(name);
-                                new RoomTriggers(Scenario, this.Event).occupiedFor(room, ...args);
-                                return Scenario.triggers;
-                            }
-                        }
+                    is: {
+                        occupied: () => { 
+                            this.event().on(`room.${room.name}`, (changedData) => {
+                                if(changedData.name === 'occupied' && changedData.value === true) {
+                                    Scenario.assert();
+                                }
+                            });
+                            return Scenario.triggers;
+                        },
+                        vacant: () => { 
+                            this.event().on(`room.${room.name}`, (changedData) => {
+                                if(changedData.name === 'occupied' && changedData.value === false) {
+                                    Scenario.assert();
+                                }
+                            });
+                            return Scenario.triggers;
+                        },
                     }
                 };
             },
