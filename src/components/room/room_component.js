@@ -47,6 +47,12 @@ class RoomComponent extends Component {
         return room;
     }
 
+    /**
+     * Defines triggers related to room for a given Scenario.
+     *
+     * @param {Scenario} Scenario - The Scenario object.
+     * @returns {object} - An object with trigger methods for devices.
+     */
     triggers(Scenario) {
         return {
             room: (name) => {

@@ -1,26 +1,37 @@
 const EventEmitter = require('events');
-const EventTriggers = require('./event_triggers');
+const Component = require('./../component');
 
 /**
- * Component for managing system events.
+ * Fluent Emitter
+ * 
+ * @extends EventEmitter
+ */
+class FluentEmitter extends EventEmitter {}
+
+/**
+ * Event component
  *
  * @extends Component
  * @class
  */
-class EventComponent extends EventEmitter {
+class EventComponent extends Component {
 
     /**
      * Constructor
      */
     constructor(Fluent) {
         super(Fluent);
+        this.emitter = new FluentEmitter();
         this.queueRunning = false;
         this.queue = [];
+
+        //Setup wrapper for 'on'
+        this.on = this.emitter.on.bind(this.emitter);
     }
 
     /**
      * Executes operations that should happen after the component has been loaded.
-     * This method should be called once the component is ready to process events.
+     * This method should be called once framework is ready to process events.
      */
     afterLoad() {
         this.queueRunning = true;
@@ -46,19 +57,26 @@ class EventComponent extends EventEmitter {
     processEventQueue() {
         while (this.queue.length > 0) {
             const eventArgs = this.queue.shift();
-            super.emit(...eventArgs);
+            this.emitter.emit(...eventArgs);
         }
     }
 
+    /**
+     * Defines triggers related to events for a given Scenario.
+     *
+     * @param {Scenario} Scenario - The Scenario object.
+     * @returns {object} - An object with trigger methods for devices.
+     */
     triggers(Scenario) {
         return {
-            event: () => {
-                return {
-                    on: (eventName) => {
-                        new EventTriggers(Scenario, this).on(eventName);
-                        return Scenario.triggers;
-                    }
-                };
+            event: {
+                on: (eventName, eventValue) => {
+                    this.on(eventName, (emittedValue) => {
+                        if(eventValue && eventValue !== emittedValue) { return; }
+                        Scenario.assert(eventName)
+                    });
+                    return Scenario.triggers;
+                }
             }
         }
     }

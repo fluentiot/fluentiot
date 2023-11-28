@@ -1,6 +1,7 @@
 const moment = require('moment');
 const logger = require('./../../utils/logger');
 const Component = require('./../component');
+const Expect = require('./../../utils/expect');
 
 /**
  * Variable component
@@ -154,14 +155,20 @@ class VariableComponent extends Component {
     constraints() {
         return {
             variable: (variableName) => {
-                return {
-                    is: (variableValue) => {
-                        const currentValue = this.get(variableName);
-                        return currentValue === variableValue;
-                    }
+                if(typeof variableName !== 'string') {
+                    logger.error(`Variable "${variableName}" was not passed as a string`,'constraint');
+                    return false;
                 }
-            },
-        }
+
+                //Undefined?
+                let currentValue = undefined;
+                if(this.variables[variableName]) {
+                    currentValue = this.get(variableName);
+                }
+                
+                return new Expect(currentValue);
+            }
+        };
     }
 
 

@@ -31,7 +31,7 @@ describe('Scene', () => {
     });
 
     it('returns false if the scene does not exist', () => {
-       expect(scene.get('foobar')).toBe(false);
+       expect(scene.get('foobar')).toBeNull();
     });
 
     it('will run the mock when called', () => {

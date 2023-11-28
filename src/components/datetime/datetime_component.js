@@ -38,6 +38,12 @@ class DatetimeComponent extends Component {
         });
     }
 
+    /**
+     * Defines triggers related to datetime for a given Scenario.
+     *
+     * @param {Scenario} Scenario - The Scenario object.
+     * @returns {object} - An object with trigger methods for devices.
+     */
     triggers(Scenario) {
         return {
             time: {

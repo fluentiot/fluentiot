@@ -89,21 +89,55 @@ describe('Variable expiry', () => {
 
 describe('Variable constraints', () => {
 
-    it('passes basic IS constraint', () => {
-        variable.set('foo','bar');
-        const result = variable.constraints().variable('foo').is('bar');
-        expect(result).toBe(true);
+    it('is', () => {
+        variable.set('foo','foo');
+        expect(variable.constraints().variable('foo').is('foo')).toBe(true);
     });
 
-    it('fails basic IS constraint', () => {
-        variable.set('foo','bar');
-        const result = variable.constraints().variable('foo').is('foo');
-        expect(result).toBe(false);
+    it('isDefined', () => {
+        variable.set('foo','foo');
+        expect(variable.constraints().variable('foo').isDefined()).toBe(true);
     });
 
-    it('handles undefined variables', () => {
-        expect(variable.constraints().variable('foo').is('bar')).toBe(false);
-        expect(variable.constraints().variable('foo2').is(null)).toBe(true);
+    it('isUndefined', () => {
+        expect(variable.constraints().variable('foo').isUndefined()).toBe(true);
+    });
+
+    it('isFalsy', () => {
+        variable.set('foo',false);
+        expect(variable.constraints().variable('foo').isFalsy()).toBe(true);
+    });
+
+    it('isTruthy', () => {
+        variable.set('foo',true);
+        expect(variable.constraints().variable('foo').isTruthy()).toBe(true);
+    });
+
+    it('isNull', () => {
+        variable.set('foo',null);
+        expect(variable.constraints().variable('foo').isNull()).toBe(true);
+    });
+
+    it('isNaN', () => {
+        variable.set('foo',NaN);
+        expect(variable.constraints().variable('foo').isNaN()).toBe(true);
+    });
+
+    it('contain', () => {
+        variable.set('foo', ['a','b','c']);
+        expect(variable.constraints().variable('foo').contain('a')).toBe(true);
+    });
+
+    it('equal', () => {
+        variable.set('foo', { a: 1, b: [2, 3] });
+        const result1 = variable.constraints().variable('foo').equal({ a: 1, b: [2, 3] });
+        expect(result1).toBe(true);
+    });
+
+    it('match', () => {
+        variable.set('foo', 'hello123');
+        const result1 = variable.constraints().variable('foo').match(/[a-z]+\d+/);
+        expect(result1).toBe(true);
     });
 
 });

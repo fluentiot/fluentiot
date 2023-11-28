@@ -1,10 +1,18 @@
 const Component = require('./../component');
 const Scene = require('./scene');
+const logger = require('./../../utils/logger');
 
+/**
+ * Scene component
+ *
+ * @extends Component
+ * @class
+ */
 class SceneComponent extends Component {
 
     /**
-     * Initializes the SceneComponent.
+     * Constructor
+     * 
      * @param {Fluent} Fluent - The Fluent IoT framework.
      */
     constructor(Fluent) {
@@ -14,13 +22,14 @@ class SceneComponent extends Component {
 
     /**
      * Adds a new scene
+     * 
      * @param {string} name - The name of the scene.
      * @param {Function} callback - The callback function for the scene.
      * @returns {Scene} - The scene object.
      */
     add(name, callback) {
         if(this.scenes[name]) {
-            throw new Error(`Scene "${name}" already exists`);
+            throw new Error(`Scene with the name "${name}" already exists`);
         }
         const newScene = new Scene(this, name, callback);
         this.scenes[name] = newScene;
@@ -28,16 +37,17 @@ class SceneComponent extends Component {
     }
 
     /**
-     * Retrieves a scene by its name.
+     * Gets the scene with the specified name.
+     * 
      * @param {string} name - The name of the scene.
      * @returns {*} - The scene object or false if the scene was not found by the name.
      */
     get(name) {
         if(!this.scenes[name]) {
-            return false;
+            logger.error(`Device "${name}" could not be found`, 'device');
+            return null;
         }
-        const scene = this.scenes[name];
-        return scene;
+        return this.scenes[name];
     }
     
 }

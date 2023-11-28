@@ -1,75 +1,81 @@
 
-const { capability, logger } = require('./../../../index.js');
+const AttributeDslMixin = require('./../_mixins/attribute_dsl');
 
 class Device {
 
-    constructor(Event, name) {
-        this.Event = Event;
+    constructor(parent, name, attributes = {}, capabilities = []) {
+        this.parent = parent;
         this.name = name;
-        this.attributes = {};
+        this.attributes = attributes;
         this.capabilities = {};
-    }
 
-    attribute() {
-        return {
-            get: (attributeName) => {
-                return this.attributes[attributeName];
+        // Mixins
+        Object.assign(this, AttributeDslMixin(this, 'device'));
+
+        // Abstracting capability method so to reflect similar DSL in system
+        // Instead of device.capability().add() => device.capability.add()
+        this.capability = this._capability();
+
+        // Add in capabilities
+        for (let ii = 0; ii < capabilities.length; ii++) {
+            if(!capabilities[ii].startsWith('@')) {
+                throw new Error(`Capabilities must be passed as a reference (e.g. @switchOn)`);
             }
-        }
+            this.capability.add(capabilities[ii]);
+        };
     }
 
-    getAttribute(attributeName) {
-        return this.attributes[attributeName];
-    }
-
-    setAttribute(name, value) {
-        this.attributes[name] = value;
-    }
-
-    updateAttribute(name, value) {
-        // if(this.attributes[name] === value) {
-        //     return;
-        // }
-
-        this.attributes[name] = value;
-        logger.debug(`${this.name} attribute ${name} set to "${value}"`,'device');
-
-        this.Event.emit(`device.${this.name}`, { name, value });
-
-    }
-
-    capability() {
+    /**
+     * Capability DSL
+     * 
+     * @private
+     */
+    _capability() {
         return {
             add: (method, callback) => {
-                //Capability passed
                 if(typeof method === 'object') {
-                    //Passed with an existing capability object
+                    // Passed with an existing capability object
+                    if(!method.callback || !method.name) {
+                        throw new Error(`Invalid capability type, missing callback and name parameters`);
+                    }
+
                     const _capability = method;
                     callback = _capability.callback;
                     method = _capability.name;
                 }
                 else if(method.startsWith('@')) {
-                    //Passed with just the name
+                    // Passed with just the name
                     if(callback) {
                         throw new Error(`When using a named capability do not define the method`);
                     }
-                    const _capability = capability.get(method.substring(1));
-                    callback = _capability.callback;
-                    method = _capability.name;
+                    const _callback = this.parent.getComponent('capability').get(method.substring(1));
+
+                    if(!_callback) {
+                        throw new Error(`Capability "${method}" does not exist`);
+                    }
+
+                    method = method.substring(1);
+                    callback = _callback;
+                }
+
+                // Capability with this name already exists
+                if(this.capabilities[method]) {
+                    throw new Error(`Cannot add capability "${name}" to ${this.name} as its added already`);
+                }
+
+                // Capabilities cannot have a space, otherwise they cannot be reliably called
+                if(method.indexOf(' ') !== -1) {
+                    throw new Error(`Capability cannot contain a space`);
                 }
 
                 this.capabilities[method] = callback;
-                this[method] = (...args) => this.executeCapability(method, ...args);
-            }
-        }
-    }
 
-    executeCapability(method, ...args) {
-        const capability = this.capabilities[method];
-        if (capability) {
-            capability(this, ...args);
-        } else {
-            console.error(`Capability '${method}' not found for device.`);
+                this[method] = (...args) => {
+                    return callback(this, ...args)
+                }
+
+                return true;
+            }
         }
     }
 
