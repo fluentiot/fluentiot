@@ -16,6 +16,10 @@ class Expect {
         this.contain = this.toContain;
         this.equal = this.toEqual;
         this.match = this.toMatch;
+        this.greaterThan = this.toBeGreaterThan;
+        this.greaterThanOrEqual = this.toBeGreaterThanOrEqual;
+        this.lessThan = this.toBeLessThan;
+        this.lessThanOrEqual = this.toBeLessThanOrEqual;
     }
   
     get not() {
@@ -71,6 +75,26 @@ class Expect {
   
     toMatch(pattern) {
         const result = pattern.test(this.value);
+        return this.negate ? !result : result;
+    }
+  
+    toBeGreaterThan(number) {
+        const result = this.value > number;
+        return this.negate ? !result : result;
+    }
+  
+    toBeGreaterThanOrEqual(number) {
+        const result = this.value >= number;
+        return this.negate ? !result : result;
+    }
+  
+    toBeLessThan(number) {
+        const result = this.value < number;
+        return this.negate ? !result : result;
+    }
+  
+    toBeLessThanOrEqual(number) {
+        const result = this.value <= number;
         return this.negate ? !result : result;
     }
 

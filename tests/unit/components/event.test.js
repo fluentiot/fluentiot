@@ -104,7 +104,7 @@ describe('Event setup and queue', () => {
 
 
 
-describe.only('Event triggers', () => {
+describe('Event triggers', () => {
     let Scenario;
     let event;
     
