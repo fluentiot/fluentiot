@@ -18,6 +18,8 @@ class EventComponent extends Component {
 
     /**
      * Constructor
+     * 
+     * @param {Fluent} Fluent - The Fluent IoT framework.
      */
     constructor(Fluent) {
         super(Fluent);
@@ -72,7 +74,7 @@ class EventComponent extends Component {
             event: {
                 on: (eventName, eventValue) => {
                     this.on(eventName, (emittedValue) => {
-                        if(eventValue && eventValue !== emittedValue) { return; }
+                        if (eventValue && eventValue !== emittedValue) { return; }
                         Scenario.assert(eventName)
                     });
                     return Scenario.triggers;

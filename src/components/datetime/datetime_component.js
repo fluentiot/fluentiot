@@ -1,11 +1,10 @@
 const schedule = require('node-schedule');
 const moment = require('moment');
 const logger = require('./../../utils/logger');
-
 const Component = require('./../component');
 
 /**
- * Date time component
+ * Datetime component
  *
  * @extends Component
  * @class
@@ -14,12 +13,17 @@ class DatetimeComponent extends Component {
 
     /**
      * Constructor
+     * 
+     * @param {Fluent} Fluent - The Fluent IoT framework.
      */
     constructor(Fluent) {
         super(Fluent);
         this.schedules();
     }
 
+    /**
+     * Regular schedules for emitting events
+     */
     schedules() {
         // Schedule an event every minute
         schedule.scheduleJob('*/1 * * * *', () => {
@@ -67,6 +71,11 @@ class DatetimeComponent extends Component {
         }
     }
 
+    /**
+     * Defines constraints related to datetime.
+     *
+     * @returns {object} - An object with constraint methods for datetime.
+     */
     constraints() {
         return {
             day: {
@@ -93,6 +102,13 @@ class DatetimeComponent extends Component {
         }
     }
 
+    /**
+     * Parse day
+     * 
+     * @private
+     * @param {string|array} input - Days to parse, either string or array of strings
+     * @returns {array} - Returns a list of formatted days
+     */
     _parseDay(input) {
         const results = [];
     
@@ -101,13 +117,13 @@ class DatetimeComponent extends Component {
             day = day.toLowerCase();
 
             // Include weekends
-            if(day === 'weekend') {
+            if (day === 'weekend') {
                 parsedDay.push('Saturday');
                 parsedDay.push('Sunday');
             }
 
             // Include weekdays
-            if(parsedDay.length === 0 && day === 'weekday') {
+            if (parsedDay.length === 0 && day === 'weekday') {
                 parsedDay.push('Monday');
                 parsedDay.push('Tuesday');
                 parsedDay.push('Wednesday');
@@ -127,7 +143,7 @@ class DatetimeComponent extends Component {
         
             // Log an error if the day couldn't be parsed
             if (parsedDay.length === 0) {
-                logger.error(`Could not parse day: ${day}`);
+                logger.error(`Could not parse day "${day}"`, 'datetime');
             } else {
                 results.push(...parsedDay);
             }
@@ -138,38 +154,42 @@ class DatetimeComponent extends Component {
         } else if (typeof input === 'string') {
             parseSingleDay(input);
         } else {
-            logger.error('Invalid input. Expected a string or an array of strings.', 'datetime');
+            logger.error(`Invalid "${input}" input. Expected a string or an array of strings`, 'datetime');
         }
     
         return results;
     }
 
+    /**
+     * Parse cron expression
+     * 
+     * @private
+     * @param {string} target - Expression of time, e.g. "10 seconds"
+     * @returns {string|null} - Cron tab expression
+     */
     _parseCronExpression(target) {
         const match = target.match(/^(\d+)?\s*(?:(second|minute|hour|sec|min|hr)s?)?$/i);
+        if(!match) { return null; }
 
-        if (match) {
-            const value = match[1] ? parseInt(match[1]) : 1; // Default to 1 if no value is specified
-            const unit = match[2] ? match[2].toLowerCase() : null;
+        const value = match[1] ? parseInt(match[1]) : 1; // Default to 1 if no value is specified
+        const unit = match[2] ? match[2].toLowerCase() : null;
 
-            switch (unit) {
-                case 'sec':
-                case 'second':
-                case 'seconds':
-                    return `*/${value} * * * * *`;
-                case 'min':
-                case 'minute':
-                case 'minutes':
-                    return `0 */${value} * * * *`;
-                case 'hr':
-                case 'hour':
-                case 'hours':
-                    return `0 0 */${value} * * *`;
-                default:
-                    return null;
-            }
+        switch (unit) {
+            case 'sec':
+            case 'second':
+            case 'seconds':
+                return `*/${value} * * * * *`;
+            case 'min':
+            case 'minute':
+            case 'minutes':
+                return `0 */${value} * * * *`;
+            case 'hr':
+            case 'hour':
+            case 'hours':
+                return `0 0 */${value} * * *`;
+            default:
+                return null;
         }
-
-        return null;
     }
 
 }

@@ -1,3 +1,4 @@
+const Device = require('./device');
 const Component = require('./../component');
 const logger = require('./../../utils/logger');
 
@@ -27,13 +28,10 @@ class DeviceComponent extends Component {
      * @param {array} [capabilities=[]] - Capabilities the device will have, must be passed as @ reference.
      */
     add(name, attributes = {}, capabilities = []) {
-        if(this.devices[name]) {
+        if (this.devices[name]) {
             throw new Error(`Device with the name "${name}" already exists`);
         }
-
-        const Device = require('./device');
         this.devices[name] = new Device(this, name, attributes, capabilities);
-
         return this.devices[name];
     }
 
@@ -70,7 +68,7 @@ class DeviceComponent extends Component {
             }
         }
 
-        if(results.length === 0) {
+        if (results.length === 0) {
             return null;
         }
 
@@ -87,7 +85,7 @@ class DeviceComponent extends Component {
         return {
             device: (name) => {
                 const device = this.get(name);
-                if(!device) {
+                if (!device) {
                     throw new Error(`Device "${name}" does not exist`);
                 }
 
@@ -140,7 +138,7 @@ class DeviceComponent extends Component {
                 return;
             }
 
-            if(
+            if (
                 (operator === 'is' && changedData.value === attributeValue) ||
                 (operator === 'not' && changedData.value !== attributeValue) ||
                 (operator === 'any')

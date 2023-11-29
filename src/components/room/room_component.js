@@ -12,6 +12,8 @@ class RoomComponent extends Component {
 
     /**
      * Constructor
+     * 
+     * @param {Fluent} Fluent - The Fluent IoT framework.
      */
     constructor(Fluent) {
         super(Fluent);
@@ -20,31 +22,31 @@ class RoomComponent extends Component {
 
     /**
      * Adds a new room
+     * 
      * @param {string} name - The name of the room.
      * @param {Object} attributes - Attributes for the room.
      * @returns {Room} - The room object.
      */
     add(name, attributes) {
-        if(this.rooms[name]) {
-            logger.error('Name already exists', 'room');
-            return false;
+        if (this.rooms[name]) {
+            throw new Error(`Room with the name "${name}" already exists`);
         }
-        const newRoom = new Room(this, name, attributes);
-        this.rooms[name] = newRoom;
-        return newRoom;
+        this.rooms[name] = new Room(this, name, attributes);
+        return this.rooms[name];
     }
 
     /**
      * Retrieves a room by its name.
+     * 
      * @param {string} name - The name of the room.
-     * @returns {*} - The room object or false if the room was not found by the name.
+     * @returns {any|null} - Returns the room.
      */
     get(name) {
-        if(!this.rooms[name]) {
+        if (!this.rooms[name]) {
+            logger.error(`Room "${name}" could not be found`, 'room');
             return false;
         }
-        const room = this.rooms[name];
-        return room;
+        return this.rooms[name];
     }
 
     /**
@@ -57,7 +59,7 @@ class RoomComponent extends Component {
         return {
             room: (name) => {
                 const room = this.get(name);
-                if(!room) {
+                if (!room) {
                     throw new Error(`Room ${name} does not exist`, 'room');
                 }
 
@@ -65,7 +67,7 @@ class RoomComponent extends Component {
                     is: {
                         occupied: () => { 
                             this.event().on(`room.${room.name}`, (changedData) => {
-                                if(changedData.name === 'occupied' && changedData.value === true) {
+                                if (changedData.name === 'occupied' && changedData.value === true) {
                                     Scenario.assert();
                                 }
                             });
@@ -73,7 +75,7 @@ class RoomComponent extends Component {
                         },
                         vacant: () => { 
                             this.event().on(`room.${room.name}`, (changedData) => {
-                                if(changedData.name === 'occupied' && changedData.value === false) {
+                                if (changedData.name === 'occupied' && changedData.value === false) {
                                     Scenario.assert();
                                 }
                             });

@@ -21,6 +21,8 @@ describe('Expect methods', () => {
     it('toBeDefined', () => {
         expect(fexpect('foo').toBeDefined()).toBe(true);
         expect(fexpect(undefined).toBeDefined()).toBe(false);
+
+        expect(fexpect(undefined).not.toBeDefined()).toBe(true);
     });
 
     it('toBeUndefined', () => {
@@ -176,20 +178,20 @@ describe('Expect constraints with aliases', () => {
         expect(result1).toBe(true);
     });
 
-    it('greaterThan', () => {
-        expect(fexpect(10).greaterThan(9)).toBe(true);
+    it('isGreaterThan', () => {
+        expect(fexpect(10).isGreaterThan(9)).toBe(true);
     });
 
-    it('greaterThanOrEqual', () => {
-        expect(fexpect(10).greaterThanOrEqual(9)).toBe(true);
+    it('isGreaterThanOrEqual', () => {
+        expect(fexpect(10).isGreaterThanOrEqual(9)).toBe(true);
     });
 
-    it('lessThan', () => {
-        expect(fexpect(10).lessThan(15)).toBe(true);
+    it('isLessThan', () => {
+        expect(fexpect(10).isLessThan(15)).toBe(true);
     });
 
-    it('lessThanOrEqual', () => {
-        expect(fexpect(15).lessThanOrEqual(15)).toBe(true);
+    it('isLessThanOrEqual', () => {
+        expect(fexpect(15).isLessThanOrEqual(15)).toBe(true);
     });
 
 });

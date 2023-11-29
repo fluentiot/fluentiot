@@ -11,13 +11,6 @@ const Expect = require('./../../utils/expect');
 class ExpectComponent extends Component {
 
     /**
-     * Constructor
-     */
-    constructor(Fluent) {
-        super(Fluent);
-    }
-
-    /**
      * Defines constraints related to expect.
      *
      * @returns {object} - An object with constraint methods for expect.
@@ -27,6 +20,7 @@ class ExpectComponent extends Component {
             expect: (value) => new Expect(value)
         };
     }
+    
 }
 
 module.exports = ExpectComponent;

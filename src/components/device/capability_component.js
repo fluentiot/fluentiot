@@ -28,7 +28,7 @@ class CapabilityComponent extends Component {
      * @throws {Error} Throws an error if a capability with the same name already exists.
      */
     add(name, callback) {
-        if(this.capabilities[name]) {
+        if (this.capabilities[name]) {
             throw new Error(`Capability with the name "${name}" already exists`);
         }
 

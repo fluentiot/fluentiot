@@ -13,13 +13,14 @@ class Expect {
         this.isTruthy = this.toBeTruthy;
         this.isNull = this.toBeNull;
         this.isNaN = this.toBeNaN;
+        this.isGreaterThan = this.toBeGreaterThan;
+        this.isGreaterThanOrEqual = this.toBeGreaterThanOrEqual;
+        this.isLessThan = this.toBeLessThan;
+        this.isLessThanOrEqual = this.toBeLessThanOrEqual;
+
         this.contain = this.toContain;
         this.equal = this.toEqual;
         this.match = this.toMatch;
-        this.greaterThan = this.toBeGreaterThan;
-        this.greaterThanOrEqual = this.toBeGreaterThanOrEqual;
-        this.lessThan = this.toBeLessThan;
-        this.lessThanOrEqual = this.toBeLessThanOrEqual;
     }
   
     get not() {

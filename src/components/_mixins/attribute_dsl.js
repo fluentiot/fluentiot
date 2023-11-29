@@ -6,7 +6,7 @@ const AttributeDslMixin = (parent, name) => {
     return {
         attribute: {
             get: (attributeName) => {
-                if(typeof parent.attributes[attributeName] === 'undefined') {
+                if (typeof parent.attributes[attributeName] === 'undefined') {
                     return null;
                 }
                 return parent.attributes[attributeName];
@@ -16,7 +16,7 @@ const AttributeDslMixin = (parent, name) => {
                 return true;
             },
             update: (attributeName, attributeValue) => {
-                if(parent.attributes[attributeName] === attributeValue) {
+                if (parent.attributes[attributeName] === attributeValue) {
                     return;
                 }
                 parent.attributes[attributeName] = attributeValue;
