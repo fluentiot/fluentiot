@@ -1,14 +1,28 @@
 {
-  "dependencies": {
-    "app-root-path": "^3.1.0",
-    "moment": "^2.29.4",
-    "node-schedule": "^2.1.1"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "jshint": "^2.13.6"
-  },
-  "scripts": {
-    "test": "jest"
-  }
+    "name": "fluent-iot",
+    "version": "0.1.0",
+    "description": "Fluent IoT - The Programmer's IoT Framework",
+    "main": "index.js",
+    "keywords": [
+        "fluent",
+        "IoT",
+        "framework"
+    ],
+    "author": "Darren Moore",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/darrenmoore/fluent-iot/issues"
+    },
+    "homepage": "https://github.com/darrenmoore/fluent-iot",
+    "dependencies": {
+        "app-root-path": "^3.1.0",
+        "moment": "^2.29.4",
+        "node-schedule": "^2.1.1"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0"
+    },
+    "scripts": {
+        "test": "jest"
+    }
 }
