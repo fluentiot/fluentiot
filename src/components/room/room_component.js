@@ -44,7 +44,7 @@ class RoomComponent extends Component {
     get(name) {
         if (!this.rooms[name]) {
             logger.error(`Room "${name}" could not be found`, 'room');
-            return false;
+            return null;
         }
         return this.rooms[name];
     }
@@ -55,7 +55,7 @@ class RoomComponent extends Component {
      * @param {Scenario} Scenario - The Scenario object.
      * @returns {object} - An object with trigger methods for devices.
      */
-    triggers(Scenario) {
+    triggers(scope) {
         return {
             room: (name) => {
                 const room = this.get(name);
@@ -64,24 +64,22 @@ class RoomComponent extends Component {
                 }
 
                 return {
-                    is: {
-                        occupied: () => { 
-                            this.event().on(`room.${room.name}`, (changedData) => {
-                                if (changedData.name === 'occupied' && changedData.value === true) {
-                                    Scenario.assert();
-                                }
-                            });
-                            return Scenario.triggers;
-                        },
-                        vacant: () => { 
-                            this.event().on(`room.${room.name}`, (changedData) => {
-                                if (changedData.name === 'occupied' && changedData.value === false) {
-                                    Scenario.assert();
-                                }
-                            });
-                            return Scenario.triggers;
-                        },
-                    }
+                    isOccupied: () => { 
+                        this.event().on(`room.${room.name}`, (changedData) => {
+                            if (changedData.name === 'occupied' && changedData.value === true) {
+                                scope.assert();
+                            }
+                        });
+                        return scope;
+                    },
+                    isVacant: () => { 
+                        this.event().on(`room.${room.name}`, (changedData) => {
+                            if (changedData.name === 'occupied' && changedData.value === false) {
+                                scope.assert();
+                            }
+                        });
+                        return scope;
+                    },
                 };
             },
         }

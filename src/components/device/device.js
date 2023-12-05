@@ -1,4 +1,4 @@
-const AttributeDslMixin = require('./../_mixins/attribute_dsl');
+const { AttributeDslMixin } = require('./../_mixins/attribute_dsl');
 
 /**
  * Device

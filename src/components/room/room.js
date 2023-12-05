@@ -1,6 +1,6 @@
 const moment = require('moment');
 const logger = require('./../../utils/logger');
-const AttributeDslMixin = require('./../_mixins/attribute_dsl');
+const { AttributeDslMixin } = require('./../_mixins/attribute_dsl');
 
 /**
  * Room
@@ -44,7 +44,7 @@ class Room {
         // If default was occupied make sure the sensor is updated so _checkIfVacant does not
         // set the room immediately back to vacant
         if (this.attributes.occupied === true) {
-            this.updateOccupancyBySensor(true);
+            this.updatePresence(true);
         }
 
         // Set up the one-minute timer for checkOccupied
@@ -56,7 +56,7 @@ class Room {
      * 
      * @param {Boolean} sensorValue - If occupied then true, if no detection then false
      */
-    updateOccupancyBySensor(sensorValue) {
+    updatePresence(sensorValue) {
         // Sensor is true, room is occupied
         // Only trigger the occupied if wasn't previous occupied
         if (sensorValue) {
@@ -112,6 +112,15 @@ class Room {
      */
     isOccupied() {
         return this.attribute.get('occupied');
+    }
+
+    /**
+     * Is vacant
+     * 
+     * @returns {Boolean} - if room is vacant
+     */
+    isVacant() {
+        return !this.attribute.get('occupied');
     }
 
 }

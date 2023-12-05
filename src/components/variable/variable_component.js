@@ -125,25 +125,25 @@ class VariableComponent extends Component {
      * @param {Scenario} Scenario - The Scenario object.
      * @returns {object} - An object with trigger methods for variables.
      */
-    triggers(Scenario) {
+    triggers(scope) {
         return {
             variable: (variableName) => {
                 return {
                     is: (variableValue) => {
                         this.event().on('variable', (changedData) => {
                             if (changedData.name === variableName && changedData.value === variableValue) {
-                                Scenario.assert();
+                                scope.assert();
                             }
                         });
-                        return Scenario.triggers;
+                        return scope;
                     },
                     updated: () => {
                         this.event().on('variable', (changedData) => {
                             if (changedData.name === variableName) {
-                                Scenario.assert(changedData.value);
+                                scope.assert(changedData.value);
                             }
                         });
-                        return Scenario.triggers;
+                        return scope;
                     }
                 };
             }
@@ -163,13 +163,15 @@ class VariableComponent extends Component {
                     return false;
                 }
 
-                //Undefined?
-                let currentValue = undefined;
-                if (this.variables[variableName]) {
-                    currentValue = this.get(variableName);
+                const callback = () => {
+                    let currentValue = undefined;
+                    if (this.variables[variableName]) {
+                        currentValue = this.get(variableName);
+                    }
+                    return currentValue;
                 }
-                
-                return new Expect(currentValue);
+
+                return new Expect(callback);
             }
         };
     }

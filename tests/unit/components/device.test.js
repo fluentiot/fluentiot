@@ -3,7 +3,6 @@ jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'));
 jest.mock('./../../../src/utils/logger');
 
 const DeviceComponent = require('./../../../src/components/device/device_component');
-const CapabilityComponent = require('./../../../src/components/device/capability_component');
 const Fluent = require('./../../../src/fluent');
 const ComponentHelper = require('./../../helpers/component_helper.js');
 
@@ -44,7 +43,20 @@ describe('Device attributes', () => {
         const newDevice1 = device.add('pir-office', { id:'123' });
         const newDevice2 = device.add('pir-living', { id:'321' });
 
-        const devices = device.findByAttribute('id', '123');
+        //Single found
+        const device1 = device.findByAttribute('id', '123');
+        expect(device1).toBe(newDevice1);
+
+        //Single found
+        const device2 = device.findByAttribute('id', '321');
+        expect(device2).toBe(newDevice2);
+
+        //Single not found
+        const device3 = device.findByAttribute('id', 'xxx');
+        expect(device3).toBe(null);
+
+        //All
+        const devices = device.findAllByAttribute('id', '123');
         expect(devices).toHaveLength(1);
         expect(devices).toContain(newDevice1);
         expect(devices).not.toContain(newDevice2);
@@ -54,7 +66,7 @@ describe('Device attributes', () => {
         const newDevice1 = device.add('pir-office', { foo:'bar' });
         const newDevice2 = device.add('pir-living', { foo:'bar' });
 
-        const devices = device.findByAttribute('foo', 'bar');
+        const devices = device.findAllByAttribute('foo', 'bar');
         expect(devices).toHaveLength(2);
         expect(devices).toContain(newDevice1);
         expect(devices).toContain(newDevice2);
@@ -266,37 +278,3 @@ describe('Device triggers', () => {
 
 });
 
-
-describe('Compability component', () => {
-
-    let capability;
-
-    beforeEach(() => {
-        capability = new CapabilityComponent(Fluent);
-    })
-
-    it('can add a new capability', () => {
-        const callback = () => {};
-        const result = capability.add('foobar', callback);
-        expect(result).toBe(callback);
-        expect(Object.keys(capability.capabilities)).toHaveLength(1);
-        expect(capability.capabilities.foobar).toBe(callback);
-    });
-
-    it('throws an error if using the same capability name twice', () => {
-        const callback = () => {};
-        capability.add('foobar', callback);
-        expect(() => capability.add('foobar', callback)).toThrow();
-    });
-
-    it('can add and then get a new capability', () => {
-        const callback = () => {};
-        capability.add('foobar', callback);
-        expect(capability.get('foobar')).toBe(callback);
-    });
-
-    it('will return null if the capability cannot be found by the name', () => {
-        expect(capability.get('foo')).toBeNull();
-    });
-
-});

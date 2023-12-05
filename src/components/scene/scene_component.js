@@ -31,6 +31,9 @@ class SceneComponent extends Component {
         if (this.scenes[name]) {
             throw new Error(`Scene with the name "${name}" already exists`);
         }
+        if (!callback) {
+            throw new Error(`Scene "${name}" requires a callback method`);
+        }
         this.scenes[name] = new Scene(this, name, callback);
         return this.scenes[name];
     }
@@ -47,6 +50,21 @@ class SceneComponent extends Component {
             return null;
         }
         return this.scenes[name];
+    }
+
+    /**
+     * Run a scene by name.
+     * 
+     * @param {string} name - The name of the scene.
+     * @returns {any|boolean} - Return from the callback
+     */
+    run(name) {
+        const scene = this.get(name);
+        if(!scene) {
+            logger.error(`Scene "${name}" not found and cannot be run`,'scene');
+            return false;
+        }
+        return scene.run();
     }
     
 }

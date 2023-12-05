@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const logger = require('./logger');
+const logger = require('./utils/logger');
 
 /**
  * Config
@@ -18,6 +18,7 @@ class Config {
 
     /**
      * Load the configuration from a given file path
+     * 
      * @returns {object} - Config object
      */
     loadConfig() {

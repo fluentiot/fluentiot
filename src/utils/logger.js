@@ -1,6 +1,15 @@
-const config = require('./../config');
+const config = require('./../config.js');
 
+/**
+ * Logger utility
+ * 
+ * @class
+ */
 class Logger {
+
+    /**
+     * Constructor
+     */
     constructor() {
         this.types = {
             'log': { color: "\x1b[37m", level: 0 },
@@ -10,6 +19,8 @@ class Logger {
             'debug': { color: "\x1b[35m", level: 4 },
         };
 
+        // For each log type create a new method
+        // Then, logger.debug(); can be called and abstracted to logger._log(...)
         Object.keys(this.types).forEach((type) => {
             this[type] = (...args) => { this._log(type, ...args); }
         });
@@ -18,6 +29,12 @@ class Logger {
         this.config = config.get('logging') || { 'levels': { 'default':'debug' } };
     }
 
+    /**
+     * Get current time stamp for logging output
+     * 
+     * @private
+     * @returns {string} - Timestamp
+     */
     _getCurrentTimestamp() {
         const now = new Date();
         const hours = now.getHours().toString().padStart(2, '0');
@@ -26,9 +43,15 @@ class Logger {
         return `${hours}:${minutes}:${seconds}`;
     }
 
-    _getLogLevel(component) {
+    /**
+     * Get the log level
+     * 
+     * @param {string} componentName - Name of the related component
+     * @returns 
+     */
+    _getLogLevel(componentName) {
         const configLevels = this.config.levels;
-        const type = configLevels[component] ? configLevels[component] : configLevels.default;
+        const type = configLevels[componentName] ? configLevels[componentName] : configLevels.default;
 
         //The defined log type in the config file was not correct
         if(!this.types[type]) {
@@ -41,6 +64,14 @@ class Logger {
         return this.types[type].level;
     }
 
+    /**
+     * Log
+     * 
+     * @private
+     * @param {string} type - Type of log message, info, debug, error, etc..
+     * @param {any} message - Text of the log or an object.
+     * @param {string} component - Which component or area of the framework is logging.
+     */
     _log(type, message, component = 'default') {
         const timestamp = this._getCurrentTimestamp();
         const coloredType = this.types[type].color + type.toUpperCase() + "\x1b[0m"; // Reset color

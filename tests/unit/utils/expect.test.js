@@ -8,6 +8,23 @@ beforeEach(() => {
 });
 
 
+describe('Expect return type', () => {
+
+    it('return normal', () => {
+        const expectNormal = (value) => new Expect(value);
+        expect(expectNormal('foo').toBe('foo')).toBe(true);
+    });
+
+    it('return callback', () => {
+        const callback = () => { return 'foo'; }
+        const expectNormal = (value) => new Expect(callback);
+        expect(typeof expectNormal('foo').toBe('foo')).toBe('function');
+        expect(expectNormal('foo').toBe('foo')()).toBe(true);
+    });
+
+});
+
+
 describe('Expect methods', () => {
 
     it('toBe and not', () => {
@@ -46,6 +63,8 @@ describe('Expect methods', () => {
         expect(fexpect(123).toBeFalsy()).toBe(false);
         expect(fexpect(53.45).toBeFalsy()).toBe(false);
         expect(fexpect(new Object).toBeFalsy()).toBe(false);
+
+        expect(fexpect(false).not.toBeFalsy()).toBe(false);
     });
 
     it('toBeTruthy', () => {
@@ -63,6 +82,8 @@ describe('Expect methods', () => {
         expect(fexpect(null).toBeTruthy()).toBe(false);
         expect(fexpect(undefined).toBeTruthy()).toBe(false);
         expect(fexpect(NaN).toBeTruthy()).toBe(false);
+
+        expect(fexpect(true).not.toBeTruthy()).toBe(false);
     });
 
     it('toBeNull', () => {
@@ -91,14 +112,19 @@ describe('Expect methods', () => {
         const obj3 = new Object();
         expect(fexpect([obj1, obj2]).toContain(obj1)).toBe(true);
         expect(fexpect([obj1, obj2]).toContain(obj3)).toBe(false);
+
+        expect(fexpect(['a','b','c']).not.toContain('d')).toBe(true);
     });
 
     it('toEqual', () => {
         const result1 = fexpect({ a: 1, b: [2, 3] }).toEqual({ a: 1, b: [2, 3] });
         expect(result1).toBe(true);
 
-        const result2 = fexpect({ a: 1, b: [2, 3] }).toEqual({ a: 1, b: [5, 6] });
-        expect(result2).toBe(false);
+        const result2 = fexpect({ a: 1, b: [2, 3] }).toEqual({ a: 1, b: [2, 3] });
+        expect(result2).not.toBe(false);
+
+        const result3 = fexpect({ a: 1, b: [2, 3] }).toEqual({ a: 1, b: [5, 6] });
+        expect(result3).toBe(false);
     });
 
     it('toMatch', () => {
@@ -107,11 +133,16 @@ describe('Expect methods', () => {
 
         const result2 = fexpect('123world').toMatch(/[a-z]+\d+/);
         expect(result2).toBe(false);
+
+        const result3 = fexpect('123world').toMatch(/[a-z]+\d+/);
+        expect(result3).not.toBe(true);
     });
 
     it('toBeGreaterThan', () => {
         expect(fexpect(10).toBeGreaterThan(9)).toBe(true);
         expect(fexpect(10).toBeGreaterThan(11)).toBe(false);
+
+        expect(fexpect(10).toBeGreaterThan(9)).not.toBe(false);
     });
 
     it('toBeGreaterThanOrEqual', () => {
@@ -119,17 +150,23 @@ describe('Expect methods', () => {
         expect(fexpect(10).toBeGreaterThanOrEqual(10)).toBe(true);
 
         expect(fexpect(10).toBeGreaterThanOrEqual(11)).toBe(false);
+
+        expect(fexpect(10).not.toBeGreaterThanOrEqual(9)).toBe(false);
     });
 
     it('toBeLessThan', () => {
         expect(fexpect(10).toBeLessThan(15)).toBe(true);
         expect(fexpect(10).toBeLessThan(8)).toBe(false);
+
+        expect(fexpect(10).not.toBeLessThan(15)).toBe(false);
     });
 
     it('toBeLessThanOrEqual', () => {
         expect(fexpect(15).toBeLessThanOrEqual(15)).toBe(true);
         expect(fexpect(5).toBeLessThanOrEqual(10)).toBe(true);
         expect(fexpect(10).toBeLessThanOrEqual(5)).toBe(false);
+
+        expect(fexpect(15).not.toBeLessThanOrEqual(15)).toBe(false);
     });
 
 });

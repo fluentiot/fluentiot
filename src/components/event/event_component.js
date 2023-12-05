@@ -69,15 +69,15 @@ class EventComponent extends Component {
      * @param {Scenario} Scenario - The Scenario object.
      * @returns {object} - An object with trigger methods for devices.
      */
-    triggers(Scenario) {
+    triggers(scope) {
         return {
             event: {
                 on: (eventName, eventValue) => {
                     this.on(eventName, (emittedValue) => {
                         if (eventValue && eventValue !== emittedValue) { return; }
-                        Scenario.assert(eventName)
+                        scope.assert(eventName)
                     });
-                    return Scenario.triggers;
+                    return scope;
                 }
             }
         }

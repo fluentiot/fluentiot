@@ -45,7 +45,7 @@ class Scenario {
      * @private
      */
     _buildTriggers() {
-        //Common triggers
+        //Build up triggers then proxy them
         this.triggers.empty = () => {
             return this.when();
         };
@@ -56,15 +56,20 @@ class Scenario {
             return this.then(callback);
         };
 
+        //Assert so the triggers can trigger the scenario
+        this.triggers.assert = () => {
+            this.assert();
+        }
+
         //Component triggers
         for (const componentName in this.components) {
             const component = this.components[componentName];
             if (typeof component.triggers === 'function') {
-                Object.assign(this.triggers, component.triggers(this));
+                Object.assign(this.triggers, component.triggers(this.triggers));
             }
         }
-    }
 
+    }
 
     /**
      * When
@@ -91,21 +96,22 @@ class Scenario {
         if (!constraints) { constraints = []; }
 
         //Component constraints must be built each time to retain the constraints scope
-        const methods = {};
+        let methods = {};
         methods.then = (callback) => {
             return this.then(callback, constraints);
         };
 
         for (const componentName in this.components) {
             const component = this.components[componentName];
-            if (typeof component.constraints !== 'function') { return; }
+
+            if (typeof component.constraints !== 'function') { continue; }
 
             const componentConstraints = component.constraints(this, constraints);
             Object.assign(methods, componentConstraints);
         }
 
         //Deep search through methods object then proxy each call and console log the method called
-        const methodsProxy = this.createProxyForConstraints(methods, constraints);
+        const methodsProxy = this._createProxyForConstraints(methods, constraints);
 
         return methodsProxy;
     }
@@ -114,21 +120,28 @@ class Scenario {
     /**
      * Proxy each constraint method
      * 
+     * @private
      * @param {*} obj 
      * @param {*} constraints 
      * @returns 
      */
-    createProxyForConstraints = (obj, constraints) => {
+    _createProxyForConstraints(obj, constraints) {
         return new Proxy(obj, {
           get: (target, prop, receiver) => {
+            
+            //console.log(prop + ' = ' + typeof target[prop]);
+
             if (typeof target[prop] === 'function') {
               return (...args) => {
                 const result = target[prop].apply(target, args);
+
+                //console.log(target);
+                //console.log(`Method ${prop} called with arguments ${args.join(', ')}. Result: ${result}`);
       
                 // Check if the result is an object with keys
                 if (result && typeof result === 'object' && Object.keys(result).length > 0) {
                     // If keys are present, create a proxy for the result
-                    return this.createProxyForConstraints(result, constraints);
+                    return this._createProxyForConstraints(result, constraints);
                 }
 
                 //Constraint
@@ -140,9 +153,10 @@ class Scenario {
       
                 return result;
               };
-            } else if (typeof target[prop] === 'object' && target[prop] !== null) {
+            } 
+            else if (typeof target[prop] === 'object' && target[prop] !== null) {
                 // Recursively create proxy for nested objects
-                return this.createProxyForConstraints(target[prop], constraints);
+                return this._createProxyForConstraints(target[prop], constraints);
             }
       
             return target[prop];

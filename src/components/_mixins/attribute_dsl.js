@@ -28,4 +28,6 @@ const AttributeDslMixin = (parent, name) => {
 
 }
 
-module.exports = AttributeDslMixin;
+module.exports = {
+    AttributeDslMixin
+};

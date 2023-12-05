@@ -87,56 +87,95 @@ describe('Variable expiry', () => {
 });
 
 
+describe('Variable constraints with expect abstraction', () => {
+
+    it('will load the variable in once constraint is called', () => {
+        variable.set('foo','foo');
+        const constraint = variable.constraints().variable('foo').is('foo');
+
+        variable.set('foo','bar');
+        
+        expect(typeof constraint).toBe('function');
+        expect(constraint()).toBe(false);
+    });
+
+    it('can be called multiple times with different values over time', () => {
+        const constraint = variable.constraints().variable('foo').is('foo');
+
+        variable.set('foo','bar');
+        const result1 = constraint();
+
+        variable.set('foo','foo');
+        const result2 = constraint();
+        
+        expect(result1).toBe(false);
+        expect(result2).toBe(true);
+    });
+
+    it('supports being defined', () => {
+        const constraint = variable.constraints().variable('foo').isDefined();
+
+        const result1 = constraint();
+
+        variable.set('foo','foo');
+        const result2 = constraint();
+
+        expect(result1).toBe(false);
+        expect(result2).toBe(true);
+    });
+
+});
+
 describe('Variable constraints', () => {
 
     it('is', () => {
         variable.set('foo','foo');
-        expect(variable.constraints().variable('foo').is('foo')).toBe(true);
+        expect(variable.constraints().variable('foo').is('foo')()).toBe(true);
     });
 
     it('isDefined', () => {
         variable.set('foo','foo');
-        expect(variable.constraints().variable('foo').isDefined()).toBe(true);
+        expect(variable.constraints().variable('foo').isDefined()()).toBe(true);
     });
 
     it('isUndefined', () => {
-        expect(variable.constraints().variable('foo').isUndefined()).toBe(true);
+        expect(variable.constraints().variable('foo').isUndefined()()).toBe(true);
     });
 
     it('isFalsy', () => {
         variable.set('foo',false);
-        expect(variable.constraints().variable('foo').isFalsy()).toBe(true);
+        expect(variable.constraints().variable('foo').isFalsy()()).toBe(true);
     });
 
     it('isTruthy', () => {
         variable.set('foo',true);
-        expect(variable.constraints().variable('foo').isTruthy()).toBe(true);
+        expect(variable.constraints().variable('foo').isTruthy()()).toBe(true);
     });
 
     it('isNull', () => {
         variable.set('foo',null);
-        expect(variable.constraints().variable('foo').isNull()).toBe(true);
+        expect(variable.constraints().variable('foo').isNull()()).toBe(true);
     });
 
     it('isNaN', () => {
         variable.set('foo',NaN);
-        expect(variable.constraints().variable('foo').isNaN()).toBe(true);
+        expect(variable.constraints().variable('foo').isNaN()()).toBe(true);
     });
 
     it('contain', () => {
         variable.set('foo', ['a','b','c']);
-        expect(variable.constraints().variable('foo').contain('a')).toBe(true);
+        expect(variable.constraints().variable('foo').contain('a')()).toBe(true);
     });
 
     it('equal', () => {
         variable.set('foo', { a: 1, b: [2, 3] });
-        const result1 = variable.constraints().variable('foo').equal({ a: 1, b: [2, 3] });
+        const result1 = variable.constraints().variable('foo').equal({ a: 1, b: [2, 3] })();
         expect(result1).toBe(true);
     });
 
     it('match', () => {
         variable.set('foo', 'hello123');
-        const result1 = variable.constraints().variable('foo').match(/[a-z]+\d+/);
+        const result1 = variable.constraints().variable('foo').match(/[a-z]+\d+/)();
         expect(result1).toBe(true);
     });
 

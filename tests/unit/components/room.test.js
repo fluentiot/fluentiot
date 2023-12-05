@@ -21,13 +21,13 @@ describe('Room add and get', () => {
         expect(Object.keys(room.rooms)).toHaveLength(1);
     });
 
-    it('returns false if trying to add a room with a name that already exists', () => {
+    it('throws if trying to add a room with a name that already exists', () => {
         room.add('office room');
-        expect(room.add('office room')).toBe(false);
+        expect(() => room.add('office room')).toThrow();
     });
 
-    it('returns false if the room cannot be found by the name', () => {
-        expect(room.get('living room')).toBe(false);
+    it('returns null if the room cannot be found by the name', () => {
+        expect(room.get('living room')).toBe(null);
     });
 
 });
@@ -35,25 +35,25 @@ describe('Room add and get', () => {
 
 describe('Room attributes DSL', () => {
 
-    it('can set and does not emit', () => {
+    it('can set attribute and does not emit', () => {
         const office = room.add('office room');
         jest.spyOn(room, 'emit');
         expect(office.attribute.set('foobar', true)).toBe(true);
         expect(room.emit).not.toHaveBeenCalled();
     });
 
-    it('can get', () => {
+    it('can get attribute by name', () => {
         const office = room.add('office room');
         office.attribute.set('foo', 'bar')
         expect(office.attribute.get('foo')).toBe('bar');
     });
 
-    it('get returns null if not found', () => {
+    it('get attribute returns null if not found', () => {
         const office = room.add('office room');
         expect(office.attribute.get('foo')).toBe(null);
     });
 
-    it('can update and emit, updating twice does not emit twice', () => {
+    it('can update attribute and emit, updating twice does not emit twice', () => {
         const office = room.add('office room');
         jest.spyOn(room, 'emit');
         office.attribute.update('foo', 'bar');
@@ -65,10 +65,6 @@ describe('Room attributes DSL', () => {
 
 
 describe('Room occupancy', () => {
-
-    afterEach(() => {
-
-    });
 
     it('default attributes are setup', () => {
         room.add('office room');
@@ -98,19 +94,21 @@ describe('Room occupancy', () => {
 
     it('makes the room occupied based on a positive sensor value', () => {
         const office = room.add('office room');
-        office.updateOccupancyBySensor(true);
+        office.updatePresence(true);
 
         expect(room.get('office room').isOccupied()).toBe(true);
+        expect(room.get('office room').isVacant()).toBe(false);
         expect(room.get('office room').attribute.get('occupied')).toBe(true);
     });
 
     it('stays occupied even if the sensor is negative', () => {
         const office = room.add('office room');
-        office.updateOccupancyBySensor(true);
-        office.updateOccupancyBySensor(false);
+        office.updatePresence(true);
+        office.updatePresence(false);
         office._checkIfVacant();
 
         expect(room.get('office room').isOccupied()).toBe(true);
+        expect(room.get('office room').isVacant()).toBe(false);
         expect(room.get('office room').attribute.get('occupied')).toBe(true);
     });
 
@@ -118,10 +116,11 @@ describe('Room occupancy', () => {
         const office = room.add('office room', { thresholdDuration:0 });
         jest.spyOn(room, 'emit');
 
-        office.updateOccupancyBySensor(true);
-        office.updateOccupancyBySensor(false);
+        office.updatePresence(true);
+        office.updatePresence(false);
 
         expect(room.get('office room').isOccupied()).toBe(false);
+        expect(room.get('office room').isVacant()).toBe(true);
         expect(room.get('office room').attribute.get('occupied')).toBe(false);
         expect(room.emit).toHaveBeenCalledTimes(2);
     });
@@ -141,23 +140,23 @@ describe('Room triggers', () => {
     });
 
     it('triggers when a room is occupied', () => {
-        room.triggers(Scenario).room('office').is.occupied();
-        office.updateOccupancyBySensor(true);
+        room.triggers(Scenario).room('office').isOccupied();
+        office.updatePresence(true);
         expect(room.emit).toHaveBeenCalledTimes(1);
         expect(Scenario.assert).toHaveBeenCalled();
     });
 
     it('throws an error if the room does not exist', () => {
-        expect(() => room.triggers(Scenario).room('foobar').is.occupied()).toThrow(Error);
+        expect(() => room.triggers(Scenario).room('foobar').isOccupied()).toThrow(Error);
     });
 
     it('triggers when a room is vacant', () => {
         const living = room.add('living', { thresholdDuration:0 });
 
-        room.triggers(Scenario).room('living').is.vacant();
+        room.triggers(Scenario).room('living').isVacant();
 
-        living.updateOccupancyBySensor(true);
-        living.updateOccupancyBySensor(false);
+        living.updatePresence(true);
+        living.updatePresence(false);
 
         expect(room.emit).toHaveBeenCalledTimes(2);
         expect(Scenario.assert).toHaveBeenCalledTimes(1);

@@ -1,7 +1,4 @@
-
-jest.mock('./../../../src/config');
 const logger = require('./../../../src/utils/logger');
-
 
 beforeEach(() => {
 });
