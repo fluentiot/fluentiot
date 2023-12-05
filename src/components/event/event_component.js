@@ -71,13 +71,15 @@ class EventComponent extends Component {
      */
     triggers(scope) {
         return {
-            event: {
-                on: (eventName, eventValue) => {
-                    this.on(eventName, (emittedValue) => {
-                        if (eventValue && eventValue !== emittedValue) { return; }
-                        scope.assert(eventName)
-                    });
-                    return scope;
+            event: (eventName) => {
+                return {
+                    on: (eventValue) => {
+                        this.on(eventName, (emittedValue) => {
+                            if (eventValue && eventValue !== emittedValue) { return; }
+                            scope.assert(eventName)
+                        });
+                        return scope;
+                    }
                 }
             }
         }

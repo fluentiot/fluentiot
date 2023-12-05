@@ -35,7 +35,7 @@ class Scenario {
 
         this._buildTriggers();
 
-        logger.info(`Scenario "${description}" loaded`, 'core');
+        logger.info(`Scenario "${description}" loaded`, 'scenario');
     }
 
 
@@ -229,6 +229,7 @@ class Scenario {
     
             //Run constraint group callback
             if (constraintsMet) {
+                logger.info(`Scenario "${this.description}" triggered`, 'scenario');
                 ranCallback = true;
                 callbackItem.callback(this, result);
                 if(constraints.length > 0) { executionsWithConstraints++; }

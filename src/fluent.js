@@ -79,7 +79,7 @@ class Fluent {
             const componentInstance = new ComponentClass(this);
             Fluent.components[name] = componentInstance;
             
-            logger.info(`Component "${name}" loaded`, 'core');
+            logger.info(`Component "${name}" loaded`, 'fluent');
 
             return componentInstance;
         }
@@ -147,7 +147,7 @@ class Fluent {
     static updateTestMode(scenario) {
         if(scenario) {
             Fluent.inTestMode = true;
-            logger.debug(`Test mode on for ${scenario.description}`, 'core');
+            logger.debug(`Test mode on for ${scenario.description}`, 'fluent');
         }
 
         if(!scenario && !Fluent.inTestMode) {

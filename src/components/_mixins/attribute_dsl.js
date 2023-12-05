@@ -20,8 +20,8 @@ const AttributeDslMixin = (parent, name) => {
                     return;
                 }
                 parent.attributes[attributeName] = attributeValue;
-                logger.debug(`${parent.name} set ${attributeName} to "${attributeValue}"`, 'room');
-                parent.parent.emit(`${name}.${parent.name}`, { name:attributeName, value:attributeValue });
+                logger.info(`Attribute, set "${attributeName}" to "${attributeValue}"`, parent.name);
+                parent.parent.emit(`${name}.${parent.name}.attribute`, { name:attributeName, value:attributeValue });
             }
         }
     }

@@ -86,6 +86,16 @@ describe('Time triggers', () => {
         expect(Scenario.assert).not.toHaveBeenCalled();
     });
 
+    it('throws if time format is wrong', () => {
+        expect(() => time.triggers(Scenario).time.is('xx:00')).toThrow();
+        expect(() => time.triggers(Scenario).time.is('xx:xx')).toThrow();
+        expect(() => time.triggers(Scenario).time.is('11:xx')).toThrow();
+        expect(() => time.triggers(Scenario).time.is('25:00')).toThrow();
+        expect(() => time.triggers(Scenario).time.is(' 11:00 ')).toThrow();
+        expect(() => time.triggers(Scenario).time.is('11am')).toThrow();
+        expect(() => time.triggers(Scenario).time.is('11')).toThrow();
+    });
+
     it('every second and different seconds', () => {
         time.triggers(Scenario).time.every('second');
         expect(schedule.scheduleJob).toHaveBeenCalledWith('*/1 * * * * *', expect.anything());

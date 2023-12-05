@@ -148,7 +148,7 @@ class DeviceComponent extends Component {
             }
         };
 
-        this.event().on(`device.${device.name}`, handler);
+        this.event().on(`device.${device.name}.attribute`, handler);
     }
 
 }

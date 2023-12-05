@@ -65,7 +65,7 @@ class RoomComponent extends Component {
 
                 return {
                     isOccupied: () => { 
-                        this.event().on(`room.${room.name}`, (changedData) => {
+                        this.event().on(`room.${room.name}.attribute`, (changedData) => {
                             if (changedData.name === 'occupied' && changedData.value === true) {
                                 scope.assert();
                             }
@@ -73,7 +73,7 @@ class RoomComponent extends Component {
                         return scope;
                     },
                     isVacant: () => { 
-                        this.event().on(`room.${room.name}`, (changedData) => {
+                        this.event().on(`room.${room.name}.attribute`, (changedData) => {
                             if (changedData.name === 'occupied' && changedData.value === false) {
                                 scope.assert();
                             }

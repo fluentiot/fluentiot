@@ -52,6 +52,9 @@ class TimeComponent extends Component {
         return {
             time: {
                 is: (targetTime) => { 
+                    if (!moment(targetTime, 'HH:mm', true).isValid()) {
+                        throw new Error(`Time "${targetTime}" is not in the correct format of HH:mm`);
+                    }
                     this.event().on('time', (time) => {
                         if (time === targetTime) { scope.assert(); }
                     });
