@@ -39,7 +39,7 @@ Fluent IoT is designed to work with your own IoT devices. Users are required to 
 ## Installation
 
 ```bash
-npm install weather-js
+npm install fluent-iot
 ```
 
 
@@ -52,37 +52,32 @@ A scenario is made up of these elements:
 ```javascript
 scenario('Office lights on when PIR is triggered or is 6pm')
 ```
-This sets up a scenario.
+This sets up a scenario and should explain the purpose of the scenario.
 
 ### Trigger
 
 ```javascript
 .when()
     .time.is('18:00')
-    .room('office').isOccupied()
 ```
-Specifying the triggers that will run the following actions. In this case either the time is 6:00pm or the room is now occupied because a PIR sensor updated the occupancy.
+Specifying the triggers that will run the following actions. In this case the time is 6:00pm. Is it possible to use multiple triggers that are treated as an "or".
 
 ### Constraints and Actions
 
 ```javascript
 .constraint()
-    .time.between('00:00', '06:00')
+    .day.is('Weekend')
     .then(() => {
         device.get('office lights').warmLights()
     })
-.constraint()
-    .time.between('06:01', '17:59')
-    .then(() => {
-        device.get('office lights').dayLights()
 .else()
     .then(() => {
-        device.get('office lights').eveningLights()
+        device.get('office lights').dayLights()
     })
 ```
-Multiple constraint groups using the `time` component to decide which `capability` to use for the office lights.
+Multiple constraint groups using the `day` component to decide which `capability` to use for the office lights.
 
-For this to example to work you would need to setup both your `device` and the device `capability`.
+For this to example to work you would need to setup both `device` and the device `capability`.
 
 
 ### Simple Example
@@ -115,6 +110,7 @@ In this example at 6:00pm the office lights are turned on. There are no constrai
 - [Room API](#room-api)
 - [Scene API](#scene-api)
 - [Variable API](#variable-api)
+- [Attributes API](#attributes-api)
 
 ---
 
@@ -268,10 +264,54 @@ scenario('Only on a Weekend')
 ```
 
 
+
+#### `.day.between(start: string, end: string)`
+
+Checking if the current date is between two dates.
+
+```javascript
+scenario('First week of May')
+    .when().empty()
+    .constraint()
+        .day.between('1st May', '7th May')
+        .then((Scenario) => { console.log(Scenario.name); })
+    .assert();
+
+scenario('Christmas lights!')
+    .when().empty()
+    .constraint()
+        .day.between('Dec 20', 'Dec 31')
+        .then((Scenario) => { console.log(Scenario.name); })
+    .assert();
+
+scenario('Only May 2024')
+    .when().empty()
+    .constraint()
+        .day.between('2024-05-01', '2024-05-31')
+        .then((Scenario) => { console.log(Scenario.name); })
+    .assert();
+```
+
+Example date formats supported:
+* `1st May`: Represents a specific day and month.
+* `5 May`: Represents a specific day in May.
+* `May 5th`: Represents a specific day in May.
+* `May 5`: Represents a specific day and month.
+* `2023-12-31`: Represents a specific date in the YYYY-MM-DD format.
+* `January 15`: Represents a specific day in January.
+* `15th January`: Represents a specific day in January.
+* `12/31/2023`: Represents a specific date in MM/DD/YYYY format.
+* `31 Dec 2023`: Represents a specific date in DD MMM YYYY format.
+* `Dec 31 2023`: Represents a specific date in MMM DD YYYY format.
+
+
 ---
 
 
 ## Time API
+
+The Time component in Fluent IoT allows you to incorporate time-related functionalities into your IoT scenarios. It supports triggers such as the current time and repeating schedules.
+
 
 ### Triggers
 
@@ -284,10 +324,16 @@ scenario('Time is 7am')
     .then((Scenario) => { console.log(Scenario.name); });
 ```
 
+To simulate time you can emit an event using the `event` component that will trigger the scenario.
+```javascript
+//Manually emit the time for testing
+event.emit('time', '07:00');
+```
+
 
 #### `.time.every(expression: string)`
 Repeating the trigger at set intervals.
-Supports seconds (`sec, second, seconds`), minutes (`min, minute, minutes`) and hours (`hr, hour, hours`).
+Supports seconds (`sec, second, seconds`), minutes (`min, minute, minutes`) and hours (`hr, hour, hours`). If an invalid format is entered an error will be thrown.
 ```javascript
 scenario('Triggers every second')
     .when()
@@ -324,6 +370,39 @@ scenario('Between times')
         .then(() => { console.log('Good Evening'); })
     .assert();
 ```
+
+### Events
+
+| Event | Description | Data |
+| ----------- | ----------- | ----------- |
+| `time` | Current time HH:mm format | - |
+| `time.hour` | Every hour, on the hour | - |
+| `time.minute` | Every minute, on the minute | - |
+| `time.second` | Every second | - |
+
+Example using the `event` component directly.
+```javascript
+scenario('At 6pm every day')
+    .when()
+        event.on('time', '18:00')
+    .then(() => { console.log('It is 6pm') });
+
+scenario('Runs every hour')
+    .when()
+        event.on('time.hour')
+    .then(() => { console.log('It is on the hour') });
+
+scenario('Runs every minute')
+    .when()
+        event.on('time.minute')
+    .then(() => { console.log('On the minute') });
+
+scenario('Runs every second')
+    .when()
+        event.on('time.second')
+    .then(() => { console.log('Every second') });
+```
+
 
 
 ---
@@ -373,14 +452,51 @@ console.log(device.get('office-switch').attribute.get('id'));
 
 
 #### `device.findByAttribute(attributeName: string, attributeValue: any)`
+Fetching devices by their attribute.
+```javascript
+//Capability for the switch
+capability.add('switchOn', (device) => {
+    const deviceId = device.attribute.get('id');
+    console.log(`Make API call to Tuya to switch device ${deviceId} on`);
+});
+
+//Grouped devices
+device.add('office-led-monitor', { id:'111', group:'office' }, ['@switchOn']);
+device.add('office-led-desk', { id:'222', group:'office' }, ['@switchOn']);
+
+//Switch them on
+for(const led in device.findByAttribute('group','office')) {
+    led.switchOn();
+}
+```
 
 
 ### Triggers
 
+Device triggers are an extension of the [Attributes DSL](#attributes-api) and [Expect DSL](#expect-api).
 
-### Constraints
+#### `.device(name: string).attribute(attributeName: string).is(value: any)`
+If a devices attribute is updated to true
+```javascript
+device.add('office-switch', { state:false })
+
+scenario('Detect when a switch is turned on')
+    .when()
+        .device('office-switch').attribute('state').isTruthy()
+    .then(() => {
+        console.log('Office switch is now on');
+    });
+
+//Attribute updated by IoT gateway
+device.get('office-switch').attribute.set('state', true);
+```
 
 
+### Events
+
+| Event | Description | Data |
+| ----------- | ----------- | ----------- |
+| `device.[device name].attribute` | Device attribute updated | `{ name:"attributeName", value:"attributeValue" }` |
 
 
 
@@ -401,6 +517,9 @@ Capabilities can be shared across multiple devices making it a reusable componen
 ### Management
 
 The `capability` component must be included for management.
+
+When referencing capabilities in devices prefix the capability with an `@` symbol.
+
 ```javascript
 const { capability } = require('fluent-iot');
 ```
@@ -416,28 +535,19 @@ device.get('office-light').lightOff();
 ```
 
 More advanced usage showing reusability.
-
 ```javascript
-const lightOff = capability.add('lightOff', (device) => {
-    //Do an API call etc.. to your IoT device referencing the ID
+//Capability for the switch
+capability.add('switchOn', (device) => {
     const deviceId = device.attribute.get('id');
-    console.log(`Turning device "${deviceId}" off`);
+    console.log(`Make API call to Tuya to switch device ${deviceId} on`);
 });
 
-//Create office light and add the capability
-device.add('office-main-light', { id:1 });
-device.get('office-main-light').capability.add('@lightOff');
+//Devices with switchOn capability
+device.add('office-led-monitor', { id:'tuya-id-111' }, ['@switchOn']);
+device.add('office-led-desk', { id:'tuya-id-222' }, ['@switchOn']);
 
-//Create office desk light with the capability in setup
-device.add('office-desk-light', { id:2 }, [ '@lightOff' ]);
-
-//Create office monitor light passing the capability directly
-device.add('office-monitor-light', { id: 3 }, [ lightOff ])
-
-//Turn the lights off
-device.get('office-main-light').lightOff();
-device.get('office-desk-light').lightOff();
-device.get('office-monitor-light').lightOff();
+device.get('office-led-monitor').switchOn();
+device.get('office-led-desk').switchOn();
 ```
 
 
@@ -463,7 +573,7 @@ const { event } = require('fluent-iot');
 #### `.event.emit(eventName: string[, ...args]);`
 See official [emit documentation](https://nodejs.org/api/events.html#emitteremiteventname-args).
 ```javascript
-scenario('Lock down')
+scenario('Lock down when receiving lockdown event')
     .when()
         .event.on('lockdown', true)
     .then(() => {
@@ -497,7 +607,7 @@ event.emit('lockdown', true);
 ```
 
 #### `.event(name: string).on()`
-When an event is emitted.
+When an event is emitted, no matter the value
 ```javascript
 scenario('Pretty colours')
     .when()
