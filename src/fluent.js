@@ -6,6 +6,11 @@ const Scenario = require('./scenario');
 const logger = require('./utils/logger');
 const config = require('./config');
 
+/**
+ * Fluent IoT Framework
+ *
+ * @class
+ */
 class Fluent {
 
     /**
@@ -22,8 +27,8 @@ class Fluent {
         Fluent.loadSetupComponents(components);
 
         //After load
-        for(const key in Fluent.components) {
-            if(typeof Fluent.components[key].afterLoad === 'function') {
+        for (const key in Fluent.components) {
+            if (typeof Fluent.components[key].afterLoad === 'function') {
                 Fluent.components[key].afterLoad();
             }
         }
@@ -31,6 +36,8 @@ class Fluent {
 
     /**
      * Load components specified in the config file
+     * 
+     * @param {array} components - List of components to load
      * @private
      */
     static loadSetupComponents(components) {
@@ -46,7 +53,7 @@ class Fluent {
             
             const files = fs.readdirSync(componentPath);
             files.forEach(file => {
-                if(file.endsWith('_component.js')) {
+                if (file.endsWith('_component.js')) {
                     const name = path.basename(file, '_component.js');
                     Fluent.component().add(componentPath, name);
                 };
@@ -57,6 +64,7 @@ class Fluent {
 
     /**
      * Component DSL
+     * 
      * @returns {Object} - Component or components
      */
     static component() {
@@ -71,7 +79,7 @@ class Fluent {
             const componentInstance = new ComponentClass(this);
             Fluent.components[name] = componentInstance;
             
-            logger.info(`Component "${name}" loaded`);
+            logger.info(`Component "${name}" loaded`, 'fluent');
 
             return componentInstance;
         }
@@ -92,10 +100,10 @@ class Fluent {
         }
     }
 
-
     /**
      * Scenario DSL
-     * @returns {Object} Component or components
+     * 
+     * @returns {object|array} - Scenario instance or instances
      */
     static scenario() {
         const create = (description) => {
@@ -130,16 +138,16 @@ class Fluent {
         }
     }
 
-
     /**
      * Set test mode will switch all other scenarios off from asserting/running
      * Multiple scenarios can have test mode enabled, this is useful for debugging
+     * 
      * @param {Object} scenario - Scenario object
      */
     static updateTestMode(scenario) {
         if(scenario) {
             Fluent.inTestMode = true;
-            logger.debug(`Test mode on for ${scenario.description}`);
+            logger.debug(`Test mode on for ${scenario.description}`, 'fluent');
         }
 
         if(!scenario && !Fluent.inTestMode) {

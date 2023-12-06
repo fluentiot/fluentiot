@@ -12,15 +12,15 @@ let Fluent;
 beforeEach(() => {
 
     const foobarComponent = new Object;
-    foobarComponent.triggers = (Scenario) => {
+    foobarComponent.triggers = (scope) => {
         return {
             "foobar": () => {
                 return {
                     onEvent: (eventName) => {
                         event.on(eventName, () => {
-                            Scenario.assert(eventName);
+                            scope.assert(eventName);
                         });
-                        return Scenario.triggers;
+                        return scope;
                     }
                 }
             }
@@ -28,11 +28,21 @@ beforeEach(() => {
     };
     foobarComponent.constraints = (Scenario, constraints) => {
         return {
-            "foobar": () => {
+            foobar: () => {
                 return {
                     isTrue: (value) => {
                         return () => value === true;
                     }
+                }
+            },
+            noneFunction: {
+                isTrue: (value) => {
+                    return () => value === true;
+                }
+            },
+            noFunctionReturn: {
+                isTrue: (value) => {
+                    return () => value === true;
                 }
             }
         }
@@ -176,6 +186,19 @@ describe('Constraints', () => {
         expect(result).toBe(true);
     });
 
+    it('constraints are never called', () => {
+        const mockCallback = jest.fn();
+
+        new Scenario(Fluent, 'Foobar')
+            .when()
+                .empty()
+            .constraint()
+                .foobar().isTrue(true)
+                .then(mockCallback);
+
+        expect(mockCallback.mock.calls).toHaveLength(0);
+    });
+
     it('calls two constraints and runs', () => {
         const mockCallback = jest.fn();
 
@@ -192,6 +215,23 @@ describe('Constraints', () => {
         expect(mockCallback.mock.calls).toHaveLength(1);
         expect(result).toBe(true);
     });
+
+    it('calls constraint that is not a function but object', () => {
+        const mockCallback = jest.fn();
+
+        const scenario = new Scenario(Fluent, 'Foobar')
+            .when()
+                .empty()
+            .constraint()
+                .noneFunction.isTrue(true)
+                .then(mockCallback);
+
+        const result = scenario.assert();
+
+        expect(mockCallback.mock.calls).toHaveLength(1);
+        expect(result).toBe(true);
+    });
+    
 
     it('it fails the constraint and does not call the callback', () => {
         const mockCallback = jest.fn();

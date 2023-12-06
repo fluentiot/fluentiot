@@ -1,3 +1,4 @@
+const Device = require('./device');
 const Component = require('./../component');
 const logger = require('./../../utils/logger');
 
@@ -27,13 +28,10 @@ class DeviceComponent extends Component {
      * @param {array} [capabilities=[]] - Capabilities the device will have, must be passed as @ reference.
      */
     add(name, attributes = {}, capabilities = []) {
-        if(this.devices[name]) {
+        if (this.devices[name]) {
             throw new Error(`Device with the name "${name}" already exists`);
         }
-
-        const Device = require('./device');
         this.devices[name] = new Device(this, name, attributes, capabilities);
-
         return this.devices[name];
     }
 
@@ -52,6 +50,19 @@ class DeviceComponent extends Component {
     }
 
     /**
+     * Finds individual device by attribute
+     *
+     * @param {string} attribute - The attribute to search for.
+     * @param {*} value - The value to match for the specified attribute.
+     * @returns {object<Device>|null} - An array of devices matching the attribute and value,
+     *   or null if no matching devices are found.
+     */
+    findByAttribute(attribute, value) {
+        const results = this.findAllByAttribute(attribute, value);
+        return results ? results[0] : null;
+    }
+
+    /**
      * Finds devices with a specified attribute and value.
      *
      * @param {string} attribute - The attribute to search for.
@@ -59,22 +70,10 @@ class DeviceComponent extends Component {
      * @returns {Array<Device>|null} - An array of devices matching the attribute and value,
      *   or null if no matching devices are found.
      */
-    findByAttribute(attribute, value) {
-        let results = [];
-
-        for (const deviceName in this.devices) {
-            const device = this.devices[deviceName];
-            const attributeValue = device.attribute.get(attribute);
-            if (attributeValue === value) {
-                results.push(device);
-            }
-        }
-
-        if(results.length === 0) {
-            return null;
-        }
-
-        return results;
+    findAllByAttribute(attribute, value) {
+        const results = Object.values(this.devices)
+            .filter(device => device.attribute.get(attribute) === value);
+        return results.length ? results : null;
     }
 
     /**
@@ -83,36 +82,36 @@ class DeviceComponent extends Component {
      * @param {Scenario} Scenario - The Scenario object.
      * @returns {object} - An object with trigger methods for devices.
      */
-    triggers(Scenario) {
+    triggers(scope) {
         return {
             device: (name) => {
                 const device = this.get(name);
-                if(!device) {
+                if (!device) {
                     throw new Error(`Device "${name}" does not exist`);
                 }
 
                 return {
                     is: (attributeName) => {
-                        this._is(Scenario, device, attributeName, true);
-                        return Scenario.triggers;
+                        this._is(scope, device, attributeName, true);
+                        return scope;
                     },
                     isNot: (attributeName) => { 
-                        this._is(Scenario, device, attributeName, false);
-                        return Scenario.triggers;
+                        this._is(scope, device, attributeName, false);
+                        return scope;
                     },
                     attribute: (attributeName) => {
                         return {
                             is: (attributeValue) => {
-                                this._is(Scenario, device, attributeName, attributeValue);
-                                return Scenario.triggers;
+                                this._is(scope, device, attributeName, attributeValue);
+                                return scope;
                             },
                             isNot: (attributeValue) => {
-                                this._is(Scenario, device, attributeName, attributeValue, 'not');
-                                return Scenario.triggers;
+                                this._is(scope, device, attributeName, attributeValue, 'not');
+                                return scope;
                             },
                             changes: () => {
-                                this._is(Scenario, device, attributeName, null, 'any');
-                                return Scenario.triggers;
+                                this._is(scope, device, attributeName, null, 'any');
+                                return scope;
                             }
                         }
                     }
@@ -140,7 +139,7 @@ class DeviceComponent extends Component {
                 return;
             }
 
-            if(
+            if (
                 (operator === 'is' && changedData.value === attributeValue) ||
                 (operator === 'not' && changedData.value !== attributeValue) ||
                 (operator === 'any')
@@ -149,7 +148,7 @@ class DeviceComponent extends Component {
             }
         };
 
-        this.event().on(`device.${device.name}`, handler);
+        this.event().on(`device.${device.name}.attribute`, handler);
     }
 
 }

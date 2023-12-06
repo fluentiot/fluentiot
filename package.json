@@ -11,7 +11,7 @@
     "author": "Darren Moore",
     "license": "MIT",
     "bugs": {
-      "url": "https://github.com/darrenmoore/fluent-iot/issues"
+        "url": "https://github.com/darrenmoore/fluent-iot/issues"
     },
     "homepage": "https://github.com/darrenmoore/fluent-iot",
     "dependencies": {

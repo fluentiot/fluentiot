@@ -13,6 +13,8 @@ class VariableComponent extends Component {
 
     /**
      * Constructor
+     * 
+     * @param {Fluent} Fluent - The Fluent IoT framework.
      */
     constructor(Fluent) {
         super(Fluent);
@@ -38,7 +40,7 @@ class VariableComponent extends Component {
             if (parsedExpiry) {
                 options.expiry = parsedExpiry;
             } else {
-                logger.error('Error parsing expiry. Please provide a valid duration and unit.', 'variable');
+                logger.error(`Error parsing "${options.expiry}" variable expiry. Please provide a valid duration and unit.`, 'variable');
                 return false;
             }
         }
@@ -53,7 +55,7 @@ class VariableComponent extends Component {
      * @returns {boolean} - Returns true if the variable is removed successfully, false otherwise.
      */
     remove(name) {
-        if(!this.variables[name]) {
+        if (!this.variables[name]) {
             return false;
         }
         delete this.variables[name];
@@ -68,7 +70,8 @@ class VariableComponent extends Component {
      * @returns {any|null} - Returns the value of the variable if found and not expired, otherwise returns null.
      */
     get(name) {
-        if(!this.variables.hasOwnProperty(name)) {
+        if(!this.variables[name]) {
+            logger.error(`Variable "${name}" could not be found`, 'variable');
             return null;
         }
 
@@ -110,7 +113,7 @@ class VariableComponent extends Component {
         const [duration, unit] = expiry.split(' ');
     
         if (!duration || isNaN(parseInt(duration)) || !unit) {
-          return false; // Return false if parsing fails
+            return false; // Return false if parsing fails
         }
     
         return moment().add(parseInt(duration), unit);
@@ -122,25 +125,25 @@ class VariableComponent extends Component {
      * @param {Scenario} Scenario - The Scenario object.
      * @returns {object} - An object with trigger methods for variables.
      */
-    triggers(Scenario) {
+    triggers(scope) {
         return {
             variable: (variableName) => {
                 return {
                     is: (variableValue) => {
                         this.event().on('variable', (changedData) => {
                             if (changedData.name === variableName && changedData.value === variableValue) {
-                                Scenario.assert();
+                                scope.assert();
                             }
                         });
-                        return Scenario.triggers;
+                        return scope;
                     },
                     updated: () => {
                         this.event().on('variable', (changedData) => {
-                            if(changedData.name === variableName) {
-                                Scenario.assert(changedData.value);
+                            if (changedData.name === variableName) {
+                                scope.assert(changedData.value);
                             }
                         });
-                        return Scenario.triggers;
+                        return scope;
                     }
                 };
             }
@@ -155,18 +158,20 @@ class VariableComponent extends Component {
     constraints() {
         return {
             variable: (variableName) => {
-                if(typeof variableName !== 'string') {
-                    logger.error(`Variable "${variableName}" was not passed as a string`,'constraint');
+                if (typeof variableName !== 'string') {
+                    logger.error(`Variable "${variableName}" was not passed as a string`, 'variable');
                     return false;
                 }
 
-                //Undefined?
-                let currentValue = undefined;
-                if(this.variables[variableName]) {
-                    currentValue = this.get(variableName);
+                const callback = () => {
+                    let currentValue = undefined;
+                    if (this.variables[variableName]) {
+                        currentValue = this.get(variableName);
+                    }
+                    return currentValue;
                 }
-                
-                return new Expect(currentValue);
+
+                return new Expect(callback);
             }
         };
     }

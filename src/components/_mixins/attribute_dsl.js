@@ -6,7 +6,7 @@ const AttributeDslMixin = (parent, name) => {
     return {
         attribute: {
             get: (attributeName) => {
-                if(typeof parent.attributes[attributeName] === 'undefined') {
+                if (typeof parent.attributes[attributeName] === 'undefined') {
                     return null;
                 }
                 return parent.attributes[attributeName];
@@ -16,16 +16,18 @@ const AttributeDslMixin = (parent, name) => {
                 return true;
             },
             update: (attributeName, attributeValue) => {
-                if(parent.attributes[attributeName] === attributeValue) {
+                if (parent.attributes[attributeName] === attributeValue) {
                     return;
                 }
                 parent.attributes[attributeName] = attributeValue;
-                logger.debug(`${parent.name} set ${attributeName} to "${attributeValue}"`, 'room');
-                parent.parent.emit(`${name}.${parent.name}`, { name:attributeName, value:attributeValue });
+                logger.info(`Attribute, set "${attributeName}" to "${attributeValue}"`, parent.name);
+                parent.parent.emit(`${name}.${parent.name}.attribute`, { name:attributeName, value:attributeValue });
             }
         }
     }
 
 }
 
-module.exports = AttributeDslMixin;
+module.exports = {
+    AttributeDslMixin
+};

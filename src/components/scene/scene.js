@@ -1,13 +1,14 @@
 const logger = require('./../../utils/logger');
 
 /**
- * Represents a scene
+ * Scene
+ *
  * @class
  */
 class Scene {
 
     /**
-     * Creates an instance of the Scene class.
+     * Scene in the system.
      * 
      * @param {Object} parent - The parent component to which this scene belongs.
      * @param {string} name - The name of the scene.

@@ -4,73 +4,127 @@ class Expect {
     constructor(value) {
         this.value = value;
         this.negate = false;
+        this.valueCallback = null;
 
-        //Aliases
-        this.is = this.toBe;
-        this.isDefined = this.toBeDefined;
-        this.isUndefined = this.toBeUndefined;
-        this.isFalsy = this.toBeFalsy;
-        this.isTruthy = this.toBeTruthy;
-        this.isNull = this.toBeNull;
-        this.isNaN = this.toBeNaN;
-        this.contain = this.toContain;
-        this.equal = this.toEqual;
-        this.match = this.toMatch;
+        //Move value and callback so it can be reused
+        if(typeof this.value === 'function') {
+            this.valueCallback = this.value;
+            this.value = null;
+        }
+
+        const methods = [
+            { 'method': 'toBe', 'alias': 'is' },
+            { 'method': 'toBeDefined', 'alias': 'isDefined' },
+            { 'method': 'toBeUndefined', 'alias': 'isUndefined' },
+            { 'method': 'toBeFalsy', 'alias': 'isFalsy' },
+            { 'method': 'toBeTruthy', 'alias': 'isTruthy' },
+            { 'method': 'toBeNull', 'alias': 'isNull' },
+            { 'method': 'toBeNaN', 'alias': 'isNaN' },
+            { 'method': 'toBeGreaterThan', 'alias': 'isGreaterThan' },
+            { 'method': 'toBeGreaterThanOrEqual', 'alias': 'isGreaterThanOrEqual' },
+            { 'method': 'toBeLessThan', 'alias': 'isLessThan' },
+            { 'method': 'toBeLessThanOrEqual', 'alias': 'isLessThanOrEqual' },
+            { 'method': 'toContain', 'alias': 'contain' },
+            { 'method': 'toEqual', 'alias': 'equal' },
+            { 'method': 'toMatch', 'alias': 'match' }
+        ];
+
+        if(this.valueCallback) {
+            //Map each method as a nested. Return will be a function that can be called later.
+            for(const element of methods) {
+                const nested = (...args) => {
+                    return () => {
+                        this.value = this.valueCallback();
+                        return this['_'+element.method](...args);
+                    }
+                };
+                this[element.method] = nested;
+                this[element.alias] = nested;
+            }
+        }
+        else {
+            //Direct mapping including alias
+            for(const element of methods) {
+                this[element.method] = this['_'+element.method];
+                this[element.alias] = this['_'+element.method];
+            }
+        }
+
     }
   
     get not() {
-        const notInstance = new Expect(this.value);
+        const notInstance = new Expect(this.value, this.returnDirect);
         notInstance.negate = true;
         return notInstance;
     }
     
-    toBe(expected) {
+    _toBe(expected) {
         const result = this.value === expected;
         return this.negate ? !result : result;
     }
   
-    toBeDefined() {
+    _toBeDefined() {
         const result = typeof this.value !== 'undefined';
         return this.negate ? !result : result;
     }
   
-    toBeUndefined() {
+    _toBeUndefined() {
         const result = typeof this.value === 'undefined';
         return this.negate ? !result : result;
     }
   
-    toBeFalsy() {
+    _toBeFalsy() {
         const result = !this.value;
         return this.negate ? !result : result;
     }
   
-    toBeTruthy() {
+    _toBeTruthy() {
         const result = Boolean(this.value);
         return this.negate ? !result : result;
     }
   
-    toBeNull() {
+    _toBeNull() {
         const result = this.value === null;
         return this.negate ? !result : result;
     }
   
-    toBeNaN() {
+    _toBeNaN() {
         const result = isNaN(this.value);
         return this.negate ? !result : result;
     }
   
-    toContain(expected) {
+    _toContain(expected) {
         const result = this.value.includes(expected);
         return this.negate ? !result : result;
     }
   
-    toEqual(expected) {
+    _toEqual(expected) {
         const result = deepEqual(this.value, expected);
         return this.negate ? !result : result;
     }
   
-    toMatch(pattern) {
+    _toMatch(pattern) {
         const result = pattern.test(this.value);
+        return this.negate ? !result : result;
+    }
+  
+    _toBeGreaterThan(number) {
+        const result = this.value > number;
+        return this.negate ? !result : result;
+    }
+  
+    _toBeGreaterThanOrEqual(number) {
+        const result = this.value >= number;
+        return this.negate ? !result : result;
+    }
+  
+    _toBeLessThan(number) {
+        const result = this.value < number;
+        return this.negate ? !result : result;
+    }
+  
+    _toBeLessThanOrEqual(number) {
+        const result = this.value <= number;
         return this.negate ? !result : result;
     }
 

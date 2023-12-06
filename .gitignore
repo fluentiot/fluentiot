@@ -1,6 +1,11 @@
 node_modules/
 node_modules/*
-npm-debug.log
-*.log
 coverage/
 coverage/*
+temp/
+temp/*
+/package-lock.json
+npm-debug.log
+npm-debug.log
+*.log
+.DS_Store

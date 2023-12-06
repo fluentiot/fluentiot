@@ -34,12 +34,21 @@ describe('Scene', () => {
        expect(scene.get('foobar')).toBeNull();
     });
 
-    it('will run the mock when called', () => {
+    it('will run the mock when called though get()', () => {
         const mock = jest.fn();
         scene.add('foobar', () => {
             mock();
         });
         scene.get('foobar').run();
+        expect(mock).toHaveBeenCalled();
+    });
+
+    it('will run the mock through scene.run()', () => {
+        const mock = jest.fn();
+        scene.add('foobar', () => {
+            mock();
+        });
+        scene.run('foobar');
         expect(mock).toHaveBeenCalled();
     });
 

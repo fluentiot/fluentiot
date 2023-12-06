@@ -1,8 +1,21 @@
 const moment = require('moment');
 const logger = require('./../../utils/logger');
-const AttributeDslMixin = require('./../_mixins/attribute_dsl');
+const { AttributeDslMixin } = require('./../_mixins/attribute_dsl');
 
+/**
+ * Room
+ *
+ * @class
+ */
 class Room {
+
+    /**
+     * Room in the system with specific attributes.
+     *
+     * @param {object} parent - The parent object to which this device belongs.
+     * @param {string} name - The name of the device.
+     * @param {object} [attributes={}] - The attributes associated with the device.
+     */
     constructor(parent, name, attributes) {
         this.parent = parent;
         this.name = name;
@@ -30,8 +43,8 @@ class Room {
 
         // If default was occupied make sure the sensor is updated so _checkIfVacant does not
         // set the room immediately back to vacant
-        if(this.attributes.occupied === true) {
-            this.updateOccupancyBySensor(true);
+        if (this.attributes.occupied === true) {
+            this.updatePresence(true);
         }
 
         // Set up the one-minute timer for checkOccupied
@@ -40,14 +53,16 @@ class Room {
 
     /**
      * Update the occupancy by sensor value
+     * 
      * @param {Boolean} sensorValue - If occupied then true, if no detection then false
      */
-    updateOccupancyBySensor(sensorValue) {
+    updatePresence(sensorValue) {
         // Sensor is true, room is occupied
         // Only trigger the occupied if wasn't previous occupied
         if (sensorValue) {
             this._sensorLastTime = moment();
-            if(!this.attribute.get('occupied')) {
+            if (!this.attribute.get('occupied')) {
+                logger.info(`Room "${this.name}" is now occupied.`, 'room');
                 this.attribute.update('occupied', true);
             }
         }
@@ -57,13 +72,14 @@ class Room {
 
         // If no threshold duration for vacany then need to trigger occupied=false quickly
         // rather than waiting for the 1 minute timer
-        if(this.attribute.get('thresholdDuration') <= 0) {
+        if (this.attribute.get('thresholdDuration') <= 0) {
             this._checkIfVacant();
         }
     }
 
     /**
      * Check if vacant
+     * 
      * @private 
      */
     _checkIfVacant() {
@@ -85,16 +101,26 @@ class Room {
 
         // Room is now vacant if passed early returns
         this._sensorLastTime = false;
-        logger.debug(`${this.name} is now vacant.`, 'room');
+        logger.info(`Room "${this.name}" is now vacant.`, 'room');
         this.attribute.update('occupied', false);
     }
 
     /**
      * Is occupied
+     * 
      * @returns {Boolean} - if room is occupied
      */
     isOccupied() {
         return this.attribute.get('occupied');
+    }
+
+    /**
+     * Is vacant
+     * 
+     * @returns {Boolean} - if room is vacant
+     */
+    isVacant() {
+        return !this.attribute.get('occupied');
     }
 
 }

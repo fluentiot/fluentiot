@@ -104,7 +104,7 @@ describe('Event setup and queue', () => {
 
 
 
-describe.only('Event triggers', () => {
+describe('Event triggers', () => {
     let Scenario;
     let event;
     
@@ -115,13 +115,13 @@ describe.only('Event triggers', () => {
     });
 
     it('triggers if a event was emitted with any value', () => {
-        event.triggers(Scenario).event.on('occupied');
+        event.triggers(Scenario).event('occupied').on();
         event.emit('occupied', true);
-        expect(Scenario.assert).toHaveBeenCalled();
+        expect(Scenario.assert).toHaveBeenCalledTimes(1);
     });
 
     it('triggers if a event was emitted with specific value', () => {
-        event.triggers(Scenario).event.on('foo', 'bar');
+        event.triggers(Scenario).event('foo').on('bar');
         event.emit('foo', 'bar');
         event.emit('foo', 'bar');
         event.emit('foo', true);
