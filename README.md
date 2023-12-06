@@ -334,6 +334,46 @@ scenario('Between times')
 
 ### Management
 
+The `device` and typically `capability` components must be included for management.
+```javascript
+const { device, capability } = require('fluent-iot');
+```
+
+
+#### `device.add(name: string, attributes: object, capabilities: array)`
+Create a new IoT device.
+```javascript
+//Creating a basic device
+device.add('kitchen-light');
+
+//Adding a device with default attributes
+device.add('kitchen-light', { id:'Xyz' });
+
+//Adding a device with capabilities using the @ reference
+capability.add('on', () => {});
+capability.add('off', () => {});
+device.add('kitchen-light', {}, [ '@on', '@off' ])
+
+//Adding a device passing capability object
+const warm = capability.add('warm', () => {});
+device.add('office-light', {}, [ '@on', '@off', warm ])
+```
+
+#### `device.get(name: string)`
+Fetching a device.
+```javascript
+//Basic add and get
+device.add('kitchen-light');
+const kitchenLight = device.get('kitchen-light');
+
+//Fetching a device attribute
+device.add('office-switch', { id:'Abc' });
+console.log(device.get('office-switch').attribute.get('id'));
+```
+
+
+#### `device.findByAttribute(attributeName: string, attributeValue: any)`
+
 
 ### Triggers
 
@@ -341,7 +381,13 @@ scenario('Between times')
 ### Constraints
 
 
+
+
+
 ---
+
+
+
 
 
 ## Capability API
@@ -373,7 +419,7 @@ More advanced usage showing reusability.
 
 ```javascript
 const lightOff = capability.add('lightOff', (device) => {
-    //Do an API call etc.. to your IoT device
+    //Do an API call etc.. to your IoT device referencing the ID
     const deviceId = device.attribute.get('id');
     console.log(`Turning device "${deviceId}" off`);
 });
