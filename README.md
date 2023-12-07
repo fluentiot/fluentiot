@@ -81,8 +81,7 @@ For this to example to work you would need to setup both `device` and the device
 ```javascript
 scenario('At 6:00pm turn on the office light')
     .when()
-    .time()
-    .is('18:00')
+        .time.is('18:00')
     .then(() => {
         device.get('office lights').turnOn()
     })
@@ -115,19 +114,17 @@ In this example at 6:00pm the office lights are turned on. There are no constrai
 Trigger or triggers for the scenario. If multiple triggers are used they act as an "or".
 
 ```javascript
+device.add('pir');
 scenario('18:00, sensor is true or room is occupied')
     .when()
-    .time.is('18:00')
-    .device('pir')
-    .attribute('sensor')
-    .isTruthy()
-    .room('office')
-    .isOccupied()
+        .time.is('18:00')
+        .device('pir').attribute('sensor').isTruthy()
+        .room('office').isOccupied()
     .then(() => {})
 
 scenario('using empty can be useful for debugging a scenario')
     .when()
-    .empty()
+        .empty()
     .then(() => {
         console.log('It ran!')
     })
@@ -141,18 +138,18 @@ For debugging if `.test()` is added to any scenario only these scenarios can be 
 ```javascript
 scenario('will not run at 17:00 and not in test mode')
     .when()
-    .time.is('17:00')
+        .time.is('17:00')
     .then(() => {})
 
 scenario('will run at 18:00 because in test mode')
     .when()
-    .time.is('18:00')
+        .time.is('18:00')
     .then(() => {})
     .test()
 
 scenario('will run at 19:00 because also in test mode')
     .when()
-    .time.is('19:00')
+        .time.is('19:00')
     .then(() => {})
     .test()
 ```
@@ -164,7 +161,7 @@ For debugging if `.assert()` is added to any scenario the scenario will be trigg
 ```javascript
 scenario('forced to run because assert() was used')
     .when()
-    .time.is('19:00')
+        .time.is('19:00')
     .then(() => {
         console.log('Triggered')
     })
@@ -177,35 +174,35 @@ Constraints are optional. Each component has it's own set of constraints and in 
 
 ```javascript
 scenario('constraint triggers at 19:00 and checks if weekend')
-when()
-    .time.is('19:00')
+    .when()
+        .time.is('19:00')
     .constraint()
-    .day.is('weekend')
-    .then(() => {
-        console.log('It is the weekend')
-    })
+        .day.is('weekend')
+        .then(() => {
+            console.log('It is the weekend')
+        })
 
 scenario('constraint triggers at 19:00 and checks the days')
-when()
-    .time.is('19:00')
+    .when()
+        .time.is('19:00')
     .constraint()
-    .day.is(['Mon', 'Tue'])
-    .then(() => {
-        console.log('Is it Monday or Tuesday')
-    })
+        .day.is(['Mon', 'Tue'])
+        .then(() => {
+            console.log('Is it Monday or Tuesday')
+        })
     .constraint()
-    .day.is('Wed', 'Thur', 'Friday')
-    .then(() => {
-        console.log('It is Wednesday, Thursday, or Friday')
-    })
+        .day.is('Wed', 'Thur', 'Friday')
+        .then(() => {
+            console.log('It is Wednesday, Thursday, or Friday')
+        })
     .else()
-    .then(() => {
-        console.log('Is it the weekend')
-    })
+        .then(() => {
+            console.log('Is it the weekend')
+        })
 
 scenario('no constraints')
-when()
-    .time.is('19:00')
+    .when()
+        .time.is('19:00')
     .then(() => {
         console.log('Triggered')
     })
@@ -216,17 +213,17 @@ when()
 `then()` is used for the actions that will be carried out.
 
 ```javascript
-scenario('it will output this scenario name')
-when()
-    .empty()
+scenario('it will output this scenario description')
+    .when()
+        .empty()
     .then((Scenario) => {
         console.log(`Scenario "${Scenario.description}" triggered`)
     })
     .assert()
 
 scenario('assert and triggers can return args to then()')
-when()
-    .empty()
+    .when()
+        .empty()
     .then((_Scenario, colour1, colour2) => {
         console.log(`Colour 1: "${colour1}"`) //red
         console.log(`Colour 2: "${colour2}"`) //green
@@ -269,7 +266,7 @@ scenario('Only on a Saturday')
     .when()
         .empty()
     .constraint()
-        .day.is('Ssaturday')
+        .day.is('Saturday')
         .then((Scenario) => {
             console.log(Scenario.description)
         })
@@ -448,7 +445,7 @@ Example using the `event` component directly.
 ```javascript
 scenario('At 6pm every day')
     .when()
-        event('time').on('18:00')
+        .event('time').on('18:00')
     .then(() => {
         console.log('It is 6pm')
     })
@@ -496,7 +493,7 @@ Create a new IoT device. It's advisable to create the capabilities for all of yo
 device.add('kitchen-switch')
 
 //Adding a device with default attributes
-device.add('kitchen-light', { id: 'Xyz', group: 'lights' })
+device.add('kitchen-kettle', { id: 'Xyz', group: 'kettle' })
 
 //Add on and off capabilities using the @ reference
 capability.add('on', () => {
@@ -530,6 +527,7 @@ Fetching a device.
 //Basic add and get
 device.add('kitchen-light')
 const kitchenLight = device.get('kitchen-light')
+console.log(kitchenLight)
 
 //Fetching a device attribute
 device.add('office-switch', { id: 'Abc' })
@@ -655,7 +653,7 @@ See official [emit documentation](https://nodejs.org/api/events.html#emitteremit
 ```javascript
 scenario('Lock down when receiving lockdown event')
     .when()
-        .event.on('lockdown', true)
+        .event('lockdown').on(true)
     .then(() => {
         console.log('Locking down')
     })
@@ -675,14 +673,14 @@ event.emit('lockdown', true)
 
 ### Triggers
 
-#### `.event(name: string).is(value: any)`
+#### `.event(name: string).on(value: any)`
 
 When an event is emitted with a specific value.
 
 ```javascript
 scenario('Lock down when event is detected')
     .when()
-        .event('lockdown').is(true)
+        .event('lockdown').on(true)
     .then(() => {
         console.log('Lock down!')
     })
@@ -749,8 +747,8 @@ room.add('office')
 console.log(room.get('office').name) //"office"
 
 //Direct
-const office = room.add('office')
-console.log(office.name) //"office"
+const living = room.add('living')
+console.log(living.name) //"living"
 ```
 
 #### `room.get(name: string).isOccupied()`
@@ -812,14 +810,14 @@ scenario('Office PIR sensor with no movement')
 //Listening to occupancy updated
 scenario('Office lights on when occupied')
     .when()
-        .room('office').is.occupied()
+        .room('office').isOccupied()
     .then(() => {
         console.log('Room is occupied, turn on lights etc...')
     })
 
 scenario('Office lights off when vacant')
     .when()
-        .room('office').is.vacant()
+        .room('office').isVacant()
     .then(() => {
         console.log('Room is vacant, turn off lights etc...')
     })
@@ -838,9 +836,10 @@ device.get('office-pir').attribute.update('sensor', false)
 When the room is occupied.
 
 ```javascript
+room.add('office')
 scenario('Office lights on when occupied')
     .when()
-        .room('office').is.occupied()
+        .room('office').isOccupied()
     .then(() => {
         console.log('Room is occupied, turn on lights etc...')
     })
@@ -851,9 +850,10 @@ scenario('Office lights on when occupied')
 When the room has been set to vacant.
 
 ```javascript
+room.add('office')
 scenario('Office lights off when vacant')
     .when()
-        .room('office').is.vacant()
+        .room('office').isVacant()
     .then(() => {
         console.log('Room is vacant, turn off lights etc...')
     })
@@ -898,7 +898,7 @@ scene.add('cool', () => {
     console.log('Super cool!')
 })
 console.log(scene.get('cool').name) //"cool"
-console.log(scene.get('cool').run()) //"Super cool!"
+scene.get('cool').run() //"Super cool!"
 ```
 
 #### `scene.run(name: string)`
@@ -909,7 +909,7 @@ Runs a scene.
 scene.add('cool', () => {
     console.log('cool')
 })
-console.log(scene.run('cool')) //"cool"
+scene.run('cool') //"cool"
 ```
 
 ---
@@ -977,7 +977,7 @@ scenario('Variable was set to red')
         console.log(`Variable is blue`);
     });
 variable.set('colour', 'red');
-variable.set('colour', 'blue'');
+variable.set('colour', 'blue');
 ```
 
 #### `.variable(name: string).updated()`
@@ -1039,12 +1039,13 @@ Typically expect appends the matchers with `toBe<>`. The matchers can be used wi
 Compare values.
 
 ```javascript
-scenario()
+scenario('is')
     .when()
         .empty()
     .constraint()
         .device('pir').attribute('sensor').is('active')
-        .then(() => {})
+        .then(() => { console.log('Is') })
+        .assert()
 ```
 
 #### `isDefined(value)`
@@ -1052,12 +1053,12 @@ scenario()
 If the value is defined
 
 ```javascript
-scenario()
+scenario('is defined')
     .when()
         .empty()
     .constraint()
         .device('pir').attribute('sensor').isDefined()
-        .then(() => {})
+        .then(() => { console.log('Is defined') })
 ```
 
 #### `isUndefined(value)`
@@ -1065,12 +1066,12 @@ scenario()
 If the value is undefined
 
 ```javascript
-scenario()
+scenario('is undefined')
     .when()
         .empty()
     .constraint()
         .device('pir').attribute('sensor').isUndefined()
-        .then(() => {})
+        .then(() => { console.log('Is undefined') })
 ```
 
 #### `isFalsy(value)`
@@ -1078,12 +1079,12 @@ scenario()
 If the value is a value of falsy
 
 ```javascript
-scenario()
+scenario('is falsy')
     .when()
         .empty()
     .constraint()
         .device('pir').attribute('sensor').isFalsy()
-        .then(() => {})
+        .then(() => { console.log('Is Falsy') })
 ```
 
 #### `isTruthy(value)`
@@ -1091,12 +1092,12 @@ scenario()
 If the value is a value of truthy
 
 ```javascript
-scenario()
+scenario('is truthy')
     .when()
         .empty()
     .constraint()
         .device('pir').attribute('sensor').isTruthy()
-        .then(() => {})
+        .then(() => { console.log('Is Truthy') })
 ```
 
 #### `isNull(value)`
@@ -1104,12 +1105,12 @@ scenario()
 If the value is null
 
 ```javascript
-scenario()
+scenario('is null')
     .when()
         .empty()
     .constraint()
         .device('pir').attribute('sensor').isNull()
-        .then(() => {})
+        .then(() => { console.log('Is Null') })
 ```
 
 #### `isNaN(value)`
@@ -1117,12 +1118,12 @@ scenario()
 If the value is NaN
 
 ```javascript
-scenario()
+scenario('is NaN')
     .when()
         .empty()
     .constraint()
         .device('pir').attribute('sensor').isNaN()
-        .then(() => {})
+        .then(() => { console.log('Is NaN') })
 ```
 
 #### `contain(value)`
@@ -1130,12 +1131,12 @@ scenario()
 If the value is contains a key in an array
 
 ```javascript
-scenario()
+scenario('contains')
     .when()
         .empty()
     .constraint()
         .device('led').attribute('colour').contain(['red', 'green', 'blue'])
-        .then(() => {})
+        .then(() => { console.log('Contains') })
 ```
 
 #### `equal(value)`
@@ -1144,11 +1145,12 @@ Compares recursively all properties of an object.
 
 ```javascript
 variable.set('deep', [ foo:'bar' ]);
-scenario()
-    when().empty()
-    constraint()
+scenario('equal')
+    .when()
+        .empty()
+    .constraint()
         .variable('deep').equal([ foo:'bar' ])
-        .then(()=>{})
+        .then(()=>{ console.log('Deep equal') })
 ```
 
 #### `match(regexp | string)`
@@ -1156,12 +1158,12 @@ scenario()
 Check that a string matches a regular expression
 
 ```javascript
-scenario()
-    when()
+scenario('matches')
+    .when()
         .empty()
-    constraint()
+    .constraint()
         .device('switch').attribute('colour').contain()
-        .then(() => {})
+        .then(() => { console.log('Matches') })
 ```
 
 ## License
