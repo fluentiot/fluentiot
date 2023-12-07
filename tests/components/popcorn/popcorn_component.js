@@ -1,9 +1,5 @@
-
 class PopcornComponent {
-
-    init() {
-    }
-
+    init() {}
 }
 
-module.exports = PopcornComponent;
+module.exports = PopcornComponent

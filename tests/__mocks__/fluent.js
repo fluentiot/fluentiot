@@ -17,3 +17,4 @@ class Fluent {
 }
 
 module.exports = Fluent;
+

@@ -1,9 +1,9 @@
-const EventEmitter = require('events');
-const Component = require('./../component');
+const EventEmitter = require('events')
+const Component = require('./../component')
 
 /**
  * Fluent Emitter
- * 
+ *
  * @extends EventEmitter
  */
 class FluentEmitter extends EventEmitter {}
@@ -15,20 +15,19 @@ class FluentEmitter extends EventEmitter {}
  * @class
  */
 class EventComponent extends Component {
-
     /**
      * Constructor
-     * 
+     *
      * @param {Fluent} Fluent - The Fluent IoT framework.
      */
     constructor(Fluent) {
-        super(Fluent);
-        this.emitter = new FluentEmitter();
-        this.queueRunning = false;
-        this.queue = [];
+        super(Fluent)
+        this.emitter = new FluentEmitter()
+        this.queueRunning = false
+        this.queue = []
 
         //Setup wrapper for 'on'
-        this.on = this.emitter.on.bind(this.emitter);
+        this.on = this.emitter.on.bind(this.emitter)
     }
 
     /**
@@ -36,8 +35,8 @@ class EventComponent extends Component {
      * This method should be called once framework is ready to process events.
      */
     afterLoad() {
-        this.queueRunning = true;
-        this.processEventQueue();
+        this.queueRunning = true
+        this.processEventQueue()
     }
 
     /**
@@ -46,9 +45,9 @@ class EventComponent extends Component {
      * @param {...any} args - Arguments to be passed to the event.
      */
     emit(...args) {
-        this.queue.push(args);
-        if(this.queueRunning) {
-            this.processEventQueue();
+        this.queue.push(args)
+        if (this.queueRunning) {
+            this.processEventQueue()
         }
     }
 
@@ -58,8 +57,8 @@ class EventComponent extends Component {
      */
     processEventQueue() {
         while (this.queue.length > 0) {
-            const eventArgs = this.queue.shift();
-            this.emitter.emit(...eventArgs);
+            const eventArgs = this.queue.shift()
+            this.emitter.emit(...eventArgs)
         }
     }
 
@@ -75,16 +74,17 @@ class EventComponent extends Component {
                 return {
                     on: (eventValue) => {
                         this.on(eventName, (emittedValue) => {
-                            if (eventValue && eventValue !== emittedValue) { return; }
+                            if (eventValue && eventValue !== emittedValue) {
+                                return
+                            }
                             scope.assert(eventName)
-                        });
-                        return scope;
-                    }
+                        })
+                        return scope
+                    },
                 }
-            }
+            },
         }
     }
-
 }
 
-module.exports = EventComponent;
+module.exports = EventComponent

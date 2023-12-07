@@ -1,6 +1,3 @@
+class MissingInitComponent {}
 
-class MissingInitComponent {
-
-}
-
-module.exports = MissingInitComponent;
+module.exports = MissingInitComponent

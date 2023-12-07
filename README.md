@@ -2,10 +2,7 @@
 
 Fluent IoT provides a fluent and intuitive DSL (domain-specific language) programming framework interface for creating human-readable scenarios for IoT control. It is designed for developers who want to create customized IoT solutions.
 
-
-
 **Important Note:** Fluent IoT is not a graphical user interface (GUI) platform like Home Assistant or similar solutions. It is a framework meant to be integrated into your code. You must already have the ability to both see the state of your IoT devices and interact with them for Fluent to be of any use.
-
 
 ## Features
 
@@ -30,18 +27,15 @@ Extend and replace the framework with your own devices, scenarios, and component
 **Simple**
 Easy to read framework with no async
 
-
 ## Connecting IoT Devices
 
 Fluent IoT is designed to work with your own IoT devices. Users are required to connect their devices to the code using the provided `device` component interface.
-
 
 ## Installation
 
 ```bash
 npm install fluent-iot
 ```
-
 
 ## Scenario Usage
 
@@ -52,6 +46,7 @@ A scenario is made up of these elements:
 ```javascript
 scenario('Office lights on when PIR is triggered or is 6pm')
 ```
+
 This sets up a scenario and should explain the purpose of the scenario.
 
 ### Trigger
@@ -60,6 +55,7 @@ This sets up a scenario and should explain the purpose of the scenario.
 .when()
     .time.is('18:00')
 ```
+
 Specifying the triggers that will run the following actions. In this case the time is 6:00pm. Is it possible to use multiple triggers that are treated as an "or".
 
 ### Constraints and Actions
@@ -75,146 +71,167 @@ Specifying the triggers that will run the following actions. In this case the ti
         device.get('office lights').dayLights()
     })
 ```
+
 Multiple constraint groups using the `day` component to decide which `capability` to use for the office lights.
 
 For this to example to work you would need to setup both `device` and the device `capability`.
-
 
 ### Simple Example
 
 ```javascript
 scenario('At 6:00pm turn on the office light')
     .when()
-        .time().is('18:00')
+        .time.is('18:00')
     .then(() => {
         device.get('office lights').turnOn()
-    });
+    })
 ```
 
 In this example at 6:00pm the office lights are turned on. There are no constraints.
-
-
-
 
 # API
 
 ## Contents
 
-- [Scenario API](#scenario-api)
-- [Day API](#day-api)
-- [Time API](#time-api)
-- [Device API](#device-api)
-- [Capability API](#capability-api)
-- [Event API](#event-api)
-- [Expect API](#expect-api)
-- [Room API](#room-api)
-- [Scene API](#scene-api)
-- [Variable API](#variable-api)
-- [Attributes API](#attributes-api)
+-   [Scenario API](#scenario-api)
+-   [Day API](#day-api)
+-   [Time API](#time-api)
+-   [Device API](#device-api)
+-   [Capability API](#capability-api)
+-   [Event API](#event-api)
+-   [Expect API](#expect-api)
+-   [Room API](#room-api)
+-   [Scene API](#scene-api)
+-   [Variable API](#variable-api)
+-   [Attributes API](#attributes-api)
 
 ---
 
 ## Scenario API
 
 #### `when()`
+
 Trigger or triggers for the scenario. If multiple triggers are used they act as an "or".
+
 ```javascript
+device.add('pir');
 scenario('18:00, sensor is true or room is occupied')
     .when()
         .time.is('18:00')
         .device('pir').attribute('sensor').isTruthy()
         .room('office').isOccupied()
-    .then(()=>{});
+    .then(() => {})
 
 scenario('using empty can be useful for debugging a scenario')
-    .when().empty()
-    .then(()=>{ console.log('It ran!') })
-    .assert();
+    .when()
+        .empty()
+    .then(() => {
+        console.log('It ran!')
+    })
+    .assert()
 ```
 
 #### `test()`
+
 For debugging if `.test()` is added to any scenario only these scenarios can be triggered and all other scenarios are disabled from running.
+
 ```javascript
 scenario('will not run at 17:00 and not in test mode')
-    .when().time.is('17:00')
-    .then(()=>{});
+    .when()
+        .time.is('17:00')
+    .then(() => {})
 
 scenario('will run at 18:00 because in test mode')
-    .when().time.is('18:00')
-    .then(()=>{})
-    .test();
+    .when()
+        .time.is('18:00')
+    .then(() => {})
+    .test()
 
 scenario('will run at 19:00 because also in test mode')
-    .when().time.is('19:00')
-    .then(()=>{})
-    .test();
+    .when()
+        .time.is('19:00')
+    .then(() => {})
+    .test()
 ```
 
-
 #### `assert()`
+
 For debugging if `.assert()` is added to any scenario the scenario will be triggered.
+
 ```javascript
 scenario('forced to run because assert() was used')
     .when()
         .time.is('19:00')
-    .then(()=>{ console.log('Triggered'); })
-    .assert();
+    .then(() => {
+        console.log('Triggered')
+    })
+    .assert()
 ```
 
-
-
 #### `.constraint()`
+
 Constraints are optional. Each component has it's own set of constraints and in the examples below they are using the `datetime` component. Multiple constraints can be used, creating constraint groups. Each constraint must have a `then()`.
+
 ```javascript
 scenario('constraint triggers at 19:00 and checks if weekend')
-    when()
+    .when()
         .time.is('19:00')
     .constraint()
         .day.is('weekend')
-        .then(()=>{ console.log('It is the weekend'); });
+        .then(() => {
+            console.log('It is the weekend')
+        })
 
 scenario('constraint triggers at 19:00 and checks the days')
-    when()
+    .when()
         .time.is('19:00')
     .constraint()
-        .day.is(['Mon','Tue'])
-        .then(()=>{ console.log('Is it Monday or Tuesday'); })
+        .day.is(['Mon', 'Tue'])
+        .then(() => {
+            console.log('Is it Monday or Tuesday')
+        })
     .constraint()
-        .day.is('Wed', 'Thur','Friday')
-        .then(()=>{ console.log('It is Wednesday, Thursday, or Friday'); })
+        .day.is('Wed', 'Thur', 'Friday')
+        .then(() => {
+            console.log('It is Wednesday, Thursday, or Friday')
+        })
     .else()
-        .then(()=>{ console.log('Is it the weekend'); })
+        .then(() => {
+            console.log('Is it the weekend')
+        })
 
 scenario('no constraints')
-    when()
+    .when()
         .time.is('19:00')
-    .then(()=>{ console.log('Triggered'); });
+    .then(() => {
+        console.log('Triggered')
+    })
 ```
 
 #### `.then(Scenario, ...args)`
+
 `then()` is used for the actions that will be carried out.
 
 ```javascript
-scenario('it will output this scenario name')
-    when().empty()
+scenario('it will output this scenario description')
+    .when()
+        .empty()
     .then((Scenario) => {
-        console.log(`Scenario "${Scenario.name}" triggered`);
+        console.log(`Scenario "${Scenario.description}" triggered`)
     })
-    .assert();
+    .assert()
 
 scenario('assert and triggers can return args to then()')
-    when().empty()
+    .when()
+        .empty()
     .then((_Scenario, colour1, colour2) => {
-        console.log(`Colour 1: "${colour1}"`)  //red
-        console.log(`Colour 2: "${colour2}"`)  //green
+        console.log(`Colour 1: "${colour1}"`) //red
+        console.log(`Colour 2: "${colour2}"`) //green
     })
-    .assert('red', 'green');
+    .assert('red', 'green')
 ```
 
-
 ---
-
-
 
 ## Day API
 
@@ -228,8 +245,12 @@ scenario('Only on Saturday at 7am')
         .time.is('07:00')
     .constraint()
         .day.is('Saturday')
-        .then((Scenario) => { console.log(Scenario.name); })
-    .assert();
+        .then(() => {
+            console.log('It is 7am Saturday ')
+        })
+    .else()
+        .then(() => { console.log('It is 7am but not Saturday'); })
+    .assert()
 ```
 
 ### Constraints
@@ -238,32 +259,44 @@ scenario('Only on Saturday at 7am')
 
 Supports a single argument or multiple arguments for multiple days.
 
-Supported arguments: `weekend, weekday, monday, mon, tuesday, tue, wednesday, wed, thursday, thur, friday, fri, saturday, sat, sunday, sun`.
+Supported arguments: `weekend, weekday, monday, mon, tuesday, tue, wednesday, wed, thursday, thu, friday, fri, saturday, sat, sunday, sun`.
 
 ```javascript
 scenario('Only on a Saturday')
-    .when().empty()
+    .when()
+        .empty()
     .constraint()
         .day.is('Saturday')
-        .then((Scenario) => { console.log(Scenario.name); })
-    .assert();
+        .then((Scenario) => {
+            console.log(Scenario.description)
+        })
+    .assert()
 
 scenario('Saturday or Monday')
-    .when().empty()
+    .when()
+        .empty()
     .constraint()
         .day.is(['Saturday', 'mon'])
-        .then((Scenario) => { console.log(Scenario.name); })
-    .assert();
+        .then((Scenario) => {
+            console.log(Scenario.description)
+        })
+    .assert()
 
-scenario('Only on a Weekend')
-    .when().empty()
+scenario('Weekends or weekdays')
+    .when()
+        .empty()
     .constraint()
         .day.is('weekend')
-        .then((Scenario) => { console.log(Scenario.name); })
-    .assert();
+        .then(() => {
+            console.log('It is the weekend')
+        })
+    .constraint()
+        .day.is('weekday')
+        .then(() => {
+            console.log('It is weekday')
+        })
+    .assert()
 ```
-
-
 
 #### `.day.between(start: string, end: string)`
 
@@ -271,240 +304,286 @@ Checking if the current date is between two dates.
 
 ```javascript
 scenario('First week of May')
-    .when().empty()
+    .when()
+        .empty()
     .constraint()
         .day.between('1st May', '7th May')
-        .then((Scenario) => { console.log(Scenario.name); })
-    .assert();
+        .then((Scenario) => {
+            console.log(Scenario.description)
+        })
+    .assert()
 
 scenario('Christmas lights!')
-    .when().empty()
+    .when()
+        .empty()
     .constraint()
         .day.between('Dec 20', 'Dec 31')
-        .then((Scenario) => { console.log(Scenario.name); })
-    .assert();
+        .then((Scenario) => {
+            console.log(Scenario.description)
+        })
+    .assert()
 
 scenario('Only May 2024')
-    .when().empty()
+    .when()
+        .empty()
     .constraint()
         .day.between('2024-05-01', '2024-05-31')
-        .then((Scenario) => { console.log(Scenario.name); })
-    .assert();
+        .then((Scenario) => {
+            console.log(Scenario.description)
+        })
+    .assert()
 ```
 
 Example date formats supported:
-* `1st May`: Represents a specific day and month.
-* `5 May`: Represents a specific day in May.
-* `May 5th`: Represents a specific day in May.
-* `May 5`: Represents a specific day and month.
-* `2023-12-31`: Represents a specific date in the YYYY-MM-DD format.
-* `January 15`: Represents a specific day in January.
-* `15th January`: Represents a specific day in January.
-* `12/31/2023`: Represents a specific date in MM/DD/YYYY format.
-* `31 Dec 2023`: Represents a specific date in DD MMM YYYY format.
-* `Dec 31 2023`: Represents a specific date in MMM DD YYYY format.
 
+-   `1st May`: Represents a specific day and month.
+-   `5 May`: Represents a specific day in May.
+-   `May 5th`: Represents a specific day in May.
+-   `May 5`: Represents a specific day and month.
+-   `2023-12-31`: Represents a specific date in the YYYY-MM-DD format.
+-   `January 15`: Represents a specific day in January.
+-   `15th January`: Represents a specific day in January.
+-   `12/31/2023`: Represents a specific date in MM/DD/YYYY format.
+-   `31 Dec 2023`: Represents a specific date in DD MMM YYYY format.
+-   `Dec 31 2023`: Represents a specific date in MMM DD YYYY format.
 
 ---
-
 
 ## Time API
 
 The Time component in Fluent IoT allows you to incorporate time-related functionalities into your IoT scenarios. It supports triggers such as the current time and repeating schedules.
 
-
 ### Triggers
 
 #### `.time.is(time: string)`
+
 If the time is matching, must be in `HH:mm` format.
+
 ```javascript
 scenario('Time is 7am')
     .when()
         .time.is('07:00')
-    .then((Scenario) => { console.log(Scenario.name); });
+    .then((Scenario) => {
+        console.log(Scenario.description)
+    })
 ```
 
 To simulate time you can emit an event using the `event` component that will trigger the scenario.
+
 ```javascript
 //Manually emit the time for testing
-event.emit('time', '07:00');
+event.emit('time', '07:00')
 ```
 
-
 #### `.time.every(expression: string)`
+
 Repeating the trigger at set intervals.
 Supports seconds (`sec, second, seconds`), minutes (`min, minute, minutes`) and hours (`hr, hour, hours`). If an invalid format is entered an error will be thrown.
+
 ```javascript
 scenario('Triggers every second')
     .when()
         .time.every('1 second')
-    .then((Scenario) => { console.log(Scenario.name); });
+    .then((Scenario) => {
+        console.log(Scenario.description)
+    })
 
 scenario('Triggers 2 minutes')
     .when()
         .time.every('2 min')
-    .then((Scenario) => { console.log(Scenario.name); });
+    .then((Scenario) => {
+        console.log(Scenario.description)
+    })
 
 scenario('Triggers 12 hours')
     .when()
         .time.every('12 hr')
-    .then((Scenario) => { console.log(Scenario.name); });
+    .then((Scenario) => {
+        console.log(Scenario.description)
+    })
 ```
-
 
 ### Constraints
 
 #### `.time.between(start_time: string, end_time: string)`
+
 Checking if the scenario was triggered between two times.
+
 ```javascript
 scenario('Between times')
-    .when().empty()
+    .when()
+        .empty()
     .constraint()
         .time.between('00:00', '12:00')
-        .then(() => { console.log('Good Morning'); })
+        .then(() => {
+            console.log('Good Morning')
+        })
     .constraint()
         .time.between('12:01', '18:00')
-        .then(() => { console.log('Good Afternoon'); })
+        .then(() => {
+            console.log('Good Afternoon')
+        })
     .constraint()
         .time.between('18:01', '23:59')
-        .then(() => { console.log('Good Evening'); })
-    .assert();
+        .then(() => {
+            console.log('Good Evening')
+        })
+    .assert()
 ```
 
 ### Events
 
-| Event | Description | Data |
-| ----------- | ----------- | ----------- |
-| `time` | Current time HH:mm format | - |
-| `time.hour` | Every hour, on the hour | - |
-| `time.minute` | Every minute, on the minute | - |
-| `time.second` | Every second | - |
+| Event         | Description                 | Data |
+| ------------- | --------------------------- | ---- |
+| `time`        | Current time HH:mm format   | -    |
+| `time.hour`   | Every hour, on the hour     | -    |
+| `time.minute` | Every minute, on the minute | -    |
+| `time.second` | Every second                | -    |
 
 Example using the `event` component directly.
+
 ```javascript
 scenario('At 6pm every day')
     .when()
-        event.on('time', '18:00')
-    .then(() => { console.log('It is 6pm') });
+        .event('time').on('18:00')
+    .then(() => {
+        console.log('It is 6pm')
+    })
 
 scenario('Runs every hour')
     .when()
-        event.on('time.hour')
-    .then(() => { console.log('It is on the hour') });
+        .event('time.hour').on()
+    .then(() => {
+        console.log('It is on the hour')
+    })
 
 scenario('Runs every minute')
     .when()
-        event.on('time.minute')
-    .then(() => { console.log('On the minute') });
+        .event('time.minute').on()
+    .then(() => {
+        console.log('On the minute')
+    })
 
 scenario('Runs every second')
     .when()
-        event.on('time.second')
-    .then(() => { console.log('Every second') });
+        .event('time.second').on()
+    .then(() => {
+        console.log('Every second')
+    })
 ```
 
-
-
 ---
-
-
 
 ## Device API
 
 ### Management
 
 The `device` and typically `capability` components must be included for management.
+
 ```javascript
-const { device, capability } = require('fluent-iot');
+const { device, capability } = require('fluent-iot')
 ```
 
-
 #### `device.add(name: string, attributes: object, capabilities: array)`
-Create a new IoT device.
+
+Create a new IoT device. It's advisable to create the capabilities for all of your devices first.
+
 ```javascript
 //Creating a basic device
-device.add('kitchen-light');
+device.add('kitchen-switch')
 
 //Adding a device with default attributes
-device.add('kitchen-light', { id:'Xyz' });
+device.add('kitchen-kettle', { id: 'Xyz', group: 'kettle' })
 
-//Adding a device with capabilities using the @ reference
-capability.add('on', () => {});
-capability.add('off', () => {});
-device.add('kitchen-light', {}, [ '@on', '@off' ])
+//Add on and off capabilities using the @ reference
+capability.add('on', () => {
+    console.log('On!')
+})
+capability.add('off', () => {
+    console.log('Off!')
+})
+device.add('kitchen-light', {}, ['@on', '@off'])
 
 //Adding a device passing capability object
-const warm = capability.add('warm', () => {});
-device.add('office-light', {}, [ '@on', '@off', warm ])
+const warm = capability.add('warm', () => {
+    console.log('Warm!')
+})
+device.add('office-light', {}, ['@on', '@off', warm])
+
+//Using the device capabilities
+device.get('kitchen-light').on()
+device.get('kitchen-light').off()
+
+device.get('office-light').on()
+device.get('office-light').off()
+device.get('office-light').warm()
 ```
 
 #### `device.get(name: string)`
+
 Fetching a device.
+
 ```javascript
 //Basic add and get
-device.add('kitchen-light');
-const kitchenLight = device.get('kitchen-light');
+device.add('kitchen-light')
+const kitchenLight = device.get('kitchen-light')
+console.log(kitchenLight)
 
 //Fetching a device attribute
-device.add('office-switch', { id:'Abc' });
-console.log(device.get('office-switch').attribute.get('id'));
+device.add('office-switch', { id: 'Abc' })
+console.log(device.get('office-switch').attribute.get('id'))
 ```
 
-
 #### `device.findByAttribute(attributeName: string, attributeValue: any)`
+
 Fetching devices by their attribute.
+
 ```javascript
 //Capability for the switch
 capability.add('switchOn', (device) => {
-    const deviceId = device.attribute.get('id');
-    console.log(`Make API call to Tuya to switch device ${deviceId} on`);
-});
+    const deviceId = device.attribute.get('id')
+    console.log(`Make API call to Tuya to switch device ${deviceId} on`)
+})
 
 //Grouped devices
-device.add('office-led-monitor', { id:'111', group:'office' }, ['@switchOn']);
-device.add('office-led-desk', { id:'222', group:'office' }, ['@switchOn']);
+device.add('office-led-monitor', { id: '111', group: 'office' }, ['@switchOn'])
+device.add('office-led-desk', { id: '222', group: 'office' }, ['@switchOn'])
 
 //Switch them on
-for(const led in device.findByAttribute('group','office')) {
-    led.switchOn();
+for (const led in device.findByAttribute('group', 'office')) {
+    led.switchOn()
 }
 ```
-
 
 ### Triggers
 
 Device triggers are an extension of the [Attributes DSL](#attributes-api) and [Expect DSL](#expect-api).
 
 #### `.device(name: string).attribute(attributeName: string).is(value: any)`
+
 If a devices attribute is updated to true
+
 ```javascript
-device.add('office-switch', { state:false })
+device.add('office-switch', { state: false })
 
 scenario('Detect when a switch is turned on')
     .when()
         .device('office-switch').attribute('state').isTruthy()
     .then(() => {
-        console.log('Office switch is now on');
-    });
+        console.log('Office switch is now on')
+    })
 
 //Attribute updated by IoT gateway
-device.get('office-switch').attribute.set('state', true);
+device.get('office-switch').attribute.set('state', true)
 ```
-
 
 ### Events
 
-| Event | Description | Data |
-| ----------- | ----------- | ----------- |
+| Event                            | Description              | Data                                               |
+| -------------------------------- | ------------------------ | -------------------------------------------------- |
 | `device.[device name].attribute` | Device attribute updated | `{ name:"attributeName", value:"attributeValue" }` |
 
-
-
 ---
-
-
-
-
 
 ## Capability API
 
@@ -521,43 +600,39 @@ The `capability` component must be included for management.
 When referencing capabilities in devices prefix the capability with an `@` symbol.
 
 ```javascript
-const { capability } = require('fluent-iot');
+const { capability } = require('fluent-iot')
 ```
 
 #### `capability.add(name: string, object: callback)`
+
 Creation of a new reusable capability.
+
 ```javascript
 capability.add('lightOff', () => {
-    console.log('Light off!');
-});
-device.add('office-light', {}, [ '@lightOff' ]);
-device.get('office-light').lightOff();
+    console.log('Light off!')
+})
+device.add('office-light', {}, ['@lightOff'])
+device.get('office-light').lightOff()
 ```
 
 More advanced usage showing reusability.
+
 ```javascript
 //Capability for the switch
 capability.add('switchOn', (device) => {
-    const deviceId = device.attribute.get('id');
-    console.log(`Make API call to Tuya to switch device ${deviceId} on`);
-});
+    const deviceId = device.attribute.get('id')
+    console.log(`Make API call to Tuya to switch device ${deviceId} on`)
+})
 
 //Devices with switchOn capability
-device.add('office-led-monitor', { id:'tuya-id-111' }, ['@switchOn']);
-device.add('office-led-desk', { id:'tuya-id-222' }, ['@switchOn']);
+device.add('office-led-monitor', { id: 'tuya-id-111' }, ['@switchOn'])
+device.add('office-led-desk', { id: 'tuya-id-222' }, ['@switchOn'])
 
-device.get('office-led-monitor').switchOn();
-device.get('office-led-desk').switchOn();
+device.get('office-led-monitor').switchOn()
+device.get('office-led-desk').switchOn()
 ```
 
-
-
-
 ---
-
-
-
-
 
 ## Event API
 
@@ -566,63 +641,69 @@ The `event` component is the central bus for all triggers. It uses the native [N
 ### Management
 
 The `event` component must be included for management.
+
 ```javascript
-const { event } = require('fluent-iot');
+const { event } = require('fluent-iot')
 ```
 
 #### `.event.emit(eventName: string[, ...args]);`
+
 See official [emit documentation](https://nodejs.org/api/events.html#emitteremiteventname-args).
+
 ```javascript
 scenario('Lock down when receiving lockdown event')
     .when()
-        .event.on('lockdown', true)
+        .event('lockdown').on(true)
     .then(() => {
         console.log('Locking down')
-    });
-event.emit('lockdown', true);
+    })
+event.emit('lockdown', true)
 ```
 
 #### `.event.on(eventName: string);`
+
 See official [emit documentation](https://nodejs.org/api/events.html#emitteroneventname-listener).
+
 ```javascript
 event.on('lockdown', () => {
-    console.log('Locking down!');
-});
-event.emit('lockdown', true);
+    console.log('Locking down!')
+})
+event.emit('lockdown', true)
 ```
-
 
 ### Triggers
 
-#### `.event(name: string).is(value: any)`
+#### `.event(name: string).on(value: any)`
+
 When an event is emitted with a specific value.
+
 ```javascript
 scenario('Lock down when event is detected')
     .when()
-        .event('lockdown').is(true)
+        .event('lockdown').on(true)
     .then(() => {
-        console.log('Lock down!');
-    });
-event.emit('lockdown', true);
+        console.log('Lock down!')
+    })
+event.emit('lockdown', true)
 ```
 
 #### `.event(name: string).on()`
+
 When an event is emitted, no matter the value
+
 ```javascript
 scenario('Pretty colours')
     .when()
         .event('lockdown').on()
     .then((_Scenario, colour) => {
-        console.log(`Pretty colour: ${colour}`);
-    });
-event.emit('colour', 'red');
-event.emit('colour', 'green');
-event.emit('colour', 'blue');
+        console.log(`Pretty colour: ${colour}`)
+    })
+event.emit('colour', 'red')
+event.emit('colour', 'green')
+event.emit('colour', 'blue')
 ```
 
-
 ---
-
 
 ## Room API
 
@@ -633,239 +714,261 @@ It is important to read the `updatePresence` API to understand how to fully mana
 ### Management
 
 The `room` component must be included for management.
+
 ```javascript
-const { room } = require('fluent-iot');
+const { room } = require('fluent-iot')
 ```
 
 #### `room.add(name: string, attributes: object)`
+
 Creates a new room that can be used for monitoring occupancy.
 See `updatePresence()` API to update the occupancy.
+
 ```javascript
 //Office room with no default attributes
-room.add('office');
-console.log(room.get('office').isOccupied()); //False
+room.add('office')
+console.log(room.get('office').isOccupied()) //False
 
 //Living room with default attribute of occupied
-room.add('living', { occupied:true });
-console.log(room.get('living').isOccupied()); //True
+room.add('living', { occupied: true })
+console.log(room.get('living').isOccupied()) //True
 
 //Updating the default duration to be occupied after receiving a 'false' occupancy sensor value
-const playroom = room.add('playroom', { thresholdDuration:5 });
+const playroom = room.add('playroom', { thresholdDuration: 5 })
 ```
 
 #### `room.get(name: string)`
+
 Get a room by its name. If the room does not exist it will return `null`.
+
 ```javascript
 //Using the .get() API
-room.add('office');
-console.log(room.get('office').name); //"office"
+room.add('office')
+console.log(room.get('office').name) //"office"
 
 //Direct
-const office = room.add('office');
-console.log(office.name); //"office"
+const living = room.add('living')
+console.log(living.name) //"living"
 ```
-
 
 #### `room.get(name: string).isOccupied()`
+
 Returns `true` if occupied or `false` if vacant.
+
 ```javascript
-const office = room.add('office');
+const office = room.add('office')
 
-office.attribute.set('occupied', true);
-console.log(office.isOccupied());    //true
+office.attribute.set('occupied', true)
+console.log(office.isOccupied()) //true
 
-office.attribute.set('occupied', false);
-console.log(office.isOccupied());    //false
+office.attribute.set('occupied', false)
+console.log(office.isOccupied()) //false
 ```
 
-
 #### `room.get(name: string).updatePresence(sensorValue: boolean)`
+
 The presence should be called on a room sensor's value (e.g. PIR sensor). This will use the `thresholdDuration` option used in the `room.add()` API.
+
 ```javascript
 // The default thresholdDuration is 15 minutes
-room.add('living');
+room.add('living')
 
 // After 5 minutes of the room not having a positive sensor value the room will become vacant
-room.add('office', { thresholdDuration: 5 });
+room.add('office', { thresholdDuration: 5 })
 
 // To ignore the threshold set it to 0
-room.add('pantry', { thresholdDuration: 0 });
+room.add('pantry', { thresholdDuration: 0 })
 ```
 
 Using this API with a scenario and simulating device updates.
+
 ```javascript
-room.add('office', { thresholdDuration: 5 });
-device.add('office-pir');
+room.add('office', { thresholdDuration: 5 })
+device.add('office-pir')
 
 //Listening to PIR updates
 scenario('Office PIR sensor with movement and update presence')
     .when()
         .device('office-pir').attribute('sensor').is(true)
     .then(() => {
-        room.get('office').updatePresence(true);
-        console.log(room.get('office').isOccupied()); //true
+        room.get('office').updatePresence(true)
+        console.log(room.get('office').isOccupied()) //true
         //.room('office').is.occupied() trigger will be called
-    });
+    })
 
 scenario('Office PIR sensor with no movement')
     .when()
         .device('office-pir').attribute('sensor').is(false)
     .then(() => {
-        room.get('office').updatePresence(false);
-        console.log(room.get('office').isOccupied()); //true
+        room.get('office').updatePresence(false)
+        console.log(room.get('office').isOccupied()) //true
         //...in 5 minutes:
         //.isOccupied() will be false
         //.room('office').is.vacant() trigger will be called
-    });
+    })
 
 //Listening to occupancy updated
 scenario('Office lights on when occupied')
     .when()
-        .room('office').is.occupied()
+        .room('office').isOccupied()
     .then(() => {
-        console.log('Room is occupied, turn on lights etc...');
-    });
+        console.log('Room is occupied, turn on lights etc...')
+    })
 
 scenario('Office lights off when vacant')
     .when()
-        .room('office').is.vacant()
+        .room('office').isVacant()
     .then(() => {
-        console.log('Room is vacant, turn off lights etc...');
-    });
+        console.log('Room is vacant, turn off lights etc...')
+    })
 
 //Simulate the office PIR sensor returning a true value
-device.get('office-pir').attribute.update('sensor', true);
+device.get('office-pir').attribute.update('sensor', true)
 
 //Simulate the office PIR sensor returning a false value
-device.get('office-pir').attribute.update('sensor', false);
+device.get('office-pir').attribute.update('sensor', false)
 ```
-
 
 ### Triggers
 
 #### `.room(name: string).is.occupied()`
+
 When the room is occupied.
+
 ```javascript
+room.add('office')
 scenario('Office lights on when occupied')
     .when()
-        .room('office').is.occupied()
+        .room('office').isOccupied()
     .then(() => {
-        console.log('Room is occupied, turn on lights etc...');
-    });
+        console.log('Room is occupied, turn on lights etc...')
+    })
 ```
 
 #### `.room(name: string).is.vacant()`
+
 When the room has been set to vacant.
+
 ```javascript
+room.add('office')
 scenario('Office lights off when vacant')
     .when()
-        .room('office').is.vacant()
+        .room('office').isVacant()
     .then(() => {
-        console.log('Room is vacant, turn off lights etc...');
-    });
+        console.log('Room is vacant, turn off lights etc...')
+    })
 ```
 
-
-
-
 ---
-
-
-
 
 ## Scene API
 
 ### Management
 
 The `scene` component must be included for management.
+
 ```javascript
-const { scene } = require('fluent-iot');
+const { scene } = require('fluent-iot')
 ```
 
 #### `scene.add(name: string, callback: object)`
+
 Creating a scene that can be referenced and reused in scenarios.
+
 ```javascript
 scene.add('cool', () => {
     //device.get('light').switchOn()
     console.log('Cool scene activated')
-});
+})
 
 scenario('Cool scene')
-    .when().empty()
+    .when()
+        .empty()
     .then(() => {
-        scene.get('cool').run();
-    });
+        scene.get('cool').run()
+    })
 ```
-
 
 #### `scene.get(name: string)`
-Fetches the scene object.
-```javascript
-scene.add('cool', () => { console.log('Super cool!') })
-console.log(scene.get('cool').name); //"cool"
-console.log(scene.get('cool').run()); //"Super cool!"
-```
 
+Fetches the scene object.
+
+```javascript
+scene.add('cool', () => {
+    console.log('Super cool!')
+})
+console.log(scene.get('cool').name) //"cool"
+scene.get('cool').run() //"Super cool!"
+```
 
 #### `scene.run(name: string)`
+
 Runs a scene.
+
 ```javascript
-scene.add('cool', () => { console.log('cool') })
-console.log(scene.run('cool')); //"cool"
+scene.add('cool', () => {
+    console.log('cool')
+})
+scene.run('cool') //"cool"
 ```
 
-
-
 ---
-
 
 ## Variable API
 
 ### Management
 
 The `variable` component must be included for management.
+
 ```javascript
-const { variable } = require('fluent-iot');
+const { variable } = require('fluent-iot')
 ```
 
 #### `variable.set(name: string, value: any, options: Object)`
+
 Setting a variable. Currently there is no state engine in the framework so if the framework is restarted all previous variables are lost.
 
 Variables can expire. Once they expire they are removed and `null` is returned.
+
 ```javascript
 //Set variable to true
-variable.set('security', true);
+variable.set('security', true)
 
 //Set variable to true and expires in 5 minutes
-variable.set('security', true, { expiry:'5 minutes' });
+variable.set('security', true, { expiry: '5 minutes' })
 
 //Set variable to true and expires in 6 hours
-variable.set('security', true, { expiry:'6 hours' });
+variable.set('security', true, { expiry: '6 hours' })
 ```
 
 #### `variable.remove(name: string)`
-Any removed variables will return `null` if `.get()` is used.
-```javascript
-variable.set('security', true);
-console.log(variable.get('security')); //true
 
-variable.remove('security');
-console.log(variable.get('security')); //null
+Any removed variables will return `null` if `.get()` is used.
+
+```javascript
+variable.set('security', true)
+console.log(variable.get('security')) //true
+
+variable.remove('security')
+console.log(variable.get('security')) //null
 ```
 
 #### `variable.get(name: string)`
-Fetch a variable that has been set.
-```javascript
-variable.set('security', true);
-console.log(variable.get('security')); //true
-console.log(variable.get('does not exist')); //null
-```
 
+Fetch a variable that has been set.
+
+```javascript
+variable.set('security', true)
+console.log(variable.get('security')) //true
+console.log(variable.get('does not exist')) //null
+```
 
 ### Triggers
 
 #### `.variable(name: string).is(value: string)`
+
 If a variable is updated to a specific value.
+
 ```javascript
 scenario('Variable was set to red')
     .when()
@@ -874,23 +977,23 @@ scenario('Variable was set to red')
         console.log(`Variable is blue`);
     });
 variable.set('colour', 'red');
-variable.set('colour', 'blue'');
+variable.set('colour', 'blue');
 ```
 
 #### `.variable(name: string).updated()`
+
 If a variable is updated to any value.
+
 ```javascript
 scenario('Variable was updated')
     .when()
         .variable('security').updated()
     .then(() => {
-        console.log(`Variable is: ${variable.get('security')}`);
-    });
-variable.set('security', true);
-variable.set('security', false);
+        console.log(`Variable is: ${variable.get('security')}`)
+    })
+variable.set('security', true)
+variable.set('security', false)
 ```
-
-
 
 ### Constraints
 
@@ -902,26 +1005,28 @@ scenario('Output the level based on variable value updates')
         .variable('level').updated()
     .constraint()
         .variable('level').is(1)
-        .then(() => { console.log('Level 1'); })
+        .then(() => {
+            console.log('Level 1')
+        })
     .constraint()
-        .variable('level').contain([ 2, 3, 4 ])
-        .then(() => { console.log('Level 2, 3 or 4'); })
+        .variable('level').contain([2, 3, 4])
+        .then(() => {
+            console.log('Level 2, 3 or 4')
+        })
     .constraint()
         .variable('level').isGreaterThan(4)
-        .then(() => { console.log(`Level is ${variable.get('level')}`); });
+        .then(() => {
+            console.log(`Level is ${variable.get('level')}`)
+        })
 
-variable.set('level', 1);
-variable.set('level', 2);
-variable.set('level', 3);
-variable.set('level', 4);
-variable.set('level', 5);
+variable.set('level', 1)
+variable.set('level', 2)
+variable.set('level', 3)
+variable.set('level', 4)
+variable.set('level', 5)
 ```
 
 ---
-
-
-
-
 
 ## Expect API
 
@@ -930,111 +1035,137 @@ The expect `component` is based on [Jest's expect](https://jestjs.io/docs/expect
 Typically expect appends the matchers with `toBe<>`. The matchers can be used with this syntax but for a better context with this framework they start with `is<>`.
 
 #### `is(value)`
+
 Compare values.
+
 ```javascript
-scenario()
-    when().empty()
-    constraint()
+scenario('is')
+    .when()
+        .empty()
+    .constraint()
         .device('pir').attribute('sensor').is('active')
-        .then(()=>{})
+        .then(() => { console.log('Is') })
+        .assert()
 ```
 
 #### `isDefined(value)`
+
 If the value is defined
+
 ```javascript
-scenario()
-    when().empty()
-    constraint()
+scenario('is defined')
+    .when()
+        .empty()
+    .constraint()
         .device('pir').attribute('sensor').isDefined()
-        .then(()=>{})
+        .then(() => { console.log('Is defined') })
 ```
 
 #### `isUndefined(value)`
+
 If the value is undefined
+
 ```javascript
-scenario()
-    when().empty()
-    constraint()
+scenario('is undefined')
+    .when()
+        .empty()
+    .constraint()
         .device('pir').attribute('sensor').isUndefined()
-        .then(()=>{})
+        .then(() => { console.log('Is undefined') })
 ```
 
 #### `isFalsy(value)`
+
 If the value is a value of falsy
+
 ```javascript
-scenario()
-    when().empty()
-    constraint()
+scenario('is falsy')
+    .when()
+        .empty()
+    .constraint()
         .device('pir').attribute('sensor').isFalsy()
-        .then(()=>{})
+        .then(() => { console.log('Is Falsy') })
 ```
 
 #### `isTruthy(value)`
+
 If the value is a value of truthy
+
 ```javascript
-scenario()
-    when().empty()
-    constraint()
+scenario('is truthy')
+    .when()
+        .empty()
+    .constraint()
         .device('pir').attribute('sensor').isTruthy()
-        .then(()=>{})
+        .then(() => { console.log('Is Truthy') })
 ```
 
 #### `isNull(value)`
+
 If the value is null
+
 ```javascript
-scenario()
-    when().empty()
-    constraint()
+scenario('is null')
+    .when()
+        .empty()
+    .constraint()
         .device('pir').attribute('sensor').isNull()
-        .then(()=>{})
+        .then(() => { console.log('Is Null') })
 ```
 
 #### `isNaN(value)`
+
 If the value is NaN
+
 ```javascript
-scenario()
-    when().empty()
-    constraint()
+scenario('is NaN')
+    .when()
+        .empty()
+    .constraint()
         .device('pir').attribute('sensor').isNaN()
-        .then(()=>{})
+        .then(() => { console.log('Is NaN') })
 ```
 
 #### `contain(value)`
+
 If the value is contains a key in an array
+
 ```javascript
-scenario()
-    when().empty()
-    constraint()
-        .device('led').attribute('colour').contain([ 'red', 'green', 'blue' ])
-        .then(()=>{})
+scenario('contains')
+    .when()
+        .empty()
+    .constraint()
+        .device('led').attribute('colour').contain(['red', 'green', 'blue'])
+        .then(() => { console.log('Contains') })
 ```
 
 #### `equal(value)`
+
 Compares recursively all properties of an object.
+
 ```javascript
 variable.set('deep', [ foo:'bar' ]);
-scenario()
-    when().empty()
-    constraint()
+scenario('equal')
+    .when()
+        .empty()
+    .constraint()
         .variable('deep').equal([ foo:'bar' ])
-        .then(()=>{})
+        .then(()=>{ console.log('Deep equal') })
 ```
 
 #### `match(regexp | string)`
+
 Check that a string matches a regular expression
+
 ```javascript
-scenario()
-    when().empty()
-    constraint()
+scenario('matches')
+    .when()
+        .empty()
+    .constraint()
         .device('switch').attribute('colour').contain()
-        .then(()=>{})
+        .then(() => { console.log('Matches') })
 ```
-
-
-
-
 
 ## License
 
 Fluent IoT is licenses under a [MIT License](./LICENSE).
-

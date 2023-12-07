@@ -1,4 +1,4 @@
-const logger = require('./utils/logger');
+const logger = require('./utils/logger')
 
 /**
  * Scenario
@@ -6,239 +6,237 @@ const logger = require('./utils/logger');
  * @class
  */
 class Scenario {
-
     /**
      * Constructor of a new scenario
-     * 
+     *
      * @param {Object} Fluent - Fluent static
      * @param {String} description - Description of the scenario
      */
     constructor(Fluent, description) {
         //Validate
         if (!Fluent) {
-            throw new Error(`Fluent core not passed, you should not call scenario directly`);
+            throw new Error(`Fluent core not passed, you should not call scenario directly`)
         }
         if (!description) {
-            throw new Error(`Description is required for a scenario`);
+            throw new Error(`Description is required for a scenario`)
         }
 
-        this.Fluent = Fluent;               //Singleton object for core
-        this.description = description;     //Verbose description of the scenario
+        this.Fluent = Fluent //Singleton object for core
+        this.description = description //Verbose description of the scenario
 
-        this.testMode = false;              //In test mode
-        this.runnable = true;               //Can scenario be run? Can be switched when .test() mode is used
-        this.triggers = {};                 //Triggers from components loaded in
-        this.callbacks = [];                //Stores a group of constraints and callbacks for that group
-        this.trace = [];                    //Debug stack trace
+        this.testMode = false //In test mode
+        this.runnable = true //Can scenario be run? Can be switched when .test() mode is used
+        this.triggers = {} //Triggers from components loaded in
+        this.callbacks = [] //Stores a group of constraints and callbacks for that group
+        this.trace = [] //Debug stack trace
 
-        this.components = this.Fluent.component().all();
+        //Fetch all required components from the Fluent / config file
+        this.components = this.Fluent.component().all()
 
-        this._buildTriggers();
+        //Setup available triggers based on components loaded
+        this._buildTriggersDsl()
 
-        logger.info(`Scenario "${description}" loaded`, 'scenario');
+        logger.info(`Scenario "${description}" loaded`, 'scenario')
     }
-
 
     /**
      * Build DSL triggers
-     * 
+     *
      * @private
      */
-    _buildTriggers() {
-        //Build up triggers then proxy them
+    _buildTriggersDsl() {
+        //Basic triggers
         this.triggers.empty = () => {
-            return this.when();
-        };
+            return this.when()
+        }
         this.triggers.constraint = (...args) => {
-            return this.constraint(...args);
-        };
+            return this.constraint(...args)
+        }
         this.triggers.then = (callback) => {
-            return this.then(callback);
-        };
-
-        //Assert so the triggers can trigger the scenario
+            return this.then(callback)
+        }
         this.triggers.assert = () => {
-            this.assert();
+            this.assert()
         }
 
         //Component triggers
         for (const componentName in this.components) {
-            const component = this.components[componentName];
+            const component = this.components[componentName]
             if (typeof component.triggers === 'function') {
-                Object.assign(this.triggers, component.triggers(this.triggers));
+                Object.assign(this.triggers, component.triggers(this.triggers))
             }
         }
-
     }
 
     /**
      * When
-     * 
+     *
      * @param {?Object} callback - Custom trigger
      * @returns {Object} - Trigger scope
      */
     when(callback) {
         if (callback) {
-            return callback(this);
+            return callback(this)
         }
-        return this.triggers;
+        return this.triggers
     }
-
 
     /**
      * New group of constraints
-     * 
+     *
      * @param {Array} constraints - Recursive list of individual constraints
      * @returns {*}
      */
     constraint(constraints) {
         //Normal constraints referencing components
-        if (!constraints) { constraints = []; }
+        if (!constraints) {
+            constraints = []
+        }
 
         //Component constraints must be built each time to retain the constraints scope
-        let methods = {};
+        let methods = {}
         methods.then = (callback) => {
-            return this.then(callback, constraints);
-        };
+            return this.then(callback, constraints)
+        }
 
         for (const componentName in this.components) {
-            const component = this.components[componentName];
+            const component = this.components[componentName]
 
-            if (typeof component.constraints !== 'function') { continue; }
+            if (typeof component.constraints !== 'function') {
+                continue
+            }
 
-            const componentConstraints = component.constraints(this, constraints);
-            Object.assign(methods, componentConstraints);
+            const componentConstraints = component.constraints(this, constraints)
+            Object.assign(methods, componentConstraints)
         }
 
         //Deep search through methods object then proxy each call and console log the method called
-        const methodsProxy = this._createProxyForConstraints(methods, constraints);
+        const methodsProxy = this._createProxyForConstraints(methods, constraints)
 
-        return methodsProxy;
+        return methodsProxy
     }
-
 
     /**
      * Proxy each constraint method
-     * 
+     *
      * @private
-     * @param {*} obj 
-     * @param {*} constraints 
-     * @returns 
+     * @param {*} obj
+     * @param {*} constraints
+     * @returns
      */
     _createProxyForConstraints(obj, constraints) {
         return new Proxy(obj, {
-          get: (target, prop, receiver) => {
-            
-            //console.log(prop + ' = ' + typeof target[prop]);
+            get: (target, prop, receiver) => {
+                //console.log(prop + ' = ' + typeof target[prop]);
 
-            if (typeof target[prop] === 'function') {
-              return (...args) => {
-                const result = target[prop].apply(target, args);
+                if (typeof target[prop] === 'function') {
+                    return (...args) => {
+                        const result = target[prop].apply(target, args)
 
-                //console.log(target);
-                //console.log(`Method ${prop} called with arguments ${args.join(', ')}. Result: ${result}`);
-      
-                // Check if the result is an object with keys
-                if (result && typeof result === 'object' && Object.keys(result).length > 0) {
-                    // If keys are present, create a proxy for the result
-                    return this._createProxyForConstraints(result, constraints);
+                        //console.log(target);
+                        //console.log(`Method ${prop} called with arguments ${args.join(', ')}. Result: ${result}`);
+
+                        // Check if the result is an object with keys
+                        if (result && typeof result === 'object' && Object.keys(result).length > 0) {
+                            // If keys are present, create a proxy for the result
+                            return this._createProxyForConstraints(result, constraints)
+                        }
+
+                        //Constraint
+                        if (typeof result === 'function') {
+                            //console.log(`Method ${prop} called with arguments ${args.join(', ')}. Result: ${result}`);
+                            constraints.push(result)
+                            return this.constraint(constraints)
+                        }
+
+                        return result
+                    }
+                } else if (typeof target[prop] === 'object' && target[prop] !== null) {
+                    // Recursively create proxy for nested objects
+                    return this._createProxyForConstraints(target[prop], constraints)
                 }
 
-                //Constraint
-                if (typeof result === 'function') {
-                    //console.log(`Method ${prop} called with arguments ${args.join(', ')}. Result: ${result}`);
-                    constraints.push(result);
-                    return this.constraint(constraints);
-                }
-      
-                return result;
-              };
-            } 
-            else if (typeof target[prop] === 'object' && target[prop] !== null) {
-                // Recursively create proxy for nested objects
-                return this._createProxyForConstraints(target[prop], constraints);
-            }
-      
-            return target[prop];
-          },
-        });
-    };
+                return target[prop]
+            },
+        })
+    }
 
     /**
      * Else used for constraint groups
-     * 
+     *
      * @returns {Object}
      */
     else() {
         return {
             then: (callback) => {
-                return this.then(callback);
-            }
+                return this.then(callback)
+            },
         }
     }
 
     /**
      * Then
-     * 
+     *
      * @param {*} callback - Callback method when scenario is asserted
-     * @param {Array} constraints - Set of constraints for this individual callback 
-     * @returns 
+     * @param {Array} constraints - Set of constraints for this individual callback
+     * @returns
      */
     then(callback, constraints) {
         this.callbacks.push({
             callback,
-            constraints
-        });
-        return this;
+            constraints,
+        })
+        return this
     }
 
     /**
      * Set scenario to test mode
      */
     test() {
-        this.testMode = true;
-        this.Fluent.updateTestMode(this);
-        return this;
+        this.testMode = true
+        this.Fluent.updateTestMode(this)
+        return this
     }
 
     /**
      * Assert scenario
-     * 
+     *
      * @param {*} result - To be passed to the callback
      * @returns {Boolean}
      */
     assert(result) {
         //Scenario might not be runnable, runnable is set to false when .test() is used in another scenario
         if (!this.runnable) {
-            return false;
+            return false
         }
 
         //Total executions with constraints
-        let ranCallback = false;
-        let executionsWithConstraints = 0;
+        let ranCallback = false
+        let executionsWithConstraints = 0
 
-        this.callbacks.forEach(callbackItem => {
-            const constraints = callbackItem.constraints || [];
-            const constraintsMet = constraints.length === 0 || constraints.every(constraint => constraint());
+        this.callbacks.forEach((callbackItem) => {
+            const constraints = callbackItem.constraints || []
+            const constraintsMet = constraints.length === 0 || constraints.every((constraint) => constraint())
 
             //If a callback has run with constraints already and this callback
             //has no constraints then do not run. This is probably an else()
             if (executionsWithConstraints > 0 && constraints.length === 0) {
-                return ranCallback;
+                return ranCallback
             }
-    
+
             //Run constraint group callback
             if (constraintsMet) {
-                logger.info(`Scenario "${this.description}" triggered`, 'scenario');
-                ranCallback = true;
-                callbackItem.callback(this, result);
-                if(constraints.length > 0) { executionsWithConstraints++; }
+                logger.info(`Scenario "${this.description}" triggered`, 'scenario')
+                ranCallback = true
+                callbackItem.callback(this, result)
+                if (constraints.length > 0) {
+                    executionsWithConstraints++
+                }
             }
-        });
+        })
 
-        return ranCallback;
+        return ranCallback
     }
-
 }
 
-module.exports = Scenario;
+module.exports = Scenario

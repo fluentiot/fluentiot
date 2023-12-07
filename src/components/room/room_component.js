@@ -1,6 +1,6 @@
-const Component = require('./../component');
-const Room = require('./room');
-const logger = require('./../../utils/logger');
+const Component = require('./../component')
+const Room = require('./room')
+const logger = require('./../../utils/logger')
 
 /**
  * Room component
@@ -9,44 +9,43 @@ const logger = require('./../../utils/logger');
  * @class
  */
 class RoomComponent extends Component {
-
     /**
      * Constructor
-     * 
+     *
      * @param {Fluent} Fluent - The Fluent IoT framework.
      */
     constructor(Fluent) {
-        super(Fluent);
-        this.rooms = {};
+        super(Fluent)
+        this.rooms = {}
     }
 
     /**
      * Adds a new room
-     * 
+     *
      * @param {string} name - The name of the room.
      * @param {Object} attributes - Attributes for the room.
      * @returns {Room} - The room object.
      */
     add(name, attributes) {
         if (this.rooms[name]) {
-            throw new Error(`Room with the name "${name}" already exists`);
+            throw new Error(`Room with the name "${name}" already exists`)
         }
-        this.rooms[name] = new Room(this, name, attributes);
-        return this.rooms[name];
+        this.rooms[name] = new Room(this, name, attributes)
+        return this.rooms[name]
     }
 
     /**
      * Retrieves a room by its name.
-     * 
+     *
      * @param {string} name - The name of the room.
      * @returns {any|null} - Returns the room.
      */
     get(name) {
         if (!this.rooms[name]) {
-            logger.error(`Room "${name}" could not be found`, 'room');
-            return null;
+            logger.error(`Room "${name}" could not be found`, 'room')
+            return null
         }
-        return this.rooms[name];
+        return this.rooms[name]
     }
 
     /**
@@ -58,33 +57,32 @@ class RoomComponent extends Component {
     triggers(scope) {
         return {
             room: (name) => {
-                const room = this.get(name);
+                const room = this.get(name)
                 if (!room) {
-                    throw new Error(`Room ${name} does not exist`, 'room');
+                    throw new Error(`Room ${name} does not exist`, 'room')
                 }
 
                 return {
-                    isOccupied: () => { 
+                    isOccupied: () => {
                         this.event().on(`room.${room.name}.attribute`, (changedData) => {
                             if (changedData.name === 'occupied' && changedData.value === true) {
-                                scope.assert();
+                                scope.assert()
                             }
-                        });
-                        return scope;
+                        })
+                        return scope
                     },
-                    isVacant: () => { 
+                    isVacant: () => {
                         this.event().on(`room.${room.name}.attribute`, (changedData) => {
                             if (changedData.name === 'occupied' && changedData.value === false) {
-                                scope.assert();
+                                scope.assert()
                             }
-                        });
-                        return scope;
+                        })
+                        return scope
                     },
-                };
+                }
             },
         }
     }
-    
 }
 
-module.exports = RoomComponent;
+module.exports = RoomComponent

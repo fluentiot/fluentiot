@@ -1,9 +1,5 @@
-
 class FoobarComponent {
-
-    init() {
-    }
-
+    init() {}
 }
 
-module.exports = FoobarComponent;
+module.exports = FoobarComponent
