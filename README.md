@@ -1,35 +1,34 @@
-# Fluent IoT
 
-Fluent IoT provides a fluent and intuitive DSL (domain-specific language) programming framework interface for creating human-readable scenarios for IoT control. It is designed for developers who want to create customized IoT solutions.
+<h1 align="center">Fluent IoT</h1>
+<p align="center">The Programmers IoT Framework</p>
+
+> Fluent IoT is a NodeJS framework designed to streamline IoT development. Offering a fluent and intuitive domain-specific language (DSL), this framework enables developers to craft human-readable scenarios for precise control over IoT devices.
+
+```javascript
+scenario('At 6:00pm turn on the gate lights')
+    .when()
+        .time.is('18:00')
+    .then(() => {
+        device.get('gate lights').turnOn()
+    })
+```
+
+* 🤖 Familiar Jest API & BDD patterns
+* 🧩 Extensive Trigger & Constraint Library
+* 🚀 Seamless Integration with Existing IoT Devices
+* 📝 Human-Readable Scenario Creation
+* 🛠️ Extensible and Customizable
+* ⚖️ Compact and Lightweight
+
 
 **Important Note:** Fluent IoT is not a graphical user interface (GUI) platform like Home Assistant or similar solutions. It is a framework meant to be integrated into your code. You must already have the ability to both see the state of your IoT devices and interact with them for Fluent to be of any use.
-
-## Features
-
-**Scenario Management**
-Easily create and manage IoT scenarios with a human-readable fluent syntax.
-
-**Event-Driven**
-The framework is built around one central event bus for all device, variable, time and attribute updates.
-
-**Device Abstraction**
-Define and manage IoT devices with capabilities.
-
-**Room Management**
-Basic room management to know if a room is occupied or vacant based on sensors.
-
-**Variable Handling**
-Manage custom variables within your IoT scenarios for state.
-
-**Extensibility**
-Extend and replace the framework with your own devices, scenarios, and components.
-
-**Simple**
-Easy to read framework with no async
 
 ## Connecting IoT Devices
 
 Fluent IoT is designed to work with your own IoT devices. Users are required to connect their devices to the code using the provided `device` component interface.
+
+The codebase comes with a `tuya` component which can serve as an example on other integrations. If you are already using tuya you can configure the access and start using it out of the box.
+
 
 ## Installation
 
@@ -87,9 +86,11 @@ scenario('At 6:00pm turn on the office light')
     })
 ```
 
-In this example at 6:00pm the office lights are turned on. There are no constraints.
+In this example at 6:00pm the office lights are turned on. There are no constraints in this example.
 
 # API
+
+This API includes many working examples.
 
 ## Contents
 
@@ -114,7 +115,10 @@ In this example at 6:00pm the office lights are turned on. There are no constrai
 Trigger or triggers for the scenario. If multiple triggers are used they act as an "or".
 
 ```javascript
+//Must create the device before trying to use it in a scenario
 device.add('pir');
+
+//Multiple triggers in when() will act as an OR
 scenario('18:00, sensor is true or room is occupied')
     .when()
         .time.is('18:00')
@@ -122,6 +126,7 @@ scenario('18:00, sensor is true or room is occupied')
         .room('office').isOccupied()
     .then(() => {})
 
+//While testing using empty() and .assert()
 scenario('using empty can be useful for debugging a scenario')
     .when()
         .empty()
@@ -191,7 +196,7 @@ scenario('constraint triggers at 19:00 and checks the days')
             console.log('Is it Monday or Tuesday')
         })
     .constraint()
-        .day.is('Wed', 'Thur', 'Friday')
+        .day.is(['Wed', 'Thur', 'Friday'])
         .then(() => {
             console.log('It is Wednesday, Thursday, or Friday')
         })
@@ -504,11 +509,11 @@ capability.add('off', () => {
 })
 device.add('kitchen-light', {}, ['@on', '@off'])
 
-//Adding a device passing capability object
+//Adding warm capability
 const warm = capability.add('warm', () => {
     console.log('Warm!')
 })
-device.add('office-light', {}, ['@on', '@off', warm])
+device.add('office-light', {}, ['@on', '@off', '@warm'])
 
 //Using the device capabilities
 device.get('kitchen-light').on()
@@ -694,7 +699,7 @@ When an event is emitted, no matter the value
 ```javascript
 scenario('Pretty colours')
     .when()
-        .event('lockdown').on()
+        .event('colour').on()
     .then((_Scenario, colour) => {
         console.log(`Pretty colour: ${colour}`)
     })

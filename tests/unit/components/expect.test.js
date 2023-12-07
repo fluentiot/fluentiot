@@ -150,7 +150,7 @@ describe('Expect constraints with aliases', () => {
     })
 
     it('contain', () => {
-        expect(fexpect.constraints().expect(['a', 'b', 'c']).contain('a')).toBe(true)
+        expect(fexpect.constraints().expect('a').contain(['a', 'b', 'c'])).toBe(true)
     })
 
     it('equal', () => {

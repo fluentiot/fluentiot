@@ -76,6 +76,7 @@ class DayComponent extends Component {
             wed: 'Wednesday',
             thursday: 'Thursday',
             thu: 'Thursday',
+            thur: 'Thursday',
             friday: 'Friday',
             fri: 'Friday',
             saturday: 'Saturday',

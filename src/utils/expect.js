@@ -143,7 +143,7 @@ class Expect {
      * @returns {boolean} - True if the value contains the expected value; false otherwise.
      */
     _toContain(expected) {
-        const result = this.value.includes(expected)
+        const result = expected.includes(this.value)
         return this.negate ? !result : result
     }
 

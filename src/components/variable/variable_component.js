@@ -73,7 +73,7 @@ class VariableComponent extends Component {
      */
     get(name) {
         if (!this.variables[name]) {
-            logger.error(`Variable "${name}" could not be found`, 'variable')
+            logger.warn(`Variable "${name}" could not be found`, 'variable')
             return null
         }
 

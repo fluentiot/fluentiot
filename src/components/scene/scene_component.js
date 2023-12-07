@@ -9,6 +9,7 @@ const logger = require('./../../utils/logger')
  * @class
  */
 class SceneComponent extends Component {
+    
     /**
      * Constructor
      *

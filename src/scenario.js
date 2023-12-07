@@ -201,10 +201,10 @@ class Scenario {
     /**
      * Assert scenario
      *
-     * @param {*} result - To be passed to the callback
+     * @param {*} ...args - To be passed to the callback
      * @returns {Boolean}
      */
-    assert(result) {
+    assert(...args) {
         //Scenario might not be runnable, runnable is set to false when .test() is used in another scenario
         if (!this.runnable) {
             return false
@@ -228,7 +228,7 @@ class Scenario {
             if (constraintsMet) {
                 logger.info(`Scenario "${this.description}" triggered`, 'scenario')
                 ranCallback = true
-                callbackItem.callback(this, result)
+                callbackItem.callback(this, ...args)
                 if (constraints.length > 0) {
                     executionsWithConstraints++
                 }
