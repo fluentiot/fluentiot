@@ -1,4 +1,4 @@
-const moment = require('moment');
+const dayjs = require('dayjs');
 const logger = require('./../../utils/logger');
 const { AttributeDslMixin } = require('./../_mixins/attribute_dsl');
 
@@ -60,7 +60,7 @@ class Room {
         // Sensor is true, room is occupied
         // Only trigger the occupied if wasn't previous occupied
         if (sensorValue) {
-            this._sensorLastTime = moment();
+            this._sensorLastTime = dayjs();
             if (!this.attribute.get('occupied')) {
                 logger.info(`Room "${this.name}" is now occupied.`, 'room');
                 this.attribute.update('occupied', true);
@@ -94,7 +94,7 @@ class Room {
         }
 
         // Room sensor is false and under the threshold to set the room to vacant
-        const now = moment();
+        const now = dayjs();
         if (now.diff(this._sensorLastTime, 'minutes') < this.attribute.get('thresholdDuration')) {
             return;
         }

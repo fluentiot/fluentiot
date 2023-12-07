@@ -16,7 +16,7 @@
     "homepage": "https://github.com/darrenmoore/fluent-iot",
     "dependencies": {
         "app-root-path": "^3.1.0",
-        "moment": "^2.29.4",
+        "dayjs": "^1.11.10",
         "node-schedule": "^2.1.1"
     },
     "devDependencies": {

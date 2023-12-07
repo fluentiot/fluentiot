@@ -2,7 +2,7 @@
 const schedule = require('node-schedule');
 schedule.scheduleJob = jest.fn();
 
-const moment = require('moment');
+const moment = require('dayjs');
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'));
 jest.mock('./../../../src/utils/logger');
 
@@ -32,15 +32,15 @@ describe('Day parsing and between methods', () => {
     });
 
     it('handles invalid date inputs', () => {
-        expect(day.parseDate('2023-45-01').isValid()).toBe(false); // Invalid day
-        expect(day.parseDate('2023-01-45').isValid()).toBe(false); // Invalid month
-        expect(day.parseDate('2023-01-01T25:00:00').isValid()).toBe(false); // Invalid hour
-        expect(day.parseDate('2023-01-01T12:60:00').isValid()).toBe(false); // Invalid minute
-        expect(day.parseDate('2023-01-01T12:00:60').isValid()).toBe(false); // Invalid second
-        expect(day.parseDate('Not a date').isValid()).toBe(false);
-        expect(day.parseDate('2023').isValid()).toBe(false); // Missing month and day
-        expect(day.parseDate('2023-01').isValid()).toBe(false); // Missing day
-        expect(day.parseDate('5th').isValid()).toBe(false); // Missing month and year
+        expect(day.parseDate('2023-45-01')).toBe(false); // Invalid day
+        expect(day.parseDate('2023-01-45')).toBe(false); // Invalid month
+        expect(day.parseDate('2023-01-01T25:00:00')).toBe(false); // Invalid hour
+        expect(day.parseDate('2023-01-01T12:60:00')).toBe(false); // Invalid minute
+        expect(day.parseDate('2023-01-01T12:00:60')).toBe(false); // Invalid second
+        expect(day.parseDate('Not a date')).toBe(false);
+        expect(day.parseDate('2023')).toBe(false); // Missing month and day
+        expect(day.parseDate('2023-01')).toBe(false); // Missing day
+        expect(day.parseDate('5th')).toBe(false); // Missing month and year
     });
 
     it('does not throw on valid date formats', () => {
@@ -143,6 +143,7 @@ describe('Day constraints for "day is"', () => {
     it('day is today', () => {
         const fullDayName = moment().format('dddd');
         const abbreviatedDayName = moment().format('ddd');
+
         expect(day.constraints().day.is(fullDayName)()).toBe(true);
         expect(day.constraints().day.is(abbreviatedDayName)()).toBe(true);
     });

@@ -2,7 +2,7 @@
 const schedule = require('node-schedule');
 schedule.scheduleJob = jest.fn();
 
-const moment = require('moment');
+const dayjs = require('dayjs');
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'));
 jest.mock('./../../../src/utils/logger');
 
@@ -34,25 +34,25 @@ describe('Time constraints for "between"', () => {
     });
 
     it('between is true when between times', () => {
-        const start = moment().clone().subtract(1, 'minute').format('HH:mm');
-        const end = moment().clone().add(1, 'minute').format('HH:mm');
+        const start = dayjs().clone().subtract(1, 'minute').format('HH:mm');
+        const end = dayjs().clone().add(1, 'minute').format('HH:mm');
         expect(time.constraints().time.between(start, end)()).toBe(true);
     });
 
     it('between is false when out of time', () => {
-        const start = moment().clone().subtract(2, 'minute').format('HH:mm');
-        const end = moment().clone().subtract(1, 'minute').format('HH:mm');
+        const start = dayjs().clone().subtract(2, 'minute').format('HH:mm');
+        const end = dayjs().clone().subtract(1, 'minute').format('HH:mm');
         expect(time.constraints().time.between(start, end)()).toBe(false);
     });
 
     it('between is true when exactly now', () => {
-        const start = moment().format('HH:mm');
-        const end = moment().clone().add(1, 'minute').format('HH:mm');
+        const start = dayjs().format('HH:mm');
+        const end = dayjs().clone().add(1, 'minute').format('HH:mm');
         expect(time.constraints().time.between(start, end)()).toBe(true);
     });
 
     it('between fails if the between start or end date is not valid', () => {
-        const any = moment().format('HH:mm');
+        const any = dayjs().format('HH:mm');
         expect(time.constraints().time.between('zz:aa', any)()).toBe(false);
         expect(time.constraints().time.between(any, 'zz:aa')()).toBe(false);
     });

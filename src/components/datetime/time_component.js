@@ -1,5 +1,12 @@
+const dayjs = require('dayjs');
+const customParseFormat = require('dayjs/plugin/customParseFormat');
+const isBetween = require('dayjs/plugin/isBetween');
+const advancedFormat = require('dayjs/plugin/advancedFormat');
+dayjs.extend(customParseFormat);
+dayjs.extend(isBetween);
+dayjs.extend(advancedFormat);
+
 const schedule = require('node-schedule');
-const moment = require('moment');
 const logger = require('./../../utils/logger');
 const Component = require('./../component');
 
@@ -28,7 +35,7 @@ class TimeComponent extends Component {
         // Schedule an event every minute
         schedule.scheduleJob('*/1 * * * *', () => {
             this.emit('time.minute');
-            this.emit('time', moment().format('HH:mm'));
+            this.emit('time', dayjs().format('HH:mm'));
         });
 
         // Schedule an event every hour
@@ -52,7 +59,7 @@ class TimeComponent extends Component {
         return {
             time: {
                 is: (targetTime) => { 
-                    if (!moment(targetTime, 'HH:mm', true).isValid()) {
+                    if (!dayjs(targetTime, 'HH:mm', true).isValid()) {
                         throw new Error(`Time "${targetTime}" is not in the correct format of HH:mm`);
                     }
                     this.event().on('time', (time) => {
@@ -84,15 +91,15 @@ class TimeComponent extends Component {
             time: {
                 between: (targetStart, targetEnd) => {
                     return () => {
-                        if (!moment(targetStart, 'HH:mm', true).isValid()) {
+                        if (!dayjs(targetStart, 'HH:mm', true).isValid()) {
                             logger.error(`Start date "${targetStart}" is not in the correct format of HH:mm`,'datetime');
                             return false;
                         }
-                        if (!moment(targetEnd, 'HH:mm', true).isValid()) {
+                        if (!dayjs(targetEnd, 'HH:mm', true).isValid()) {
                             logger.error(`Start date "${targetStart}" is not in the correct format of HH:mm`,'datetime');
                             return false;
                         }
-                        const currentTime = moment().format('HH:mm');
+                        const currentTime = dayjs().format('HH:mm');
                         return currentTime >= targetStart && currentTime <= targetEnd;
                     }
                 }

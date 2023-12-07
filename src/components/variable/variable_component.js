@@ -1,4 +1,4 @@
-const moment = require('moment');
+const dayjs = require('dayjs');
 const logger = require('./../../utils/logger');
 const Component = require('./../component');
 const Expect = require('./../../utils/expect');
@@ -94,8 +94,8 @@ class VariableComponent extends Component {
         const variable = this.variables[name];
 
         if (variable && variable.options && variable.options.expiry) {
-            const expiryMoment = moment(variable.options.expiry);
-            const currentMoment = moment();
+            const expiryMoment = dayjs(variable.options.expiry);
+            const currentMoment = dayjs();
             return expiryMoment.isBefore(currentMoment);
         }
         
@@ -107,7 +107,7 @@ class VariableComponent extends Component {
      *
      * @private
      * @param {string} expiry - The expiry string (e.g., "1 hour").
-     * @returns {moment.Moment|false} - Returns a moment object if parsing is successful, false otherwise.
+     * @returns {dayjs.dayjs|false} - Returns a dayjs object if parsing is successful, false otherwise.
      */
     _parseExpiry(expiry) {
         const [duration, unit] = expiry.split(' ');
@@ -116,7 +116,7 @@ class VariableComponent extends Component {
             return false; // Return false if parsing fails
         }
     
-        return moment().add(parseInt(duration), unit);
+        return dayjs().add(parseInt(duration), unit);
     }
         
     /**

@@ -1,4 +1,3 @@
-
 const Component = require('./../component');
 const Expect = require('./../../utils/expect');
 
