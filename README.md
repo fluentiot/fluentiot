@@ -220,7 +220,7 @@ scenario('it will output this scenario name')
 when()
     .empty()
     .then((Scenario) => {
-        console.log(`Scenario "${Scenario.name}" triggered`)
+        console.log(`Scenario "${Scenario.description}" triggered`)
     })
     .assert()
 
@@ -245,12 +245,14 @@ Day currently has no triggers.
 ```javascript
 scenario('Only on Saturday at 7am')
     .when()
-    .time.is('07:00')
+        .time.is('07:00')
     .constraint()
-    .day.is('Saturday')
-    .then((Scenario) => {
-        console.log(Scenario.name)
-    })
+        .day.is('Saturday')
+        .then(() => {
+            console.log('It is 7am Saturday ')
+        })
+    .else()
+        .then(() => { console.log('It is 7am but not Saturday'); })
     .assert()
 ```
 
@@ -260,37 +262,42 @@ scenario('Only on Saturday at 7am')
 
 Supports a single argument or multiple arguments for multiple days.
 
-Supported arguments: `weekend, weekday, monday, mon, tuesday, tue, wednesday, wed, thursday, thur, friday, fri, saturday, sat, sunday, sun`.
+Supported arguments: `weekend, weekday, monday, mon, tuesday, tue, wednesday, wed, thursday, thu, friday, fri, saturday, sat, sunday, sun`.
 
 ```javascript
 scenario('Only on a Saturday')
     .when()
-    .empty()
+        .empty()
     .constraint()
-    .day.is('Saturday')
-    .then((Scenario) => {
-        console.log(Scenario.name)
-    })
+        .day.is('Ssaturday')
+        .then((Scenario) => {
+            console.log(Scenario.description)
+        })
     .assert()
 
 scenario('Saturday or Monday')
     .when()
-    .empty()
+        .empty()
     .constraint()
-    .day.is(['Saturday', 'mon'])
-    .then((Scenario) => {
-        console.log(Scenario.name)
-    })
+        .day.is(['Saturday', 'mon'])
+        .then((Scenario) => {
+            console.log(Scenario.description)
+        })
     .assert()
 
-scenario('Only on a Weekend')
+scenario('Weekends or weekdays')
     .when()
-    .empty()
+        .empty()
     .constraint()
-    .day.is('weekend')
-    .then((Scenario) => {
-        console.log(Scenario.name)
-    })
+        .day.is('weekend')
+        .then(() => {
+            console.log('It is the weekend')
+        })
+    .constraint()
+        .day.is('weekday')
+        .then(() => {
+            console.log('It is weekday')
+        })
     .assert()
 ```
 
@@ -301,32 +308,32 @@ Checking if the current date is between two dates.
 ```javascript
 scenario('First week of May')
     .when()
-    .empty()
+        .empty()
     .constraint()
-    .day.between('1st May', '7th May')
-    .then((Scenario) => {
-        console.log(Scenario.name)
-    })
+        .day.between('1st May', '7th May')
+        .then((Scenario) => {
+            console.log(Scenario.description)
+        })
     .assert()
 
 scenario('Christmas lights!')
     .when()
-    .empty()
+        .empty()
     .constraint()
-    .day.between('Dec 20', 'Dec 31')
-    .then((Scenario) => {
-        console.log(Scenario.name)
-    })
+        .day.between('Dec 20', 'Dec 31')
+        .then((Scenario) => {
+            console.log(Scenario.description)
+        })
     .assert()
 
 scenario('Only May 2024')
     .when()
-    .empty()
+        .empty()
     .constraint()
-    .day.between('2024-05-01', '2024-05-31')
-    .then((Scenario) => {
-        console.log(Scenario.name)
-    })
+        .day.between('2024-05-01', '2024-05-31')
+        .then((Scenario) => {
+            console.log(Scenario.description)
+        })
     .assert()
 ```
 
@@ -358,9 +365,9 @@ If the time is matching, must be in `HH:mm` format.
 ```javascript
 scenario('Time is 7am')
     .when()
-    .time.is('07:00')
+        .time.is('07:00')
     .then((Scenario) => {
-        console.log(Scenario.name)
+        console.log(Scenario.description)
     })
 ```
 
@@ -379,23 +386,23 @@ Supports seconds (`sec, second, seconds`), minutes (`min, minute, minutes`) and 
 ```javascript
 scenario('Triggers every second')
     .when()
-    .time.every('1 second')
+        .time.every('1 second')
     .then((Scenario) => {
-        console.log(Scenario.name)
+        console.log(Scenario.description)
     })
 
 scenario('Triggers 2 minutes')
     .when()
-    .time.every('2 min')
+        .time.every('2 min')
     .then((Scenario) => {
-        console.log(Scenario.name)
+        console.log(Scenario.description)
     })
 
 scenario('Triggers 12 hours')
     .when()
-    .time.every('12 hr')
+        .time.every('12 hr')
     .then((Scenario) => {
-        console.log(Scenario.name)
+        console.log(Scenario.description)
     })
 ```
 
@@ -408,22 +415,22 @@ Checking if the scenario was triggered between two times.
 ```javascript
 scenario('Between times')
     .when()
-    .empty()
+        .empty()
     .constraint()
-    .time.between('00:00', '12:00')
-    .then(() => {
-        console.log('Good Morning')
-    })
+        .time.between('00:00', '12:00')
+        .then(() => {
+            console.log('Good Morning')
+        })
     .constraint()
-    .time.between('12:01', '18:00')
-    .then(() => {
-        console.log('Good Afternoon')
-    })
+        .time.between('12:01', '18:00')
+        .then(() => {
+            console.log('Good Afternoon')
+        })
     .constraint()
-    .time.between('18:01', '23:59')
-    .then(() => {
-        console.log('Good Evening')
-    })
+        .time.between('18:01', '23:59')
+        .then(() => {
+            console.log('Good Evening')
+        })
     .assert()
 ```
 
@@ -439,30 +446,30 @@ scenario('Between times')
 Example using the `event` component directly.
 
 ```javascript
-scenario('At 6pm every day').when()
-event('time')
-    .on('18:00')
+scenario('At 6pm every day')
+    .when()
+        event('time').on('18:00')
     .then(() => {
         console.log('It is 6pm')
     })
 
-scenario('Runs every hour').when()
-event('time.hour')
-    .on()
+scenario('Runs every hour')
+    .when()
+        .event('time.hour').on()
     .then(() => {
         console.log('It is on the hour')
     })
 
-scenario('Runs every minute').when()
-event('time.minute')
-    .on()
+scenario('Runs every minute')
+    .when()
+        .event('time.minute').on()
     .then(() => {
         console.log('On the minute')
     })
 
-scenario('Runs every second').when()
-event('time.second')
-    .on()
+scenario('Runs every second')
+    .when()
+        .event('time.second').on()
     .then(() => {
         console.log('Every second')
     })
@@ -563,9 +570,7 @@ device.add('office-switch', { state: false })
 
 scenario('Detect when a switch is turned on')
     .when()
-    .device('office-switch')
-    .attribute('state')
-    .isTruthy()
+        .device('office-switch').attribute('state').isTruthy()
     .then(() => {
         console.log('Office switch is now on')
     })
@@ -650,7 +655,7 @@ See official [emit documentation](https://nodejs.org/api/events.html#emitteremit
 ```javascript
 scenario('Lock down when receiving lockdown event')
     .when()
-    .event.on('lockdown', true)
+        .event.on('lockdown', true)
     .then(() => {
         console.log('Locking down')
     })
@@ -677,8 +682,7 @@ When an event is emitted with a specific value.
 ```javascript
 scenario('Lock down when event is detected')
     .when()
-    .event('lockdown')
-    .is(true)
+        .event('lockdown').is(true)
     .then(() => {
         console.log('Lock down!')
     })
@@ -692,8 +696,7 @@ When an event is emitted, no matter the value
 ```javascript
 scenario('Pretty colours')
     .when()
-    .event('lockdown')
-    .on()
+        .event('lockdown').on()
     .then((_Scenario, colour) => {
         console.log(`Pretty colour: ${colour}`)
     })
@@ -788,9 +791,7 @@ device.add('office-pir')
 //Listening to PIR updates
 scenario('Office PIR sensor with movement and update presence')
     .when()
-    .device('office-pir')
-    .attribute('sensor')
-    .is(true)
+        .device('office-pir').attribute('sensor').is(true)
     .then(() => {
         room.get('office').updatePresence(true)
         console.log(room.get('office').isOccupied()) //true
@@ -799,9 +800,7 @@ scenario('Office PIR sensor with movement and update presence')
 
 scenario('Office PIR sensor with no movement')
     .when()
-    .device('office-pir')
-    .attribute('sensor')
-    .is(false)
+        .device('office-pir').attribute('sensor').is(false)
     .then(() => {
         room.get('office').updatePresence(false)
         console.log(room.get('office').isOccupied()) //true
@@ -813,16 +812,14 @@ scenario('Office PIR sensor with no movement')
 //Listening to occupancy updated
 scenario('Office lights on when occupied')
     .when()
-    .room('office')
-    .is.occupied()
+        .room('office').is.occupied()
     .then(() => {
         console.log('Room is occupied, turn on lights etc...')
     })
 
 scenario('Office lights off when vacant')
     .when()
-    .room('office')
-    .is.vacant()
+        .room('office').is.vacant()
     .then(() => {
         console.log('Room is vacant, turn off lights etc...')
     })
@@ -843,8 +840,7 @@ When the room is occupied.
 ```javascript
 scenario('Office lights on when occupied')
     .when()
-    .room('office')
-    .is.occupied()
+        .room('office').is.occupied()
     .then(() => {
         console.log('Room is occupied, turn on lights etc...')
     })
@@ -857,8 +853,7 @@ When the room has been set to vacant.
 ```javascript
 scenario('Office lights off when vacant')
     .when()
-    .room('office')
-    .is.vacant()
+        .room('office').is.vacant()
     .then(() => {
         console.log('Room is vacant, turn off lights etc...')
     })
@@ -888,7 +883,7 @@ scene.add('cool', () => {
 
 scenario('Cool scene')
     .when()
-    .empty()
+        .empty()
     .then(() => {
         scene.get('cool').run()
     })
@@ -992,8 +987,7 @@ If a variable is updated to any value.
 ```javascript
 scenario('Variable was updated')
     .when()
-    .variable('security')
-    .updated()
+        .variable('security').updated()
     .then(() => {
         console.log(`Variable is: ${variable.get('security')}`)
     })
@@ -1008,26 +1002,22 @@ Variable constraints are an extension of the [Expect API](#expect-api).
 ```javascript
 scenario('Output the level based on variable value updates')
     .when()
-    .variable('level')
-    .updated()
+        .variable('level').updated()
     .constraint()
-    .variable('level')
-    .is(1)
-    .then(() => {
-        console.log('Level 1')
-    })
+        .variable('level').is(1)
+        .then(() => {
+            console.log('Level 1')
+        })
     .constraint()
-    .variable('level')
-    .contain([2, 3, 4])
-    .then(() => {
-        console.log('Level 2, 3 or 4')
-    })
+        .variable('level').contain([2, 3, 4])
+        .then(() => {
+            console.log('Level 2, 3 or 4')
+        })
     .constraint()
-    .variable('level')
-    .isGreaterThan(4)
-    .then(() => {
-        console.log(`Level is ${variable.get('level')}`)
-    })
+        .variable('level').isGreaterThan(4)
+        .then(() => {
+            console.log(`Level is ${variable.get('level')}`)
+        })
 
 variable.set('level', 1)
 variable.set('level', 2)
@@ -1050,12 +1040,11 @@ Compare values.
 
 ```javascript
 scenario()
-when().empty()
-constraint()
-    .device('pir')
-    .attribute('sensor')
-    .is('active')
-    .then(() => {})
+    .when()
+        .empty()
+    .constraint()
+        .device('pir').attribute('sensor').is('active')
+        .then(() => {})
 ```
 
 #### `isDefined(value)`
@@ -1064,12 +1053,11 @@ If the value is defined
 
 ```javascript
 scenario()
-when().empty()
-constraint()
-    .device('pir')
-    .attribute('sensor')
-    .isDefined()
-    .then(() => {})
+    .when()
+        .empty()
+    .constraint()
+        .device('pir').attribute('sensor').isDefined()
+        .then(() => {})
 ```
 
 #### `isUndefined(value)`
@@ -1078,12 +1066,11 @@ If the value is undefined
 
 ```javascript
 scenario()
-when().empty()
-constraint()
-    .device('pir')
-    .attribute('sensor')
-    .isUndefined()
-    .then(() => {})
+    .when()
+        .empty()
+    .constraint()
+        .device('pir').attribute('sensor').isUndefined()
+        .then(() => {})
 ```
 
 #### `isFalsy(value)`
@@ -1092,12 +1079,11 @@ If the value is a value of falsy
 
 ```javascript
 scenario()
-when().empty()
-constraint()
-    .device('pir')
-    .attribute('sensor')
-    .isFalsy()
-    .then(() => {})
+    .when()
+        .empty()
+    .constraint()
+        .device('pir').attribute('sensor').isFalsy()
+        .then(() => {})
 ```
 
 #### `isTruthy(value)`
@@ -1106,12 +1092,11 @@ If the value is a value of truthy
 
 ```javascript
 scenario()
-when().empty()
-constraint()
-    .device('pir')
-    .attribute('sensor')
-    .isTruthy()
-    .then(() => {})
+    .when()
+        .empty()
+    .constraint()
+        .device('pir').attribute('sensor').isTruthy()
+        .then(() => {})
 ```
 
 #### `isNull(value)`
@@ -1120,12 +1105,11 @@ If the value is null
 
 ```javascript
 scenario()
-when().empty()
-constraint()
-    .device('pir')
-    .attribute('sensor')
-    .isNull()
-    .then(() => {})
+    .when()
+        .empty()
+    .constraint()
+        .device('pir').attribute('sensor').isNull()
+        .then(() => {})
 ```
 
 #### `isNaN(value)`
@@ -1134,12 +1118,11 @@ If the value is NaN
 
 ```javascript
 scenario()
-when().empty()
-constraint()
-    .device('pir')
-    .attribute('sensor')
-    .isNaN()
-    .then(() => {})
+    .when()
+        .empty()
+    .constraint()
+        .device('pir').attribute('sensor').isNaN()
+        .then(() => {})
 ```
 
 #### `contain(value)`
@@ -1148,12 +1131,11 @@ If the value is contains a key in an array
 
 ```javascript
 scenario()
-when().empty()
-constraint()
-    .device('led')
-    .attribute('colour')
-    .contain(['red', 'green', 'blue'])
-    .then(() => {})
+    .when()
+        .empty()
+    .constraint()
+        .device('led').attribute('colour').contain(['red', 'green', 'blue'])
+        .then(() => {})
 ```
 
 #### `equal(value)`
@@ -1175,12 +1157,11 @@ Check that a string matches a regular expression
 
 ```javascript
 scenario()
-when().empty()
-constraint()
-    .device('switch')
-    .attribute('colour')
-    .contain()
-    .then(() => {})
+    when()
+        .empty()
+    constraint()
+        .device('switch').attribute('colour').contain()
+        .then(() => {})
 ```
 
 ## License
