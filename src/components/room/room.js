@@ -19,7 +19,6 @@ class Room {
         this.parent = parent
         this.name = name
 
-
         //Mixins
         Object.assign(this, AttributeDslMixin(this, 'room'))
 
@@ -29,8 +28,7 @@ class Room {
             occupiedStartTime: null,
             thresholdDuration: 15, // Default threshold duration in minutes
         }
-        this.attribute.setup(this, defaultAttributes, attributes);
-
+        this.attribute.setup(this, defaultAttributes, attributes)
 
         // Last sensor time
         // For example each time a PIR sensor detects someone this variable will get updated
@@ -45,10 +43,7 @@ class Room {
         }
 
         // Set up the one-minute timer for checkOccupied
-        this.checkOccupiedTimer = setInterval(
-            () => this._checkIfVacant(),
-            60 * 1000
-        ) // Every 1 minute
+        this.checkOccupiedTimer = setInterval(() => this._checkIfVacant(), 60 * 1000) // Every 1 minute
     }
 
     /**
@@ -95,10 +90,7 @@ class Room {
 
         // Room sensor is false and under the threshold to set the room to vacant
         const now = dayjs()
-        if (
-            now.diff(this._sensorLastTime, 'minutes') <
-            this.attribute.get('thresholdDuration')
-        ) {
+        if (now.diff(this._sensorLastTime, 'minutes') < this.attribute.get('thresholdDuration')) {
             return
         }
 

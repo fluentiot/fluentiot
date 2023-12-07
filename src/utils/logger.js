@@ -52,17 +52,13 @@ class Logger {
      */
     _getLogLevel(componentName) {
         const configLevels = this.config.levels
-        const type = configLevels[componentName]
-            ? configLevels[componentName]
-            : configLevels.default
+        const type = configLevels[componentName] ? configLevels[componentName] : configLevels.default
 
         //The defined log type in the config file was not correct
         if (!this.types[type]) {
             const timestamp = this._getCurrentTimestamp()
             const coloredType = this.types.error.color + 'ERROR' + '\x1b[0m'
-            console.log(
-                `[${timestamp}] [${coloredType}] Your logging level for ${type} is not correct`
-            )
+            console.log(`[${timestamp}] [${coloredType}] Your logging level for ${type} is not correct`)
             return this.types.debug.level
         }
 
@@ -79,21 +75,15 @@ class Logger {
      */
     _log(type, message, component = 'default') {
         const timestamp = this._getCurrentTimestamp()
-        const coloredType =
-            this.types[type].color + type.toUpperCase() + '\x1b[0m' // Reset color
+        const coloredType = this.types[type].color + type.toUpperCase() + '\x1b[0m' // Reset color
         const logLevel = this._getLogLevel(component)
 
         if (this.types[type].level <= logLevel) {
-            const formattedMessage =
-                typeof message === 'object' ? JSON.stringify(message) : message
+            const formattedMessage = typeof message === 'object' ? JSON.stringify(message) : message
             if (component === 'default') {
-                console.log(
-                    `[${timestamp}] [${coloredType}] ${formattedMessage}`
-                )
+                console.log(`[${timestamp}] [${coloredType}] ${formattedMessage}`)
             } else {
-                console.log(
-                    `[${timestamp}] [${coloredType}] [${component}] ${formattedMessage}`
-                )
+                console.log(`[${timestamp}] [${coloredType}] [${component}] ${formattedMessage}`)
             }
         }
     }

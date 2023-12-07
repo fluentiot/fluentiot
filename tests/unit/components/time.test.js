@@ -13,21 +13,9 @@ describe('Time setup', () => {
     it('has setup scheduler', () => {
         new TimeComponent(Fluent)
         expect(schedule.scheduleJob).toHaveBeenCalledTimes(3)
-        expect(schedule.scheduleJob).toHaveBeenNthCalledWith(
-            1,
-            '*/1 * * * *',
-            expect.anything()
-        )
-        expect(schedule.scheduleJob).toHaveBeenNthCalledWith(
-            2,
-            '0 * * * *',
-            expect.anything()
-        )
-        expect(schedule.scheduleJob).toHaveBeenNthCalledWith(
-            3,
-            '* * * * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenNthCalledWith(1, '*/1 * * * *', expect.anything())
+        expect(schedule.scheduleJob).toHaveBeenNthCalledWith(2, '0 * * * *', expect.anything())
+        expect(schedule.scheduleJob).toHaveBeenNthCalledWith(3, '* * * * * *', expect.anything())
     })
 })
 
@@ -100,93 +88,55 @@ describe('Time triggers', () => {
 
     it('every second and different seconds', () => {
         time.triggers(Scenario).time.every('second')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '*/1 * * * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('*/1 * * * * *', expect.anything())
 
         time.triggers(Scenario).time.every('1 second')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '*/1 * * * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('*/1 * * * * *', expect.anything())
 
         time.triggers(Scenario).time.every('10 seconds')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '*/10 * * * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('*/10 * * * * *', expect.anything())
 
         time.triggers(Scenario).time.every('60 sec')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '*/60 * * * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('*/60 * * * * *', expect.anything())
 
         expect(Scenario.assert).toHaveBeenCalledTimes(4)
     })
 
     it('every minute and different minutes', () => {
         time.triggers(Scenario).time.every('minute')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '0 */1 * * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('0 */1 * * * *', expect.anything())
 
         time.triggers(Scenario).time.every('1 minute')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '0 */1 * * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('0 */1 * * * *', expect.anything())
 
         time.triggers(Scenario).time.every('10 minutes')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '0 */10 * * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('0 */10 * * * *', expect.anything())
 
         time.triggers(Scenario).time.every('60 mins')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '0 */60 * * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('0 */60 * * * *', expect.anything())
 
         expect(Scenario.assert).toHaveBeenCalledTimes(4)
     })
 
     it('every hour and different hours', () => {
         time.triggers(Scenario).time.every('hour')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '0 0 */1 * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('0 0 */1 * * *', expect.anything())
 
         time.triggers(Scenario).time.every('1 hr')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '0 0 */1 * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('0 0 */1 * * *', expect.anything())
 
         time.triggers(Scenario).time.every('10 hour')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '0 0 */10 * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('0 0 */10 * * *', expect.anything())
 
         time.triggers(Scenario).time.every('60 hours')
-        expect(schedule.scheduleJob).toHaveBeenCalledWith(
-            '0 0 */60 * * *',
-            expect.anything()
-        )
+        expect(schedule.scheduleJob).toHaveBeenCalledWith('0 0 */60 * * *', expect.anything())
 
         expect(Scenario.assert).toHaveBeenCalledTimes(4)
     })
 
     it('throws an error if the time is no valid', () => {
         expect(() => time.triggers(Scenario).time.every('1hou')).toThrow(Error)
-        expect(() => time.triggers(Scenario).time.every('1 minz')).toThrow(
-            Error
-        )
+        expect(() => time.triggers(Scenario).time.every('1 minz')).toThrow(Error)
         expect(() => time.triggers(Scenario).time.every('1')).toThrow(Error)
         expect(() => time.triggers(Scenario).time.every('minz')).toThrow(Error)
 

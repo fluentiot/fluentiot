@@ -44,10 +44,7 @@ class Config {
      */
     getConfigFilePath() {
         // Check if fluent.config.js exists in the project root
-        const projectConfigPath = path.join(
-            this.getProjectRoot(),
-            'fluent.config.js'
-        )
+        const projectConfigPath = path.join(this.getProjectRoot(), 'fluent.config.js')
         if (fs.existsSync(projectConfigPath)) {
             return projectConfigPath
         }

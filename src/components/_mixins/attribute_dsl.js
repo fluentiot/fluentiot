@@ -5,15 +5,16 @@ const AttributeDslMixin = (parent, name) => {
         attribute: {
             setup: (parent, defaultAttributes, definedAttributes) => {
                 if (!parent.attributes) {
-                    parent.attributes = {};
+                    parent.attributes = {}
                 }
 
-                const merged = definedAttributes !== null && typeof definedAttributes === 'object'
-                    ? { ...defaultAttributes, ...definedAttributes }
-                    : { ...defaultAttributes };
+                const merged =
+                    definedAttributes !== null && typeof definedAttributes === 'object'
+                        ? { ...defaultAttributes, ...definedAttributes }
+                        : { ...defaultAttributes }
 
-                for(const key in merged) {
-                    parent.attribute.set(key, merged[key]);
+                for (const key in merged) {
+                    parent.attribute.set(key, merged[key])
                 }
             },
             get: (attributeName) => {
@@ -28,10 +29,7 @@ const AttributeDslMixin = (parent, name) => {
             },
             update: (attributeName, attributeValue) => {
                 // Do not allow double setting
-                if (
-                    parent.attributes[attributeName] &&
-                    parent.attributes[attributeName].value === attributeValue
-                ) {
+                if (parent.attributes[attributeName] && parent.attributes[attributeName].value === attributeValue) {
                     return
                 }
 
@@ -43,10 +41,7 @@ const AttributeDslMixin = (parent, name) => {
                 //Set it
                 parent.attributes[attributeName].value = attributeValue
 
-                logger.info(
-                    `Attribute, set "${attributeName}" to "${attributeValue}"`,
-                    parent.name
-                )
+                logger.info(`Attribute, set "${attributeName}" to "${attributeValue}"`, parent.name)
                 parent.parent.emit(`${name}.${parent.name}.attribute`, {
                     name: attributeName,
                     value: attributeValue,

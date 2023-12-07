@@ -133,10 +133,7 @@ class VariableComponent extends Component {
                 return {
                     is: (variableValue) => {
                         this.event().on('variable', (changedData) => {
-                            if (
-                                changedData.name === variableName &&
-                                changedData.value === variableValue
-                            ) {
+                            if (changedData.name === variableName && changedData.value === variableValue) {
                                 scope.assert()
                             }
                         })
@@ -164,10 +161,7 @@ class VariableComponent extends Component {
         return {
             variable: (variableName) => {
                 if (typeof variableName !== 'string') {
-                    logger.error(
-                        `Variable "${variableName}" was not passed as a string`,
-                        'variable'
-                    )
+                    logger.error(`Variable "${variableName}" was not passed as a string`, 'variable')
                     return false
                 }
 

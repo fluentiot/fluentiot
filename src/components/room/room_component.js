@@ -64,31 +64,19 @@ class RoomComponent extends Component {
 
                 return {
                     isOccupied: () => {
-                        this.event().on(
-                            `room.${room.name}.attribute`,
-                            (changedData) => {
-                                if (
-                                    changedData.name === 'occupied' &&
-                                    changedData.value === true
-                                ) {
-                                    scope.assert()
-                                }
+                        this.event().on(`room.${room.name}.attribute`, (changedData) => {
+                            if (changedData.name === 'occupied' && changedData.value === true) {
+                                scope.assert()
                             }
-                        )
+                        })
                         return scope
                     },
                     isVacant: () => {
-                        this.event().on(
-                            `room.${room.name}.attribute`,
-                            (changedData) => {
-                                if (
-                                    changedData.name === 'occupied' &&
-                                    changedData.value === false
-                                ) {
-                                    scope.assert()
-                                }
+                        this.event().on(`room.${room.name}.attribute`, (changedData) => {
+                            if (changedData.name === 'occupied' && changedData.value === false) {
+                                scope.assert()
                             }
-                        )
+                        })
                         return scope
                     },
                 }

@@ -100,10 +100,7 @@ describe('Creating basic scenarios', () => {
     it('fails to run if the scenario is not runnable', () => {
         const mockCallback = jest.fn()
 
-        const scenario = new Scenario(Fluent, 'Foobar')
-            .when()
-            .empty()
-            .then(mockCallback)
+        const scenario = new Scenario(Fluent, 'Foobar').when().empty().then(mockCallback)
 
         scenario.runnable = false
         const result = scenario.assert()
@@ -114,20 +111,14 @@ describe('Creating basic scenarios', () => {
 
     it('gets triggered with assert and parameters are passed', () => {
         const mockCallback = jest.fn()
-        const scenario = new Scenario(Fluent, 'Foobar')
-            .when()
-            .empty()
-            .then(mockCallback)
+        const scenario = new Scenario(Fluent, 'Foobar').when().empty().then(mockCallback)
         scenario.assert('foobar result')
         expect(mockCallback).toHaveBeenCalledWith(scenario, 'foobar result')
     })
 
     it('gets triggered and the callback receives scenario and the assert object', () => {
         const mockCallback = jest.fn()
-        const scenario = new Scenario(Fluent, 'Foobar')
-            .when()
-            .empty()
-            .then(mockCallback)
+        const scenario = new Scenario(Fluent, 'Foobar').when().empty().then(mockCallback)
         scenario.assert({ a: 'b' })
         expect(mockCallback).toHaveBeenCalledWith(scenario, { a: 'b' })
     })
@@ -148,9 +139,7 @@ describe('Creating basic scenarios', () => {
     })
 
     it('it throws if the component is not found', () => {
-        expect(() => new Scenario().when().empty().constraint().bar()).toThrow(
-            Error
-        )
+        expect(() => new Scenario().when().empty().constraint().bar()).toThrow(Error)
     })
 })
 
@@ -175,13 +164,7 @@ describe('Constraints', () => {
     it('constraints are never called', () => {
         const mockCallback = jest.fn()
 
-        new Scenario(Fluent, 'Foobar')
-            .when()
-            .empty()
-            .constraint()
-            .foobar()
-            .isTrue(true)
-            .then(mockCallback)
+        new Scenario(Fluent, 'Foobar').when().empty().constraint().foobar().isTrue(true).then(mockCallback)
 
         expect(mockCallback.mock.calls).toHaveLength(0)
     })
@@ -359,11 +342,7 @@ describe('Triggers', () => {
     it('will not run if the when() is not triggered', () => {
         const mockCallback = jest.fn()
 
-        new Scenario(Fluent, 'Foobar')
-            .when()
-            .foobar()
-            .onEvent('hey')
-            .then(mockCallback)
+        new Scenario(Fluent, 'Foobar').when().foobar().onEvent('hey').then(mockCallback)
 
         expect(mockCallback.mock.calls).toHaveLength(0)
     })
@@ -371,11 +350,7 @@ describe('Triggers', () => {
     it('will trigger if the when() is triggered', () => {
         const mockCallback = jest.fn()
 
-        new Scenario(Fluent, 'Foobar')
-            .when()
-            .foobar()
-            .onEvent('hey')
-            .then(mockCallback)
+        new Scenario(Fluent, 'Foobar').when().foobar().onEvent('hey').then(mockCallback)
 
         event.emit('hey')
 
@@ -402,13 +377,7 @@ describe('Triggers', () => {
     it('will handle two triggers for two different events acting as an OR', () => {
         const mockCallback = jest.fn()
 
-        new Scenario(Fluent, 'Foobar')
-            .when()
-            .foobar()
-            .onEvent('foo')
-            .foobar()
-            .onEvent('bar')
-            .then(mockCallback)
+        new Scenario(Fluent, 'Foobar').when().foobar().onEvent('foo').foobar().onEvent('bar').then(mockCallback)
 
         event.emit('foo') //Assert
         event.emit('bar') //Assert
@@ -420,11 +389,7 @@ describe('Triggers', () => {
     test('will put the scenario into test mode in the DSL', () => {
         const mockCallback = jest.fn()
 
-        const scenario = new Scenario(Fluent, 'Foobar')
-            .when()
-            .empty()
-            .then(mockCallback)
-            .test()
+        const scenario = new Scenario(Fluent, 'Foobar').when().empty().then(mockCallback).test()
 
         expect(scenario.testMode).toBe(true)
     })

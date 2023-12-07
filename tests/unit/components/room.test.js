@@ -61,9 +61,7 @@ describe('Room occupancy', () => {
     it('default attributes are setup', () => {
         room.add('office room')
         expect(room.get('office room').attribute.get('occupied')).toBe(false)
-        expect(room.get('office room').attribute.get('thresholdDuration')).toBe(
-            15
-        )
+        expect(room.get('office room').attribute.get('thresholdDuration')).toBe(15)
         expect(room.get('office room').isOccupied()).toBe(false)
     })
 
@@ -75,9 +73,7 @@ describe('Room occupancy', () => {
         })
         expect(room.get('office room').attribute.get('occupied')).toBe(true)
         expect(room.get('office room').attribute.get('foobar')).toBe(true)
-        expect(room.get('office room').attribute.get('thresholdDuration')).toBe(
-            20
-        )
+        expect(room.get('office room').attribute.get('thresholdDuration')).toBe(20)
     })
 
     it('handles get and set attributes', () => {
@@ -144,9 +140,7 @@ describe('Room triggers', () => {
     })
 
     it('throws an error if the room does not exist', () => {
-        expect(() =>
-            room.triggers(Scenario).room('foobar').isOccupied()
-        ).toThrow(Error)
+        expect(() => room.triggers(Scenario).room('foobar').isOccupied()).toThrow(Error)
     })
 
     it('triggers when a room is vacant', () => {

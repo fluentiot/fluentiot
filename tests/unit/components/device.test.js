@@ -175,9 +175,7 @@ describe('Device capabilities', () => {
     })
 
     it('throws an error if defining a callback when using a reference', () => {
-        expect(() =>
-            officeSwitch.capability.add('@switchOff', () => {})
-        ).toThrow(Error)
+        expect(() => officeSwitch.capability.add('@switchOff', () => {})).toThrow(Error)
     })
 
     it('throws an error if referenced @ capability has already been added', () => {
@@ -186,9 +184,7 @@ describe('Device capabilities', () => {
     })
 
     it('throws an error if referenced @ does not exist', () => {
-        expect(() => officeSwitch.capability.add('@doesNotExist')).toThrow(
-            Error
-        )
+        expect(() => officeSwitch.capability.add('@doesNotExist')).toThrow(Error)
     })
 
     it('can create a new device with capabilities', () => {
@@ -197,15 +193,11 @@ describe('Device capabilities', () => {
     })
 
     it('will throw an error when setting up a device with a capability that does not exist', () => {
-        expect(() =>
-            device.add('living room light', {}, ['@doesNotExist'])
-        ).toThrow(Error)
+        expect(() => device.add('living room light', {}, ['@doesNotExist'])).toThrow(Error)
     })
 
     it('will throw an error if passed capability is not a reference', () => {
-        expect(() =>
-            device.add('living room light', {}, ['notReference'])
-        ).toThrow(Error)
+        expect(() => device.add('living room light', {}, ['notReference'])).toThrow(Error)
     })
 
     it('capability can be executed and returns a success or failure', () => {
@@ -234,13 +226,7 @@ describe('Device triggers', () => {
     })
 
     it('throws error if device is not found', () => {
-        expect(() =>
-            device
-                .triggers(Scenario)
-                .device('unknownDevice')
-                .attribute('foo')
-                .is(true)
-        ).toThrow()
+        expect(() => device.triggers(Scenario).device('unknownDevice').attribute('foo').is(true)).toThrow()
     })
 
     it('it triggers when an attribute is updated to true', () => {

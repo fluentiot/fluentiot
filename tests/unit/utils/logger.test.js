@@ -5,9 +5,7 @@ beforeEach(() => {})
 describe('Logger basic methods and setup', () => {
     it('is correctly setup', () => {
         const expected = ['log', 'info', 'warn', 'error', 'debug']
-        expect(Object.keys(logger.types)).toEqual(
-            expect.arrayContaining(expected)
-        )
+        expect(Object.keys(logger.types)).toEqual(expect.arrayContaining(expected))
 
         expected.forEach((method) => {
             expect(typeof logger[method]).toBe('function')

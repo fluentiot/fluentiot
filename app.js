@@ -1,12 +1,4 @@
-const {
-    Fluent,
-    scenario,
-    event,
-    variable,
-    device,
-    room,
-    capability,
-} = require('./fluent-iot.js')
+const { Fluent, scenario, event, variable, device, room, capability } = require('./fluent-iot.js')
 
 //--------------------------------
 

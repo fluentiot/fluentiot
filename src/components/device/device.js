@@ -26,7 +26,7 @@ class Device {
         Object.assign(this, AttributeDslMixin(this, 'device'))
 
         //Attributes
-        this.attribute.setup(this, {}, attributes);
+        this.attribute.setup(this, {}, attributes)
 
         // Abstracting capability method so to reflect similar DSL in system
         // Instead of device.capability().add() => device.capability.add()
@@ -35,9 +35,7 @@ class Device {
         // Add in capabilities
         for (let ii = 0; ii < capabilities.length; ii++) {
             if (!capabilities[ii].startsWith('@')) {
-                throw new Error(
-                    `Capabilities must be passed as a reference (e.g. @switchOn)`
-                )
+                throw new Error(`Capabilities must be passed as a reference (e.g. @switchOn)`)
             }
             this.capability.add(capabilities[ii])
         }
@@ -54,9 +52,7 @@ class Device {
                 if (typeof method === 'object') {
                     // Passed with an existing capability object
                     if (!method.callback || !method.name) {
-                        throw new Error(
-                            `Invalid capability type, missing callback and name parameters`
-                        )
+                        throw new Error(`Invalid capability type, missing callback and name parameters`)
                     }
 
                     const _capability = method
@@ -65,13 +61,9 @@ class Device {
                 } else if (method.startsWith('@')) {
                     // Passed with just the name
                     if (callback) {
-                        throw new Error(
-                            `When using a named capability do not define the method`
-                        )
+                        throw new Error(`When using a named capability do not define the method`)
                     }
-                    const _callback = this.parent
-                        .getComponent('capability')
-                        .get(method.substring(1))
+                    const _callback = this.parent.getComponent('capability').get(method.substring(1))
 
                     if (!_callback) {
                         throw new Error(`Capability "${method}" does not exist`)
@@ -83,9 +75,7 @@ class Device {
 
                 // Capability with this name already exists
                 if (this.capabilities[method]) {
-                    throw new Error(
-                        `Cannot add capability "${name}" to ${this.name} as its added already`
-                    )
+                    throw new Error(`Cannot add capability "${name}" to ${this.name} as its added already`)
                 }
 
                 // Capabilities cannot have a space, otherwise they cannot be reliably called

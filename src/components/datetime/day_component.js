@@ -37,19 +37,13 @@ class DayComponent extends Component {
                     return () => {
                         const parsedDays = this._parseDay(targetDay)
                         const today = dayjs().format('dddd')
-                        return parsedDays.some(
-                            (parsedDay) =>
-                                parsedDay.toLowerCase() === today.toLowerCase()
-                        )
+                        return parsedDays.some((parsedDay) => parsedDay.toLowerCase() === today.toLowerCase())
                     }
                 },
                 between: (targetStart, targetEnd) => {
                     return () => {
                         try {
-                            return this.isCurrentDateInRange(
-                                targetStart,
-                                targetEnd
-                            )
+                            return this.isCurrentDateInRange(targetStart, targetEnd)
                         } catch (e) {
                             logger.error(
                                 `Date format for between constraint not correct, "${targetStart}" / "${targetEnd}"`,
@@ -118,10 +112,7 @@ class DayComponent extends Component {
         } else if (typeof input === 'string') {
             parseSingleDay(input)
         } else {
-            logger.error(
-                `Invalid "${input}" input. Expected a string or an array of strings`,
-                'datetime'
-            )
+            logger.error(`Invalid "${input}" input. Expected a string or an array of strings`, 'datetime')
         }
 
         return results
@@ -169,11 +160,7 @@ class DayComponent extends Component {
      */
     parseDate(dateStr) {
         const year = dayjs().year() // Use the current year by default
-        const dateWithoutYear = dayjs(
-            dateStr,
-            ['MMMM D', 'MMM D', 'Do MMM', 'D MMM', 'MMMM Do', 'MMM Do'],
-            true
-        ) // Try to parse without the year
+        const dateWithoutYear = dayjs(dateStr, ['MMMM D', 'MMM D', 'Do MMM', 'D MMM', 'MMMM Do', 'MMM Do'], true) // Try to parse without the year
 
         if (dateWithoutYear.isValid()) {
             return dateWithoutYear.year(year)
@@ -182,14 +169,7 @@ class DayComponent extends Component {
         // If parsing without the year fails, try with the year
         const dateWithYear = dayjs(
             dateStr,
-            [
-                'YYYY-MM-DD',
-                'MM/DD/YYYY',
-                'MMMM D YYYY',
-                'MMM D YYYY',
-                'Do MMM YYYY',
-                'D MMM YYYY',
-            ],
+            ['YYYY-MM-DD', 'MM/DD/YYYY', 'MMMM D YYYY', 'MMM D YYYY', 'Do MMM YYYY', 'D MMM YYYY'],
             true
         )
         if (dateWithYear.isValid()) {

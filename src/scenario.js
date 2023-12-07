@@ -15,9 +15,7 @@ class Scenario {
     constructor(Fluent, description) {
         //Validate
         if (!Fluent) {
-            throw new Error(
-                `Fluent core not passed, you should not call scenario directly`
-            )
+            throw new Error(`Fluent core not passed, you should not call scenario directly`)
         }
         if (!description) {
             throw new Error(`Description is required for a scenario`)
@@ -108,18 +106,12 @@ class Scenario {
                 continue
             }
 
-            const componentConstraints = component.constraints(
-                this,
-                constraints
-            )
+            const componentConstraints = component.constraints(this, constraints)
             Object.assign(methods, componentConstraints)
         }
 
         //Deep search through methods object then proxy each call and console log the method called
-        const methodsProxy = this._createProxyForConstraints(
-            methods,
-            constraints
-        )
+        const methodsProxy = this._createProxyForConstraints(methods, constraints)
 
         return methodsProxy
     }
@@ -145,16 +137,9 @@ class Scenario {
                         //console.log(`Method ${prop} called with arguments ${args.join(', ')}. Result: ${result}`);
 
                         // Check if the result is an object with keys
-                        if (
-                            result &&
-                            typeof result === 'object' &&
-                            Object.keys(result).length > 0
-                        ) {
+                        if (result && typeof result === 'object' && Object.keys(result).length > 0) {
                             // If keys are present, create a proxy for the result
-                            return this._createProxyForConstraints(
-                                result,
-                                constraints
-                            )
+                            return this._createProxyForConstraints(result, constraints)
                         }
 
                         //Constraint
@@ -166,15 +151,9 @@ class Scenario {
 
                         return result
                     }
-                } else if (
-                    typeof target[prop] === 'object' &&
-                    target[prop] !== null
-                ) {
+                } else if (typeof target[prop] === 'object' && target[prop] !== null) {
                     // Recursively create proxy for nested objects
-                    return this._createProxyForConstraints(
-                        target[prop],
-                        constraints
-                    )
+                    return this._createProxyForConstraints(target[prop], constraints)
                 }
 
                 return target[prop]
@@ -237,9 +216,7 @@ class Scenario {
 
         this.callbacks.forEach((callbackItem) => {
             const constraints = callbackItem.constraints || []
-            const constraintsMet =
-                constraints.length === 0 ||
-                constraints.every((constraint) => constraint())
+            const constraintsMet = constraints.length === 0 || constraints.every((constraint) => constraint())
 
             //If a callback has run with constraints already and this callback
             //has no constraints then do not run. This is probably an else()
@@ -249,10 +226,7 @@ class Scenario {
 
             //Run constraint group callback
             if (constraintsMet) {
-                logger.info(
-                    `Scenario "${this.description}" triggered`,
-                    'scenario'
-                )
+                logger.info(`Scenario "${this.description}" triggered`, 'scenario')
                 ranCallback = true
                 callbackItem.callback(this, result)
                 if (constraints.length > 0) {

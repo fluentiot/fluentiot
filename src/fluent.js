@@ -46,9 +46,7 @@ class Fluent {
         // Load each component
         components.forEach((component) => {
             const componentName = component.name
-            let componentPath =
-                component.path ||
-                path.join(__dirname, 'components', componentName)
+            let componentPath = component.path || path.join(__dirname, 'components', componentName)
 
             componentPath = componentPath.replace('<root>', projectRoot)
 
@@ -115,9 +113,7 @@ class Fluent {
             // Check if the description has already been used
             for (const scenario of Fluent.scenarios) {
                 if (scenario.description === description) {
-                    throw new Error(
-                        `Scenario with description '${description}' already exists`
-                    )
+                    throw new Error(`Scenario with description '${description}' already exists`)
                 }
             }
 

@@ -15,12 +15,7 @@ describe('Fluent setup', () => {
     })
 
     it('can load custom components', () => {
-        const componentPath = path.join(
-            __dirname,
-            '..',
-            'components',
-            'popcorn'
-        )
+        const componentPath = path.join(__dirname, '..', 'components', 'popcorn')
         Fluent.loadSetupComponents([{ name: 'popcorn', path: componentPath }])
         const components = Fluent.component().all()
         expect(components).toHaveProperty('popcorn')
@@ -52,9 +47,7 @@ describe('Components management', () => {
     })
 
     it('returns an error if the component cannot be found', () => {
-        expect(() => Fluent.component().add('/fake/path', 'foobar')).toThrow(
-            Error
-        )
+        expect(() => Fluent.component().add('/fake/path', 'foobar')).toThrow(Error)
     })
 
     it('loads in a blank component and can be fetched', () => {

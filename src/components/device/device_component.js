@@ -70,9 +70,7 @@ class DeviceComponent extends Component {
      *   or null if no matching devices are found.
      */
     findAllByAttribute(attribute, value) {
-        const results = Object.values(this.devices).filter(
-            (device) => device.attribute.get(attribute) === value
-        )
+        const results = Object.values(this.devices).filter((device) => device.attribute.get(attribute) === value)
         return results.length ? results : null
     }
 
@@ -102,32 +100,15 @@ class DeviceComponent extends Component {
                     attribute: (attributeName) => {
                         return {
                             is: (attributeValue) => {
-                                this._is(
-                                    scope,
-                                    device,
-                                    attributeName,
-                                    attributeValue
-                                )
+                                this._is(scope, device, attributeName, attributeValue)
                                 return scope
                             },
                             isNot: (attributeValue) => {
-                                this._is(
-                                    scope,
-                                    device,
-                                    attributeName,
-                                    attributeValue,
-                                    'not'
-                                )
+                                this._is(scope, device, attributeName, attributeValue, 'not')
                                 return scope
                             },
                             changes: () => {
-                                this._is(
-                                    scope,
-                                    device,
-                                    attributeName,
-                                    null,
-                                    'any'
-                                )
+                                this._is(scope, device, attributeName, null, 'any')
                                 return scope
                             },
                         }

@@ -59,9 +59,7 @@ class TimeComponent extends Component {
             time: {
                 is: (targetTime) => {
                     if (!dayjs(targetTime, 'HH:mm', true).isValid()) {
-                        throw new Error(
-                            `Time "${targetTime}" is not in the correct format of HH:mm`
-                        )
+                        throw new Error(`Time "${targetTime}" is not in the correct format of HH:mm`)
                     }
                     this.event().on('time', (time) => {
                         if (time === targetTime) {
@@ -73,9 +71,7 @@ class TimeComponent extends Component {
                 every: (target) => {
                     const parsedSchedule = this._parseCronExpression(target)
                     if (parsedSchedule === null) {
-                        throw new Error(
-                            `Failed to parse schedule for '${target}'.`
-                        )
+                        throw new Error(`Failed to parse schedule for '${target}'.`)
                     }
                     schedule.scheduleJob(parsedSchedule, () => {
                         scope.assert()
@@ -111,10 +107,7 @@ class TimeComponent extends Component {
                             return false
                         }
                         const currentTime = dayjs().format('HH:mm')
-                        return (
-                            currentTime >= targetStart &&
-                            currentTime <= targetEnd
-                        )
+                        return currentTime >= targetStart && currentTime <= targetEnd
                     }
                 },
             },
@@ -129,9 +122,7 @@ class TimeComponent extends Component {
      * @returns {string|null} - Cron tab expression
      */
     _parseCronExpression(target) {
-        const match = target.match(
-            /^(\d+)?\s*(?:(second|minute|hour|sec|min|hr)s?)?$/i
-        )
+        const match = target.match(/^(\d+)?\s*(?:(second|minute|hour|sec|min|hr)s?)?$/i)
         if (!match) {
             return null
         }

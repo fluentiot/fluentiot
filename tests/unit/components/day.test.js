@@ -41,9 +41,7 @@ describe('Day parsing and between methods', () => {
     })
 
     it('does not throw on valid date formats', () => {
-        expect(
-            day.isCurrentDateInRange('2023-01-01', '2023-01-02')
-        ).toBeDefined()
+        expect(day.isCurrentDateInRange('2023-01-01', '2023-01-02')).toBeDefined()
         expect(day.isCurrentDateInRange('5th May', '8th May')).toBeDefined()
         expect(day.isCurrentDateInRange('5 May', '8 May')).toBeDefined()
         expect(day.isCurrentDateInRange('May 5th', 'May 10th')).toBeDefined()
@@ -61,9 +59,7 @@ describe('Day parsing and between methods', () => {
     })
 
     it('throws error if end date is before start date', () => {
-        expect(() =>
-            day.isCurrentDateInRange('2023-01-12', '2023-01-10')
-        ).toThrow()
+        expect(() => day.isCurrentDateInRange('2023-01-12', '2023-01-10')).toThrow()
     })
 
     it('is between today and tomorrow', () => {
@@ -144,9 +140,7 @@ describe('Day constraints for "day is"', () => {
     it('is supports multiple days', () => {
         const fullDayName = moment().format('dddd')
         const tomorrowDayName = moment().add(1, 'days').format('dddd')
-        const result = day
-            .constraints()
-            .day.is([fullDayName, tomorrowDayName])()
+        const result = day.constraints().day.is([fullDayName, tomorrowDayName])()
         expect(result).toBe(true)
     })
 

@@ -129,9 +129,7 @@ describe('Variable constraints', () => {
     })
 
     it('isUndefined', () => {
-        expect(variable.constraints().variable('foo').isUndefined()()).toBe(
-            true
-        )
+        expect(variable.constraints().variable('foo').isUndefined()()).toBe(true)
     })
 
     it('isFalsy', () => {

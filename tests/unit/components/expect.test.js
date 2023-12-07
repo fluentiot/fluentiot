@@ -20,19 +20,13 @@ describe('Expect constraints', () => {
 
     it('toBeDefined', () => {
         expect(fexpect.constraints().expect('foo').toBeDefined()).toBe(true)
-        expect(fexpect.constraints().expect(undefined).toBeDefined()).toBe(
-            false
-        )
+        expect(fexpect.constraints().expect(undefined).toBeDefined()).toBe(false)
     })
 
     it('toBeUndefined', () => {
-        expect(fexpect.constraints().expect(undefined).toBeUndefined()).toBe(
-            true
-        )
+        expect(fexpect.constraints().expect(undefined).toBeUndefined()).toBe(true)
         expect(fexpect.constraints().expect('foo').toBeUndefined()).toBe(false)
-        expect(fexpect.constraints().expect('foo').not.toBeUndefined()).toBe(
-            true
-        )
+        expect(fexpect.constraints().expect('foo').not.toBeUndefined()).toBe(true)
     })
 
     it('toBeFalsy', () => {
@@ -49,9 +43,7 @@ describe('Expect constraints', () => {
         expect(fexpect.constraints().expect(1).toBeFalsy()).toBe(false)
         expect(fexpect.constraints().expect(123).toBeFalsy()).toBe(false)
         expect(fexpect.constraints().expect(53.45).toBeFalsy()).toBe(false)
-        expect(fexpect.constraints().expect(new Object()).toBeFalsy()).toBe(
-            false
-        )
+        expect(fexpect.constraints().expect(new Object()).toBeFalsy()).toBe(false)
     })
 
     it('toBeTruthy', () => {
@@ -61,9 +53,7 @@ describe('Expect constraints', () => {
         expect(fexpect.constraints().expect(1).toBeTruthy()).toBe(true)
         expect(fexpect.constraints().expect(123).toBeTruthy()).toBe(true)
         expect(fexpect.constraints().expect(53.45).toBeTruthy()).toBe(true)
-        expect(fexpect.constraints().expect(new Object()).toBeTruthy()).toBe(
-            true
-        )
+        expect(fexpect.constraints().expect(new Object()).toBeTruthy()).toBe(true)
 
         expect(fexpect.constraints().expect(false).toBeTruthy()).toBe(false)
         expect(fexpect.constraints().expect(0).toBeTruthy()).toBe(false)
@@ -91,22 +81,14 @@ describe('Expect constraints', () => {
     })
 
     it('toContain', () => {
-        expect(
-            fexpect.constraints().expect(['a', 'b', 'c']).toContain('a')
-        ).toBe(true)
-        expect(
-            fexpect.constraints().expect(['a', 'b', 'c']).toContain('d')
-        ).toBe(false)
+        expect(fexpect.constraints().expect(['a', 'b', 'c']).toContain('a')).toBe(true)
+        expect(fexpect.constraints().expect(['a', 'b', 'c']).toContain('d')).toBe(false)
 
         const obj1 = new Object()
         const obj2 = new Object()
         const obj3 = new Object()
-        expect(fexpect.constraints().expect([obj1, obj2]).toContain(obj1)).toBe(
-            true
-        )
-        expect(fexpect.constraints().expect([obj1, obj2]).toContain(obj3)).toBe(
-            false
-        )
+        expect(fexpect.constraints().expect([obj1, obj2]).toContain(obj1)).toBe(true)
+        expect(fexpect.constraints().expect([obj1, obj2]).toContain(obj3)).toBe(false)
     })
 
     it('toEqual', () => {
@@ -168,9 +150,7 @@ describe('Expect constraints with aliases', () => {
     })
 
     it('contain', () => {
-        expect(fexpect.constraints().expect(['a', 'b', 'c']).contain('a')).toBe(
-            true
-        )
+        expect(fexpect.constraints().expect(['a', 'b', 'c']).contain('a')).toBe(true)
     })
 
     it('equal', () => {
