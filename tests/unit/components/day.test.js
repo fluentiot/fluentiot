@@ -29,6 +29,8 @@ describe('Day parsing and between methods', () => {
         expect(day.parseDate('12/31/2023').isValid()).toBe(true);
         expect(day.parseDate('31 Dec 2023').isValid()).toBe(true);
         expect(day.parseDate('Dec 31 2023').isValid()).toBe(true);
+        expect(day.parseDate('1st December').isValid()).toBe(true);
+        expect(day.parseDate('31st December').isValid()).toBe(true);
     });
 
     it('handles invalid date inputs', () => {

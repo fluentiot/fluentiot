@@ -7,6 +7,7 @@ class Fluent {
                 if(name === 'event') {
                     const event = new Object();
                     event.emit = (...args) => {};
+                    event.on = (...args) => {};
                     return event;
                 }
             }

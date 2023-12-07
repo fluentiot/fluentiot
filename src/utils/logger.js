@@ -81,8 +81,7 @@ class Logger {
             const formattedMessage = typeof message === 'object' ? JSON.stringify(message) : message;
             if(component === 'default') {
                 console.log(`[${timestamp}] [${coloredType}] ${formattedMessage}`);
-            }
-            else {
+            } else {
                 console.log(`[${timestamp}] [${coloredType}] [${component}] ${formattedMessage}`);
             }
         }

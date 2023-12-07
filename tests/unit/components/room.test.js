@@ -5,6 +5,9 @@ const ComponentHelper = require('./../../helpers/component_helper.js');
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'));
 jest.mock('./../../../src/utils/logger');
 
+const DeviceComponent = require('./../../../src/components/device/device_component');
+const EventEmitter = require('events');
+
 let room;
 
 beforeEach(() => {
@@ -123,6 +126,54 @@ describe('Room occupancy', () => {
         expect(room.get('office room').isVacant()).toBe(true);
         expect(room.get('office room').attribute.get('occupied')).toBe(false);
         expect(room.emit).toHaveBeenCalledTimes(2);
+    });
+
+});
+
+
+
+describe('Room occupancy set with sensors', () => {
+    let device;
+    let office;
+    let officePir1;
+    let officePir2;
+
+    beforeEach(() => {
+        class MyEmitter extends EventEmitter {}
+        room._event = new MyEmitter();
+
+        device = new DeviceComponent(Fluent);
+
+        officePir1 = device.add('officePir1');
+        officePir2 = device.add('officePir2');
+
+        office = room.add('office');
+        office.addPresenceSensor(officePir1, 'pir', true);
+        office.addPresenceSensor(officePir2, 'pirSensor', 'pir');
+    });
+
+    it('pir sensor sets room to occupied', () => {
+        room.event().emit('device.officePir1.attribute',{ name:'pir', value:true });
+        expect(room.get('office').isOccupied()).toBe(true);
+    });
+
+    it('pir with wrong value does not set room to occupied', () => {
+        room.event().emit('device.officePir1.attribute',{ name:'pir', value:false });
+        room.event().emit('device.officePir1.attribute',{ name:'pir', value:'abc' });
+        room.event().emit('device.officePir1.attribute',{ name:'pir', value:1 });
+
+        expect(room.get('office').isOccupied()).toBe(false);
+    });
+
+    it('sets room to occupied on second sensor', () => {
+        room.event().emit('device.officePir2.attribute',{ name:'pirSensor', value:'pir' });
+        expect(room.get('office').isOccupied()).toBe(true);
+    });
+
+    it('sets room to occupied if both sensors are true', () => {
+        room.event().emit('device.officePir1.attribute',{ name:'pir', value:true });
+        room.event().emit('device.officePir2.attribute',{ name:'pirSensor', value:'pir' });
+        expect(room.get('office').isOccupied()).toBe(true);
     });
 
 });

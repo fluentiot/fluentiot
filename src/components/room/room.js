@@ -78,6 +78,24 @@ class Room {
     }
 
     /**
+     * Add presence sensor
+     * 
+     * @param {Device} device - Device object
+     * @param {string} attributeKey - Sensor key/code to detect on
+     * @param {string} attributeValue - Sensor value to detect on
+     */
+    addPresenceSensor(device, attributeKey, attributeValue) {
+        this.parent.event().on(`device.${device.name}.attribute`, (data) => {
+            // Not the right event
+            if (data.name !== attributeKey || data.value !== attributeValue) {
+                return
+            }
+
+            this.updatePresence(true)
+        });
+    }
+
+    /**
      * Check if vacant
      * 
      * @private 

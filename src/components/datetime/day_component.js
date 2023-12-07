@@ -151,7 +151,7 @@ class DayComponent extends Component {
      */
     parseDate(dateStr) {
         const year = moment().year(); // Use the current year by default
-        const dateWithoutYear = moment(dateStr, ['MMMM D', 'MMM D', 'Do MMM', 'D MMM', 'MMMM Do', 'MMM Do'], true); // Try to parse without the year
+        const dateWithoutYear = moment(dateStr, ['MMMM D', 'MMM D', 'Do MMM', 'Do MMMM', 'D MMM', 'MMMM Do', 'MMM Do'], true); // Try to parse without the year
     
         if (dateWithoutYear.isValid()) {
             return dateWithoutYear.year(year);

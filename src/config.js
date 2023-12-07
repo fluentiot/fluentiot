@@ -23,7 +23,8 @@ class Config {
      */
     loadConfig() {
         try {
-            return require(this.getConfigFilePath());
+            const configFile = this.getConfigFilePath();
+            return this.loadConfigFile(configFile);
         } catch (error) {
             throw new Error(`Error loading config: ${error.message}`);
         }
@@ -55,6 +56,16 @@ class Config {
     }
 
     /**
+     * Load config file, abstraction useful for testing
+     * 
+     * @param {string} path - Path to require
+     * @returns 
+     */
+    loadConfigFile(configFile) {
+        return require(configFile)
+    }
+
+    /**
      * Get a nested property from the configuration file
      * 
      * @param {string} key - Dot notation of the key to fetch from config file
@@ -83,3 +94,4 @@ class Config {
 }
 
 module.exports = new Config();
+module.exports.Config = Config;
