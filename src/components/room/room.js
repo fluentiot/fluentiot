@@ -24,16 +24,12 @@ class Room {
         Object.assign(this, AttributeDslMixin(this, 'room'));
 
         // Default attributes
-        this.defaultAttributes = {
+        const defaultAttributes = {
             occupied: false,
             occupiedStartTime: null,
             thresholdDuration: 15,      // Default threshold duration in minutes
         };
-
-        // Use provided attributes if available, otherwise use default attributes
-        this.attributes = attributes !== null && typeof attributes === 'object'
-            ? { ...this.defaultAttributes, ...attributes }
-            : { ...this.defaultAttributes };
+        this.attribute.setup(this, defaultAttributes, attributes);
 
         // Last sensor time
         // For example each time a PIR sensor detects someone this variable will get updated

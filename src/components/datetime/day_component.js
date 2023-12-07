@@ -160,7 +160,7 @@ class DayComponent extends Component {
      */
     parseDate(dateStr) {
         const year = dayjs().year() // Use the current year by default
-        const dateWithoutYear = dayjs(dateStr, ['MMMM D', 'MMM D', 'Do MMM', 'D MMM', 'MMMM Do', 'MMM Do'], true) // Try to parse without the year
+        const dateWithoutYear = dayjs(dateStr, ['MMMM D', 'MMM D', 'Do MMM', 'D MMM', 'MMMM Do', 'MMM Do', 'Do MMMM', 'Do MMM', 'D MMMM'], true) // Try to parse without the year
 
         if (dateWithoutYear.isValid()) {
             return dateWithoutYear.year(year)

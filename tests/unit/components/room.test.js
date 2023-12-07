@@ -205,4 +205,5 @@ describe('Room triggers', () => {
         expect(room.emit).toHaveBeenCalledTimes(2)
         expect(Scenario.assert).toHaveBeenCalledTimes(1)
     })
+
 })
