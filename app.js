@@ -1,5 +1,12 @@
-
-const { Fluent, scenario, event, variable, device, room, capability } = require('./fluent-iot.js');
+const {
+    Fluent,
+    scenario,
+    event,
+    variable,
+    device,
+    room,
+    capability,
+} = require('./fluent-iot.js')
 
 //--------------------------------
 
@@ -19,21 +26,31 @@ const { Fluent, scenario, event, variable, device, room, capability } = require(
 
 scenario('Every 2 seconds')
     .when()
-        .time().every('2 seconds')
-    .then((scenario) => { console.log(scenario.description); })
+    .time()
+    .every('2 seconds')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 
 //--------------------------------
 
 scenario('Light variable changed to red')
     .when()
-        .variable('light').is('red')
-    .then((scenario) => { console.log(scenario.description); })
+    .variable('light')
+    .is('red')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 
 scenario('Light variable changed to blue or purple')
     .when()
-        .variable('light').is('blue')
-        .variable('light').is('purple')
-    .then((scenario) => { console.log(scenario.description); })
+    .variable('light')
+    .is('blue')
+    .variable('light')
+    .is('purple')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 
 // variable.set('foo','bar');
 // variable.set('light','red');
@@ -43,10 +60,11 @@ scenario('Light variable changed to blue or purple')
 
 scenario('Variable light changes')
     .when()
-        .variable('light').changes()
+    .variable('light')
+    .changes()
     .then((scenario, result) => {
-        console.log(scenario.description);
-        console.log(`Variable light was changed to: ${result}`);
+        console.log(scenario.description)
+        console.log(`Variable light was changed to: ${result}`)
     })
 
 // variable.set('light','green');
@@ -55,13 +73,20 @@ scenario('Variable light changes')
 
 scenario('Variable light changes')
     .when()
-        .variable('light').changes()
+    .variable('light')
+    .changes()
     .constraint()
-        .variable('light').is('purple')
-        .then((scenario, result) => { console.log(`Light is Purple, ${result}`); })
+    .variable('light')
+    .is('purple')
+    .then((scenario, result) => {
+        console.log(`Light is Purple, ${result}`)
+    })
     .constraint()
-        .variable('light').is('red')
-        .then((scenario, result) => { console.log(`Light is Red, ${result}`); });
+    .variable('light')
+    .is('red')
+    .then((scenario, result) => {
+        console.log(`Light is Red, ${result}`)
+    })
 
 // variable.set('light','purple');
 // variable.set('light','red');
@@ -71,33 +96,42 @@ scenario('Variable light changes')
 
 scenario('Variable light changes with else')
     .when()
-        .variable('light').changes()
+    .variable('light')
+    .changes()
     .constraint()
-        .variable('light').is('purple')
-        .then((scenario, result) => { console.log(`Light is Purple, ${result}`); })
+    .variable('light')
+    .is('purple')
+    .then((scenario, result) => {
+        console.log(`Light is Purple, ${result}`)
+    })
     .else()
-        .then((scenario, result) => { console.log(`Light is ${result}`); });
+    .then((scenario, result) => {
+        console.log(`Light is ${result}`)
+    })
 //variable.set('light','green');
 
 //--------------------------------
 
 scenario('Variable expires')
     .when()
-        .time().every('1 second')
+    .time()
+    .every('1 second')
     .constraint()
-        .variable('expiry_test').is(true)
-        .then(() => {
-            console.log('Expiry is TRUE');
-        })
+    .variable('expiry_test')
+    .is(true)
+    .then(() => {
+        console.log('Expiry is TRUE')
+    })
     .constraint()
-        .variable('expiry_test').is(null)
-        .then(() => {
-            console.log('Expiry has reset');
-        })
+    .variable('expiry_test')
+    .is(null)
+    .then(() => {
+        console.log('Expiry has reset')
+    })
     .else()
-        .then(() => {
-            console.log('Expiry is something else');
-        });
+    .then(() => {
+        console.log('Expiry is something else')
+    })
 
 //variable.set('expiry_test',true,'5 second');
 
@@ -105,56 +139,65 @@ scenario('Variable expires')
 
 scenario('Event was emitted')
     .when()
-        .event().on('hello')
-    .then((scenario) => { console.log(scenario.description); })
+    .event()
+    .on('hello')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 //event.emit('hello');
 
 //--------------------------------
 
-const officeLight = device.add('office-light', 'light');
-const officePir = device.add('office-pir', 'pir');
+const officeLight = device.add('office-light', 'light')
+const officePir = device.add('office-pir', 'pir')
 
-scenario("Light turns on")
-        .when()
-            .device('office-light').is('on')
-        .then(() => {
-            console.log('Light is now on!')
-        });
+scenario('Light turns on')
+    .when()
+    .device('office-light')
+    .is('on')
+    .then(() => {
+        console.log('Light is now on!')
+    })
 
-scenario("Light turns off")
-        .when()
-            .device('office-light').isNot('on')
-        .then(() => {
-            console.log('Light is off!')
-        });
+scenario('Light turns off')
+    .when()
+    .device('office-light')
+    .isNot('on')
+    .then(() => {
+        console.log('Light is off!')
+    })
 //officeLight.updateAttribute('on', true);
 //officeLight.updateAttribute('on', false);
 
 //--------------------------------
 
-scenario("Light is pink")
-        .when()
-            .device('office-light').attribute('color').is('pink')
-        .then(() => {
-            console.log('Light is pink')
-        });
+scenario('Light is pink')
+    .when()
+    .device('office-light')
+    .attribute('color')
+    .is('pink')
+    .then(() => {
+        console.log('Light is pink')
+    })
 //officeLight.updateAttribute('color', 'pink');
 
 //--------------------------------
 
 officeLight.capability().add('turnOn', () => {
-    officeLight.updateAttribute('state', true);
-});
+    officeLight.updateAttribute('state', true)
+})
 officeLight.capability().add('turnOff', () => {
-    officeLight.updateAttribute('state', false);
-});
+    officeLight.updateAttribute('state', false)
+})
 
-scenario("Light turned on with capability")
-        .when()
-            .device('office-light').attribute('state').is(true)
-        .then(() => {
-            console.log('Light is on')
-        });
+scenario('Light turned on with capability')
+    .when()
+    .device('office-light')
+    .attribute('state')
+    .is(true)
+    .then(() => {
+        console.log('Light is on')
+    })
 
 // officeLight.turnOn();
 // officeLight.turnOff();
@@ -165,22 +208,25 @@ scenario("Light turned on with capability")
 
 officeLight.capability().add('foobar', (passed) => {
     console.log('Light foobar called!')
-    console.log(passed);
-});
+    console.log(passed)
+})
 
-scenario("Adding capability")
-        .when()
-            .empty()
-        .then(() => {
-            officeLight.foobar('passed!');
-        })
-        //.assert();
+scenario('Adding capability')
+    .when()
+    .empty()
+    .then(() => {
+        officeLight.foobar('passed!')
+    })
+//.assert();
 
 //--------------------------------
 
-
-const capTurnOff = capability.add('turnOff', () => { console.log('turned off!'); })
-const capTurnOn = capability.add('turnOn', () => { console.log('turned on'); })
+const capTurnOff = capability.add('turnOff', () => {
+    console.log('turned off!')
+})
+const capTurnOn = capability.add('turnOn', () => {
+    console.log('turned on')
+})
 
 // device.add('test');
 // device.get('test').capability().add(capTurnOff);
@@ -192,73 +238,97 @@ const capTurnOn = capability.add('turnOn', () => { console.log('turned on'); })
 // device.get('test2').capability().add(capTurnOff);
 // device.get('test2').turnOff();
 
-
-
 //--------------------------------
 
 scenario('Certain time of the day')
     .when()
-        .time().is('21:22')
-    .then((scenario) => { console.log(scenario.description); });
+    .time()
+    .is('21:22')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 
 scenario('Every second')
     .when()
-        .time().every('second')
-    .then((scenario) => { console.log(scenario.description); });
+    .time()
+    .every('second')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 
 scenario('every minute')
     .when()
-        .time().every('minute')
-    .then((scenario) => { console.log(scenario.description); });
+    .time()
+    .every('minute')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 
 scenario('every hour')
     .when()
-        .time().every('hour')
-    .then((scenario) => { console.log(scenario.description); });
+    .time()
+    .every('hour')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 
 //--------------------------------
 
 scenario('Test method single')
     .when()
-        .empty()
+    .empty()
     .constraint()
-        .expect('foo').to.equal('foo')
-    .then((scenario) => { console.log(scenario.description); })
-    //.assert()
-    //.test()
+    .expect('foo')
+    .to.equal('foo')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
+//.assert()
+//.test()
 
 scenario('Test method double')
     .when()
-        .empty()
+    .empty()
     .constraint()
-        .expect('foo').to.equal('foo')
-        .expect('bar').to.equal('bar')
-        .then((scenario) => { console.log(scenario.description); })
+    .expect('foo')
+    .to.equal('foo')
+    .expect('bar')
+    .to.equal('bar')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
     .assert()
     .test()
 
 scenario('Test method, not match')
     .when()
-        .empty()
+    .empty()
     .constraint()
-        .expect('foo').to.equal('bar')
-        .then((scenario) => { console.log(scenario.description); })
-    // .assert()
-    // .test()
+    .expect('foo')
+    .to.equal('bar')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
+// .assert()
+// .test()
 
 scenario('Test method, not match with an else')
     .when()
-        .empty()
+    .empty()
     .constraint()
-        .expect('foo').to.equal('bar')
-        .then((scenario) => { console.log(scenario.description+': If'); })
+    .expect('foo')
+    .to.equal('bar')
+    .then((scenario) => {
+        console.log(scenario.description + ': If')
+    })
     .else()
-        .then((scenario) => { console.log(scenario.description+': Else'); })
-    // .assert()
-    // .test()
+    .then((scenario) => {
+        console.log(scenario.description + ': Else')
+    })
+// .assert()
+// .test()
 
 //--------------------------------
-
 
 // new Scenario('check every minute and the office light is blue')
 //     .when().time().every('minute')
@@ -269,51 +339,66 @@ scenario('Test method, not match with an else')
 
 scenario('Every second on a certain day')
     .when()
-        .time().every('second')
+    .time()
+    .every('second')
     .constraint()
-        .day().is('saturday')
-    .then((scenario) => { console.log(scenario.description); });
+    .day()
+    .is('saturday')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 
 //--------------------------------
 
 scenario('Every second on a certain day')
     .when()
-        .time().every('second')
+    .time()
+    .every('second')
     .constraint()
-        .day().is('saturday')
-        .time().between('22:07', '22:08')
-    .then((scenario) => { console.log(scenario.description); });
+    .day()
+    .is('saturday')
+    .time()
+    .between('22:07', '22:08')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 
 //--------------------------------
 
 scenario('Weekend')
     .when()
-        .time().every('second')
+    .time()
+    .every('second')
     .constraint()
-        .day().is('weekday')
-    .then((scenario) => { console.log(scenario.description); });
+    .day()
+    .is('weekday')
+    .then((scenario) => {
+        console.log(scenario.description)
+    })
 
 //--------------------------------
 
-room.add('office');
-room.add('living');
-room.add('kitchen');
+room.add('office')
+room.add('living')
+room.add('kitchen')
 
 //--------------------------------
 
 scenario('Room is occupied')
     .when()
-        .room('office').isOccupied()
+    .room('office')
+    .isOccupied()
     .then((scenario) => {
-        console.log(scenario.description);
-    });
+        console.log(scenario.description)
+    })
 
 scenario('Room is vacant')
     .when()
-        .room('office').isVacant()
+    .room('office')
+    .isVacant()
     .then((scenario) => {
-        console.log(scenario.description);
-    });
+        console.log(scenario.description)
+    })
 
 //room.get('office').updateOccupied(true);
 //room.get('office').updateOccupied(false);
@@ -322,42 +407,48 @@ scenario('Room is vacant')
 
 scenario('Office room is occupied for time defined')
     .when()
-        .room('office').occupied().is('>', '1', 'minute')
+    .room('office')
+    .occupied()
+    .is('>', '1', 'minute')
     .then((scenario, result) => {
-        console.log(scenario.description);
-        console.log(result);
-    });
+        console.log(scenario.description)
+        console.log(result)
+    })
 //room.get('office').updateOccupied(true);
 
 //--------------------------------
 
 scenario('In test mode, do not run (1)')
     .when()
-        .time().every('1 second')
+    .time()
+    .every('1 second')
     .then((scenario, result) => {
-        console.log(scenario.description);
-    });
+        console.log(scenario.description)
+    })
 
 scenario('In test mode, do not run (2)')
     .when()
-        .time().every('1 second')
+    .time()
+    .every('1 second')
     .then((scenario, result) => {
-        console.log(scenario.description);
-    });
+        console.log(scenario.description)
+    })
 
 scenario('In test mode, DO run (1)')
     .when()
-        .time().every('1 second')
+    .time()
+    .every('1 second')
     .then((scenario, result) => {
-        console.log(scenario.description);
-    });
+        console.log(scenario.description)
+    })
 
 scenario('In test mode, DO run (2)')
     .when()
-        .time().every('1 second')
+    .time()
+    .every('1 second')
     .then((scenario, result) => {
-        console.log(scenario.description);
-    });
+        console.log(scenario.description)
+    })
 
 //--------------------------------
 

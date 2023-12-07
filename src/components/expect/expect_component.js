@@ -1,5 +1,5 @@
-const Component = require('./../component');
-const Expect = require('./../../utils/expect');
+const Component = require('./../component')
+const Expect = require('./../../utils/expect')
 
 /**
  * Expect component
@@ -8,7 +8,6 @@ const Expect = require('./../../utils/expect');
  * @class
  */
 class ExpectComponent extends Component {
-
     /**
      * Defines constraints related to expect.
      *
@@ -16,10 +15,9 @@ class ExpectComponent extends Component {
      */
     constraints() {
         return {
-            expect: (value) => new Expect(value)
-        };
+            expect: (value) => new Expect(value),
+        }
     }
-    
 }
 
-module.exports = ExpectComponent;
+module.exports = ExpectComponent

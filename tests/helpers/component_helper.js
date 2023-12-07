@@ -1,22 +1,20 @@
-
-const EventEmitter = require('events');
+const EventEmitter = require('events')
 
 const ScenarioAndEvent = (parent) => {
-    ScenarioObject = new Object;
-    ScenarioObject.assert = jest.fn();
-    ScenarioObject.triggers = jest.fn();
+    ScenarioObject = new Object()
+    ScenarioObject.assert = jest.fn()
+    ScenarioObject.triggers = jest.fn()
 
     class CustomEmitter extends EventEmitter {}
-    const event = new CustomEmitter();
+    const event = new CustomEmitter()
 
     parent.event = jest.fn(() => {
-        return event;
-    });
+        return event
+    })
 
-    return ScenarioObject;
+    return ScenarioObject
 }
 
-
 module.exports = {
-    ScenarioAndEvent
+    ScenarioAndEvent,
 }

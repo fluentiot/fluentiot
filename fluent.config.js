@@ -2,19 +2,19 @@
 //Copy this file to your main app directory to make changes
 const config = {
     components: [
-      { name:"datetime" },
-      { name:"device" },
-      { name:"event" },
-      { name:"expect" },
-      { name:"room" },
-      { name:"variable" },
-      { name:"scene" }
+        { name: 'datetime' },
+        { name: 'device' },
+        { name: 'event' },
+        { name: 'expect' },
+        { name: 'room' },
+        { name: 'variable' },
+        { name: 'scene' },
     ],
     logging: {
-      "levels": {
-        "default": "debug"
-      }
-    }
-};
+        levels: {
+            default: 'debug',
+        },
+    },
+}
 
-module.exports = config;
+module.exports = config

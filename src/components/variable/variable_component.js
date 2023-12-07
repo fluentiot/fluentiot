@@ -1,7 +1,7 @@
-const dayjs = require('dayjs');
-const logger = require('./../../utils/logger');
-const Component = require('./../component');
-const Expect = require('./../../utils/expect');
+const dayjs = require('dayjs')
+const logger = require('./../../utils/logger')
+const Component = require('./../component')
+const Expect = require('./../../utils/expect')
 
 /**
  * Variable component
@@ -10,15 +10,14 @@ const Expect = require('./../../utils/expect');
  * @class
  */
 class VariableComponent extends Component {
-
     /**
      * Constructor
-     * 
+     *
      * @param {Fluent} Fluent - The Fluent IoT framework.
      */
     constructor(Fluent) {
-        super(Fluent);
-        this.variables = {};
+        super(Fluent)
+        this.variables = {}
     }
 
     /**
@@ -31,21 +30,24 @@ class VariableComponent extends Component {
      * @returns {boolean} - Returns true if the variable is set successfully, false otherwise.
      */
     set(name, value, options = {}) {
-        this.variables[name] = { value, options };
-        this.emit('variable', { name, value });
+        this.variables[name] = { value, options }
+        this.emit('variable', { name, value })
 
         // Check if expiry is provided
         if (options.expiry) {
-            const parsedExpiry = this._parseExpiry(options.expiry);
+            const parsedExpiry = this._parseExpiry(options.expiry)
             if (parsedExpiry) {
-                options.expiry = parsedExpiry;
+                options.expiry = parsedExpiry
             } else {
-                logger.error(`Error parsing "${options.expiry}" variable expiry. Please provide a valid duration and unit.`, 'variable');
-                return false;
+                logger.error(
+                    `Error parsing "${options.expiry}" variable expiry. Please provide a valid duration and unit.`,
+                    'variable'
+                )
+                return false
             }
         }
 
-        return true;
+        return true
     }
 
     /**
@@ -56,11 +58,11 @@ class VariableComponent extends Component {
      */
     remove(name) {
         if (!this.variables[name]) {
-            return false;
+            return false
         }
-        delete this.variables[name];
-        this.emit('variable.remove', { name });
-        return true;
+        delete this.variables[name]
+        this.emit('variable.remove', { name })
+        return true
     }
 
     /**
@@ -70,17 +72,17 @@ class VariableComponent extends Component {
      * @returns {any|null} - Returns the value of the variable if found and not expired, otherwise returns null.
      */
     get(name) {
-        if(!this.variables[name]) {
-            logger.error(`Variable "${name}" could not be found`, 'variable');
-            return null;
+        if (!this.variables[name]) {
+            logger.error(`Variable "${name}" could not be found`, 'variable')
+            return null
         }
 
-        if(this._checkIfExpired(name)) {
-            this.remove(name);
-            return null;
+        if (this._checkIfExpired(name)) {
+            this.remove(name)
+            return null
         }
 
-        return this.variables[name].value;
+        return this.variables[name].value
     }
 
     /**
@@ -91,16 +93,16 @@ class VariableComponent extends Component {
      * @returns {boolean} - Returns true if the variable is expired, false otherwise.
      */
     _checkIfExpired(name) {
-        const variable = this.variables[name];
+        const variable = this.variables[name]
 
         if (variable && variable.options && variable.options.expiry) {
-            const expiryMoment = dayjs(variable.options.expiry);
-            const currentMoment = dayjs();
-            return expiryMoment.isBefore(currentMoment);
+            const expiryMoment = dayjs(variable.options.expiry)
+            const currentMoment = dayjs()
+            return expiryMoment.isBefore(currentMoment)
         }
-        
-        return false;
-    } 
+
+        return false
+    }
 
     /**
      * Parses the expiry string and returns a moment object.
@@ -110,15 +112,15 @@ class VariableComponent extends Component {
      * @returns {dayjs.dayjs|false} - Returns a dayjs object if parsing is successful, false otherwise.
      */
     _parseExpiry(expiry) {
-        const [duration, unit] = expiry.split(' ');
-    
+        const [duration, unit] = expiry.split(' ')
+
         if (!duration || isNaN(parseInt(duration)) || !unit) {
-            return false; // Return false if parsing fails
+            return false // Return false if parsing fails
         }
-    
-        return dayjs().add(parseInt(duration), unit);
+
+        return dayjs().add(parseInt(duration), unit)
     }
-        
+
     /**
      * Defines triggers related to variables for a given Scenario.
      *
@@ -131,22 +133,25 @@ class VariableComponent extends Component {
                 return {
                     is: (variableValue) => {
                         this.event().on('variable', (changedData) => {
-                            if (changedData.name === variableName && changedData.value === variableValue) {
-                                scope.assert();
+                            if (
+                                changedData.name === variableName &&
+                                changedData.value === variableValue
+                            ) {
+                                scope.assert()
                             }
-                        });
-                        return scope;
+                        })
+                        return scope
                     },
                     updated: () => {
                         this.event().on('variable', (changedData) => {
                             if (changedData.name === variableName) {
-                                scope.assert(changedData.value);
+                                scope.assert(changedData.value)
                             }
-                        });
-                        return scope;
-                    }
-                };
-            }
+                        })
+                        return scope
+                    },
+                }
+            },
         }
     }
 
@@ -159,24 +164,25 @@ class VariableComponent extends Component {
         return {
             variable: (variableName) => {
                 if (typeof variableName !== 'string') {
-                    logger.error(`Variable "${variableName}" was not passed as a string`, 'variable');
-                    return false;
+                    logger.error(
+                        `Variable "${variableName}" was not passed as a string`,
+                        'variable'
+                    )
+                    return false
                 }
 
                 const callback = () => {
-                    let currentValue = undefined;
+                    let currentValue = undefined
                     if (this.variables[variableName]) {
-                        currentValue = this.get(variableName);
+                        currentValue = this.get(variableName)
                     }
-                    return currentValue;
+                    return currentValue
                 }
 
-                return new Expect(callback);
-            }
-        };
+                return new Expect(callback)
+            },
+        }
     }
-
-
 }
 
-module.exports = VariableComponent;
+module.exports = VariableComponent
