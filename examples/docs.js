@@ -1,11 +1,13 @@
 const { scenario, device, event, capability, room, scene, variable  } = require('../index')
 
+//Capability for the switch
+capability.add('switchOn', (device) => {
+    const deviceId = device.attribute.get('id')
+    console.log(`Make API call to Tuya to switch device ${deviceId} on`)
+})
 
-scenario('assert and triggers can return args to then()')
-    .when()
-        .empty()
-    .then((_Scenario, colour1, colour2) => {
-        console.log(`Colour 1: "${colour1}"`) //red
-        console.log(`Colour 2: "${colour2}"`) //green
-    })
-    .assert('red', 'green')
+device.add('office-led-monitor', { id: '111' }, ['@switchOn'])
+
+//Switch this device on
+const matchedDevice = device.findOneByAttribute('id', '111')
+matchedDevice.switchOn()

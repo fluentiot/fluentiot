@@ -56,7 +56,7 @@ class DeviceComponent extends Component {
      * @returns {object<Device>|null} - An array of devices matching the attribute and value,
      *   or null if no matching devices are found.
      */
-    findByAttribute(attribute, value) {
+    findOneByAttribute(attribute, value) {
         const results = this.findAllByAttribute(attribute, value)
         return results ? results[0] : null
     }

@@ -539,9 +539,29 @@ device.add('office-switch', { id: 'Abc' })
 console.log(device.get('office-switch').attribute.get('id'))
 ```
 
-#### `device.findByAttribute(attributeName: string, attributeValue: any)`
+#### `device.findOneByAttribute(attributeName: string, attributeValue: any)`
 
-Fetching devices by their attribute.
+Query an individual device based on a specific attribute and its corresponding value.
+
+```javascript
+//Capability for the switch
+capability.add('switchOn', (device) => {
+    const deviceId = device.attribute.get('id')
+    console.log(`Make API call to Tuya to switch device ${deviceId} on`)
+})
+
+device.add('office-led-monitor', { id: '111' }, ['@switchOn'])
+
+//Switch this device on
+const matchedDevice = device.findOneByAttribute('id', '111')
+matchedDevice.switchOn()
+```
+
+
+
+#### `device.findAllByAttribute(attributeName: string, attributeValue: any)`
+
+Query devices based on a specific attribute and its corresponding value.
 
 ```javascript
 //Capability for the switch
@@ -554,10 +574,11 @@ capability.add('switchOn', (device) => {
 device.add('office-led-monitor', { id: '111', group: 'office' }, ['@switchOn'])
 device.add('office-led-desk', { id: '222', group: 'office' }, ['@switchOn'])
 
-//Switch them on
-for (const led in device.findByAttribute('group', 'office')) {
-    led.switchOn()
-}
+//Switch on devices that match this attribute group value
+const devices = device.findAllByAttribute('group', 'office')
+devices.forEach((currentDevice) => {
+    currentDevice.switchOn()
+})
 ```
 
 ### Triggers

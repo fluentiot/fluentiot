@@ -38,15 +38,15 @@ describe('Device attributes', () => {
         const newDevice2 = device.add('pir-living', { id: '321' })
 
         //Single found
-        const device1 = device.findByAttribute('id', '123')
+        const device1 = device.findOneByAttribute('id', '123')
         expect(device1).toBe(newDevice1)
 
         //Single found
-        const device2 = device.findByAttribute('id', '321')
+        const device2 = device.findOneByAttribute('id', '321')
         expect(device2).toBe(newDevice2)
 
         //Single not found
-        const device3 = device.findByAttribute('id', 'xxx')
+        const device3 = device.findOneByAttribute('id', 'xxx')
         expect(device3).toBe(null)
 
         //All
@@ -67,7 +67,7 @@ describe('Device attributes', () => {
     })
 
     it('no devices found by attribute', () => {
-        const devices = device.findByAttribute('foo', 'bar')
+        const devices = device.findOneByAttribute('foo', 'bar')
         expect(devices).toBe(null)
     })
 })
