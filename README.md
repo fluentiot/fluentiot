@@ -846,7 +846,7 @@ device.get('office-pir').attribute.update('sensor', false)
 
 ### Triggers
 
-#### `.room(name: string).is.occupied()`
+#### `.room(name: string).isOccupied()`
 
 When the room is occupied.
 
@@ -860,7 +860,7 @@ scenario('Office lights on when occupied')
     })
 ```
 
-#### `.room(name: string).is.vacant()`
+#### `.room(name: string).isVacant()`
 
 When the room has been set to vacant.
 
@@ -873,6 +873,26 @@ scenario('Office lights off when vacant')
         console.log('Room is vacant, turn off lights etc...')
     })
 ```
+
+
+### Constraints
+
+#### `.room(name: string).isOccupied()`
+Checking if the room is occupied.
+```javascript
+scenario('')
+    .when()
+        .empty()
+    .constraint()
+        .room('office').isOccupied()
+        .then(() => {
+            console.log('Good Morning')
+        })
+    .assert()
+```
+
+#### `.room(name: string).isVacant()`
+
 
 ---
 

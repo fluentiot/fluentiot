@@ -83,6 +83,36 @@ class RoomComponent extends Component {
             },
         }
     }
+
+    /**
+     * Defines constraints related to room.
+     *
+     * @returns {object} - An object with constraint methods for datetime.
+     */
+    constraints() {
+        return {
+            room: (name) => {
+                const room = this.get(name)
+                if (!room) {
+                    throw new Error(`Room ${name} does not exist`, 'room')
+                }
+                
+                return {
+                    isOccupied: () => {
+                        return () => {
+                            return room.isOccupied();
+                        }
+                    },
+                    isVacant: () => {
+                        return () => {
+                            return room.isVacant();
+                        }
+                    }
+                }
+            },
+        }
+    }
+
 }
 
 module.exports = RoomComponent

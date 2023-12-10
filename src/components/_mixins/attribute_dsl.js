@@ -44,7 +44,7 @@ const AttributeDslMixin = (parent, name) => {
                 //Set it
                 parent.attributes[attributeName].value = attributeValue
 
-                logger.info(`Attribute, set "${attributeName}" to "${attributeValue}"`, name)
+                logger.info(`Attribute, ${parent.name} set "${attributeName}" to "${attributeValue}"`, name)
                 parent.parent.emit(`${name}.${parent.name}.attribute`, {
                     name: attributeName,
                     value: attributeValue,

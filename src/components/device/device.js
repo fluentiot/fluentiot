@@ -6,6 +6,7 @@ const { AttributeDslMixin } = require('./../_mixins/attribute_dsl')
  * @class
  */
 class Device {
+    
     /**
      * Represents a device in the system with specific attributes and capabilities.
      *

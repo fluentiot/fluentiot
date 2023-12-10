@@ -207,3 +207,43 @@ describe('Room triggers', () => {
     })
 
 })
+
+
+
+describe('Room constraints', () => {
+    let Scenario
+    let office
+    let device
+
+    beforeEach(() => {
+        device = new DeviceComponent(Fluent);
+        Scenario = ComponentHelper.ScenarioAndEvent(room)
+        office = room.add('office')
+    })
+
+    it('passes if the room is occupied', () => {
+        office.attribute.set('occupied', true);
+        expect(room.constraints().room('office').isOccupied()()).toBe(true)
+
+        office.attribute.set('occupied', false);
+        expect(room.constraints().room('office').isOccupied()()).toBe(false)
+    })
+
+    it('passes if the room is vacant', () => {
+        office.attribute.set('occupied', false);
+        expect(room.constraints().room('office').isVacant()()).toBe(true)
+
+        office.attribute.set('occupied', true);
+        expect(room.constraints().room('office').isVacant()()).toBe(false)
+    })
+
+    it('passes if the room is occupied by using presense', () => {
+        const living = room.add('living', { thresholdDuration: 0 })
+        living.updatePresence(true)
+        expect(room.constraints().room('living').isOccupied()()).toBe(true)
+
+        living.updatePresence(false)
+        expect(room.constraints().room('living').isOccupied()()).toBe(false)
+    })
+
+})
