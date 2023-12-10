@@ -29,7 +29,10 @@ const AttributeDslMixin = (parent, name) => {
             },
             update: (attributeName, attributeValue) => {
                 // Do not allow double setting
-                if (parent.attributes[attributeName] && parent.attributes[attributeName].value === attributeValue) {
+                if (
+                    (!parent.attributes.stateful || parent.attributes.stateful.value === true) &&
+                    parent.attributes[attributeName] && 
+                    parent.attributes[attributeName].value === attributeValue) {
                     return
                 }
 
@@ -41,7 +44,7 @@ const AttributeDslMixin = (parent, name) => {
                 //Set it
                 parent.attributes[attributeName].value = attributeValue
 
-                logger.info(`Attribute, set "${attributeName}" to "${attributeValue}"`, parent.name)
+                logger.info(`Attribute, set "${attributeName}" to "${attributeValue}"`, name)
                 parent.parent.emit(`${name}.${parent.name}.attribute`, {
                     name: attributeName,
                     value: attributeValue,

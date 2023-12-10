@@ -26,7 +26,10 @@ class Device {
         Object.assign(this, AttributeDslMixin(this, 'device'))
 
         //Attributes
-        this.attribute.setup(this, {}, attributes)
+        const defaultAttributes = {
+            stateful: true
+        };
+        this.attribute.setup(this, defaultAttributes, attributes)
 
         // Abstracting capability method so to reflect similar DSL in system
         // Instead of device.capability().add() => device.capability.add()

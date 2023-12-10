@@ -289,3 +289,41 @@ describe('Device triggers', () => {
         expect(Scenario.assert).toHaveBeenCalledTimes(5)
     })
 })
+
+
+
+describe.only('Device triggers with state', () => {
+    let Scenario
+    let device
+
+    beforeEach(() => {
+        device = new DeviceComponent(Fluent)
+        Scenario = ComponentHelper.ScenarioAndEvent(device)
+    })
+
+    it('it only triggers once because it is a stateful switch', () => {
+        const playroomSwitch = device.add('playroomSwitch', { stateful: true })
+        device.triggers(Scenario).device('playroomSwitch').attribute('switch').is('on')
+        playroomSwitch.attribute.update('switch', 'on')
+        playroomSwitch.attribute.update('switch', 'on')      
+        expect(Scenario.assert).toHaveBeenCalledTimes(1)
+    })
+
+    it('it only triggers once because it is a stateful switch by default', () => {
+        //Create switch with stateful not defined, make sure default it is stateful
+        const playroomSwitch = device.add('playroomSwitch')
+        device.triggers(Scenario).device('playroomSwitch').attribute('switch').is('on')
+        playroomSwitch.attribute.update('switch', 'on')
+        playroomSwitch.attribute.update('switch', 'on')      
+        expect(Scenario.assert).toHaveBeenCalledTimes(1)
+    })
+
+    it('it can trigger multiple times because it is a none stateful button', () => {
+        const playroomSwitch = device.add('playroomSwitch', { stateful: false })
+        device.triggers(Scenario).device('playroomSwitch').attribute('switch').is('on')
+        playroomSwitch.attribute.update('switch', 'on')
+        playroomSwitch.attribute.update('switch', 'on')      
+        expect(Scenario.assert).toHaveBeenCalledTimes(2)
+    })
+
+});
