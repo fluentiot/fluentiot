@@ -490,13 +490,23 @@ const { device, capability } = require('fluent-iot')
 ```
 
 #### `device.add(name: string, attributes: object, capabilities: array)`
-
-Create a new IoT device. It's advisable to create the capabilities for all of your devices first.
-
+Create a new IoT device. All your IoT devices, from switches, buttons, lights etc.. must have a device so you can interact with them and update their state.
 ```javascript
 //Creating a basic device
 device.add('kitchen-switch')
+```
 
+Understanding the concept of IoT state provides clarity in device behavior. For instance, a switch, with a defined state (on or off), contrasts with a button, which lacks a persistent state and can be pressed multiple times, consistently triggering the same action. By default, devices are stateful. However, for buttons, setting them as stateless (`stateful: false`) is necessary. If a button is not explicitly set as stateless, it will respond to a single press only.
+
+This is useful to avoid loopbacks.
+
+```javascript
+device.add('kitchenSwitch');
+device.add('kitchenButton', { stateful: false })
+```
+
+Example of adding devices with capabilities.
+```javascript
 //Adding a device with default attributes
 device.add('kitchen-kettle', { id: 'Xyz', group: 'kettle' })
 
