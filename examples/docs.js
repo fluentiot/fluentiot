@@ -6,8 +6,9 @@ capability.add('switchOn', (device) => {
     console.log(`Make API call to Tuya to switch device ${deviceId} on`)
 })
 
-device.add('office-led-monitor', { id: '111' }, ['@switchOn'])
-
-//Switch this device on
-const matchedDevice = device.findOneByAttribute('id', '111')
-matchedDevice.switchOn()
+scenario('Runs every minute')
+    .when()
+        .event('time.minute').on()
+    .then(() => {
+        console.log('On the minute')
+    })

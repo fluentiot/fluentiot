@@ -490,13 +490,23 @@ const { device, capability } = require('fluent-iot')
 ```
 
 #### `device.add(name: string, attributes: object, capabilities: array)`
-
-Create a new IoT device. It's advisable to create the capabilities for all of your devices first.
-
+Create a new IoT device. All your IoT devices, from switches, buttons, lights etc.. must have a device so you can interact with them and update their state.
 ```javascript
 //Creating a basic device
 device.add('kitchen-switch')
+```
 
+Understanding the concept of IoT state provides clarity in device behavior. For instance, a switch, with a defined state (on or off), contrasts with a button, which lacks a persistent state and can be pressed multiple times, consistently triggering the same action. By default, devices are stateful. However, for buttons, setting them as stateless (`stateful: false`) is necessary. If a button is not explicitly set as stateless, it will respond to a single press only.
+
+This is useful to avoid loopbacks.
+
+```javascript
+device.add('kitchenSwitch');
+device.add('kitchenButton', { stateful: false })
+```
+
+Example of adding devices with capabilities.
+```javascript
 //Adding a device with default attributes
 device.add('kitchen-kettle', { id: 'Xyz', group: 'kettle' })
 
@@ -857,7 +867,7 @@ device.get('office-pir').attribute.update('sensor', false)
 
 ### Triggers
 
-#### `.room(name: string).is.occupied()`
+#### `.room(name: string).isOccupied()`
 
 When the room is occupied.
 
@@ -871,7 +881,7 @@ scenario('Office lights on when occupied')
     })
 ```
 
-#### `.room(name: string).is.vacant()`
+#### `.room(name: string).isVacant()`
 
 When the room has been set to vacant.
 
@@ -884,6 +894,26 @@ scenario('Office lights off when vacant')
         console.log('Room is vacant, turn off lights etc...')
     })
 ```
+
+
+### Constraints
+
+#### `.room(name: string).isOccupied()`
+Checking if the room is occupied.
+```javascript
+scenario('')
+    .when()
+        .empty()
+    .constraint()
+        .room('office').isOccupied()
+        .then(() => {
+            console.log('Good Morning')
+        })
+    .assert()
+```
+
+#### `.room(name: string).isVacant()`
+
 
 ---
 

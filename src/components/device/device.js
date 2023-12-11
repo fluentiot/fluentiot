@@ -6,6 +6,7 @@ const { AttributeDslMixin } = require('./../_mixins/attribute_dsl')
  * @class
  */
 class Device {
+    
     /**
      * Represents a device in the system with specific attributes and capabilities.
      *
@@ -26,7 +27,10 @@ class Device {
         Object.assign(this, AttributeDslMixin(this, 'device'))
 
         //Attributes
-        this.attribute.setup(this, {}, attributes)
+        const defaultAttributes = {
+            stateful: true
+        };
+        this.attribute.setup(this, defaultAttributes, attributes)
 
         // Abstracting capability method so to reflect similar DSL in system
         // Instead of device.capability().add() => device.capability.add()
