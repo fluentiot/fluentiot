@@ -57,8 +57,7 @@ class TuyaComponent extends Component {
             settings.token_info.access_key, 
             settings.token_info.secret_key,
             settings.token_info.username,
-            settings.token_info.password,
-            'SMART_HOME', 'en'
+            settings.token_info.password
         );
 
         this.openApi.onConnect = () => {
