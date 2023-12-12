@@ -126,11 +126,14 @@ describe('Room occupancy', () => {
 })
 
 
-describe('Room occupancy set with sensors', () => {
+describe.only('Room occupancy set with sensors', () => {
     let device;
     let office;
     let officePir1;
     let officePir2;
+    let kitchenPir1;
+    let kitchenPir2;
+    let kitchen;
 
     beforeEach(() => {
         class MyEmitter extends EventEmitter {}
@@ -140,10 +143,15 @@ describe('Room occupancy set with sensors', () => {
 
         officePir1 = device.add('officePir1');
         officePir2 = device.add('officePir2');
-
         office = room.add('office');
         office.addPresenceSensor(officePir1, 'pir', true);
         office.addPresenceSensor(officePir2, 'pirSensor', 'pir');
+
+        kitchenPir1 = device.add('kitchenPir1');
+        kitchenPir2 = device.add('kitchenPir2');
+        kitchen = room.add('kitchen', { thresholdDuration: 0 });
+        kitchen.addPresenceSensor(kitchenPir1, 'pir', true);
+        kitchen.addPresenceSensor(kitchenPir2, 'pirSensor', 'pir');
     });
 
     it('pir sensor sets room to occupied', () => {
@@ -168,6 +176,14 @@ describe('Room occupancy set with sensors', () => {
         room.event().emit('device.officePir1.attribute',{ name:'pir', value:true });
         room.event().emit('device.officePir2.attribute',{ name:'pirSensor', value:'pir' });
         expect(room.get('office').isOccupied()).toBe(true);
+    });
+
+    it('pir sensor sets room to vacant', () => {
+        room.event().emit('device.kitchenPir1.attribute',{ name:'pir', value:true });
+        expect(room.get('kitchen').isOccupied()).toBe(true);
+
+        room.event().emit('device.kitchenPir1.attribute',{ name:'pir', value:false });
+        expect(room.get('kitchen').isOccupied()).toBe(false);
     });
 
 });

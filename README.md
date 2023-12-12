@@ -801,9 +801,52 @@ office.attribute.set('occupied', false)
 console.log(office.isOccupied()) //false
 ```
 
+
+#### `room.get(name: string).addPresenceSensor(device: Device, expectedKey: string, expectedValue:string)`
+Adding an existing sensor to a room for presence detection. This is a preferred method than using the more manual `updatePresence`.
+
+```javascript
+const livingPir = device.add('livingPir')
+const living = room.add('living')
+living.addPresenceSensor(livingPir, 'pir', true)
+```
+
+In the above example this will listen to the attribute `pir` for the `livingPir` device. If the attribute is updated to `true` the room presence will be updated. If the value is anything other than `true`, e.g. `false` then the presence is updated and the room `thresholdDuration` will update the occupancy.
+
+```javascript
+const livingPir = device.add('livingPir')
+const living = room.add('living', { thresholdDuration: 0 })
+living.addPresenceSensor(livingPir, 'sensor', true)
+
+scenario('Living lights on when occupied')
+    .when()
+        .room('living').isOccupied()
+    .then(() => {
+        console.log('Room is occupied, turn on lights etc...')
+    })
+
+scenario('Living lights off when vacant')
+    .when()
+        .room('living').isVacant()
+    .then(() => {
+        console.log('Room is vacant, turn off lights etc...')
+    })
+
+//Simulate the office PIR sensor returning a true value
+livingPir.attribute.update('sensor', true)
+
+//Simulate the office PIR sensor returning a false value
+livingPir.attribute.update('sensor', false)
+```
+
+
+
+
 #### `room.get(name: string).updatePresence(sensorValue: boolean)`
 
 The presence should be called on a room sensor's value (e.g. PIR sensor). This will use the `thresholdDuration` option used in the `room.add()` API.
+
+This method is a more manual method. It's recommended to use `addPresenceSensor` method if possible.
 
 ```javascript
 // The default thresholdDuration is 15 minutes
