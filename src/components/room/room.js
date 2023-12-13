@@ -73,7 +73,7 @@ class Room {
         }
     }
 
-    /**
+    /**wwwsasd
      * Add presence sensor
      * 
      * @param {Device} device - Device object
