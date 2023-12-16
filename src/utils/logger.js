@@ -37,12 +37,18 @@ class Logger {
      * @returns {string} - Timestamp
      */
     _getCurrentTimestamp() {
-        const now = new Date()
-        const hours = now.getHours().toString().padStart(2, '0')
-        const minutes = now.getMinutes().toString().padStart(2, '0')
-        const seconds = now.getSeconds().toString().padStart(2, '0')
-        return `${hours}:${minutes}:${seconds}`
+        const now = new Date();
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+        const month = monthNames[now.getMonth()];
+        const day = now.getDate().toString().padStart(2, '0');
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+    
+        return `${month} ${day} ${hours}:${minutes}:${seconds}`;
     }
+    
 
     /**
      * Get the log level
@@ -69,24 +75,44 @@ class Logger {
      * Log
      *
      * @private
-     * @param {string} type - Type of log message, info, debug, error, etc..
+     * @param {string} type - Type of log message, info, debug, error, etc.
      * @param {any} message - Text of the log or an object.
      * @param {string} component - Which component or area of the framework is logging.
      */
     _log(type, message, component = 'default') {
-        const timestamp = this._getCurrentTimestamp()
-        const coloredType = this.types[type].color + type.toUpperCase() + '\x1b[0m' // Reset color
-        const logLevel = this._getLogLevel(component)
-
-        if (this.types[type].level <= logLevel) {
-            const formattedMessage = typeof message === 'object' ? JSON.stringify(message) : message
-            if (component === 'default') {
-                console.log(`[${timestamp}] [${coloredType}] ${formattedMessage}`)
-            } else {
-                console.log(`[${timestamp}] [${coloredType}] [${component}] ${formattedMessage}`)
-            }
+        // Exit early if the log level condition is not met
+        const logLevel = this._getLogLevel(component);
+        if (this.types[type].level > logLevel) {
+            return;
         }
+
+        const timestamp = this._getCurrentTimestamp();
+        
+        const logTypeColour = this.types[type].color
+        const logTypeBackground = '\x1b[40m'
+        const timeStampColor = '\x1b[37m'
+        const componentColor = '\x1b[94m'
+        const highlightColor = '\x1b[92m'
+        const messageColor = '\x1b[97m'
+
+        // Construct log components
+        const logTimestamp = `${timeStampColor}${timestamp}\x1b[0m`;
+        const logComponent = `${componentColor}${component}\x1b[0m`
+        const logType = `${logTypeBackground}${logTypeColour}${type.toUpperCase()}\x1b[0m`
+        
+        let logMessage = typeof message === 'object' ? JSON.stringify(message) : message;
+        logMessage = `${messageColor}${logMessage}\x1b[0m`
+
+        // Highlight words in quotes with green color
+        logMessage = logMessage.replace(/"([^"]*)"/g, `${highlightColor}"$1"\x1b[0m${messageColor}`);
+
+        // Construct the final log string
+        const logString = `${logTimestamp} ${logComponent} ${logType} ${logMessage}`;
+
+        console.log(logString);
     }
+
+
 }
 
 module.exports = new Logger()
