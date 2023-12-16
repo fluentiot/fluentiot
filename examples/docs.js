@@ -1,4 +1,4 @@
-const { scenario, device, event, capability, room, scene, variable  } = require('../index')
+const { scenario, device, event, capability, room, scene, variable, logger  } = require('../index')
 
 //Capability for the switch
 capability.add('switchOn', (device) => {
@@ -11,3 +11,6 @@ capability.add('lightOff', () => {
 })
 device.add('officeLight', {}, ['@lightOff'])
 device.get('officeLight').lightOff()
+
+
+logger.info(`Attribute, aaa updated "bb bb" to '{ "a":"b", "c":1000 }'`);

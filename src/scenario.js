@@ -221,13 +221,13 @@ class Scenario {
         // Cooldown checks
         const currentTime = Date.now();
         if (this.properties.cooldown > 0 && currentTime - this.lastAssetTime < this.properties.cooldown * 1000) {
-            logger.warn(`Scenario did not trigger because still in cooldown period`, 'scenario');
+            logger.warn(`Scenario "${this.description}" did not trigger because in cooldown period`, 'scenario');
             return false;
         }
         this.lastAssetTime = currentTime;
 
 
-        //Total executions with constraints
+        // Total executions with constraints
         let ranCallback = false
         let executionsWithConstraints = 0
 
@@ -235,13 +235,13 @@ class Scenario {
             const constraints = callbackItem.constraints || []
             const constraintsMet = constraints.length === 0 || constraints.every((constraint) => constraint())
 
-            //If a callback has run with constraints already and this callback
-            //has no constraints then do not run. This is probably an else()
+            // If a callback has run with constraints already and this callback
+            // has no constraints then do not run. This is probably an else()
             if (executionsWithConstraints > 0 && constraints.length === 0) {
                 return ranCallback
             }
 
-            //Run constraint group callback
+            // Run constraint group callback
             if (constraintsMet) {
                 logger.info(`Scenario "${this.description}" triggered`, 'scenario')
                 ranCallback = true

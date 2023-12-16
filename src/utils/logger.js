@@ -94,6 +94,7 @@ class Logger {
         const componentColor = '\x1b[94m'
         const highlightColor = '\x1b[92m'
         const messageColor = '\x1b[97m'
+        const jsonColour = '\x1b[91m'
 
         // Construct log components
         const logTimestamp = `${timeStampColor}${timestamp}\x1b[0m`;
@@ -103,7 +104,7 @@ class Logger {
         let logMessage = typeof message === 'object' ? JSON.stringify(message) : message;
         logMessage = `${messageColor}${logMessage}\x1b[0m`
 
-        // Highlight words in quotes with green color
+        // Highlight quotes
         logMessage = logMessage.replace(/"([^"]*)"/g, `${highlightColor}"$1"\x1b[0m${messageColor}`);
 
         // Construct the final log string
