@@ -37,8 +37,13 @@ describe('Time isTimeBetween', () => {
         expect(time.isTimeBetween('10:00', '15:00')).toBe(true);
     });
 
-    it('returns true within a time range crossing midnight', () => {
+    it('returns true within a time range crossing midnight when it is before midnight', () => {
         mockdate.set('2000-11-22 23:30:00');
+        expect(time.isTimeBetween('23:00', '03:00')).toBe(true);
+    });
+
+    it('returns true within a time range crossing midnight when it is after midnight', () => {
+        mockdate.set('2000-11-22 01:30:00');
         expect(time.isTimeBetween('23:00', '03:00')).toBe(true);
     });
 
