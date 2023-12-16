@@ -34,6 +34,8 @@ class Fluent {
                 Fluent.components[key].afterLoad()
             }
         }
+
+        logger.info(`Fluent IoT Ready`, 'fluent');
     }
 
     /**

@@ -38,9 +38,9 @@ class CapabilityComponent extends Component {
             throw new Error(`Capability name "${name} is not valid`);
         }
 
-        this.capabilities[name] = () => {
+        this.capabilities[name] = (...args) => {
             logger.info(`Capability "${name}" running`, 'device');
-            return callback()
+            return callback(...args)
         }
         return this.capabilities[name]
     }

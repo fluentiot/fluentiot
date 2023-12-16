@@ -414,14 +414,14 @@ scenario('Triggers 12 hours')
 
 #### `.time.between(start_time: string, end_time: string)`
 
-Checking if the scenario was triggered between two times.
+Checking if the scenario was triggered between two times. It can also support times crossing over midnight.
 
 ```javascript
 scenario('Between times')
     .when()
         .empty()
     .constraint()
-        .time.between('00:00', '12:00')
+        .time.between('05:00', '12:00')
         .then(() => {
             console.log('Good Morning')
         })
@@ -431,9 +431,14 @@ scenario('Between times')
             console.log('Good Afternoon')
         })
     .constraint()
-        .time.between('18:01', '23:59')
+        .time.between('18:01', '23:00')
         .then(() => {
             console.log('Good Evening')
+        })
+    .constraint()
+        .time.between('23:01', '04:59')
+        .then(() => {
+            console.log('Crossing over midnight')
         })
     .assert()
 ```

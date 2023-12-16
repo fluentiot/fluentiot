@@ -106,12 +106,31 @@ class TimeComponent extends Component {
                             )
                             return false
                         }
-                        const currentTime = dayjs().format('HH:mm')
-                        return currentTime >= targetStart && currentTime <= targetEnd
+                        return this.isTimeBetween(targetStart, targetEnd)
                     }
                 },
             },
         }
+    }
+
+    /**
+     * Checks if the current time is within a specified time range.
+     *
+     * @param {string} start - The start time in the format 'HH:mm'.
+     * @param {string} end - The end time in the format 'HH:mm'.
+     * @returns {boolean} True if the current time is within the specified range, false otherwise.
+     */
+    isTimeBetween(start, end) {
+        const currentTime = dayjs();
+        const startTime = dayjs(start, 'HH:mm');
+        const endTime = dayjs(end, 'HH:mm');
+    
+        // If the end time is before or the same as the start time, it means the range crosses midnight
+        if (endTime.isBefore(startTime) || endTime.isSame(startTime, 'minute')) {
+            return currentTime.isAfter(startTime) || currentTime.isBefore(endTime);
+        }
+    
+        return currentTime.isAfter(startTime) && currentTime.isBefore(endTime);    
     }
 
     /**
