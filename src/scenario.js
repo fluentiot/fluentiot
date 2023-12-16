@@ -11,8 +11,9 @@ class Scenario {
      *
      * @param {Object} Fluent - Fluent static
      * @param {String} description - Description of the scenario
+     * @param {object} properties - Properties for scenario
      */
-    constructor(Fluent, description) {
+    constructor(Fluent, description, properties) {
         //Validate
         if (!Fluent) {
             throw new Error(`Fluent core not passed, you should not call scenario directly`)
@@ -24,11 +25,18 @@ class Scenario {
         this.Fluent = Fluent //Singleton object for core
         this.description = description //Verbose description of the scenario
 
+        this.lastAssetTime = null //When the scenario last asserted, used for cooldown
         this.testMode = false //In test mode
         this.runnable = true //Can scenario be run? Can be switched when .test() mode is used
         this.triggers = {} //Triggers from components loaded in
         this.callbacks = [] //Stores a group of constraints and callbacks for that group
         this.trace = [] //Debug stack trace
+
+        //Scenario rules
+        const defaultProperties = {
+            cooldown: 1000
+        }
+        this.properties = { ...defaultProperties, ...properties }
 
         //Fetch all required components from the Fluent / config file
         this.components = this.Fluent.component().all()
@@ -209,6 +217,15 @@ class Scenario {
         if (!this.runnable) {
             return false
         }
+
+        // Cooldown checks
+        const currentTime = Date.now();
+        if (this.properties.cooldown > 0 && currentTime - this.lastAssetTime < this.properties.cooldown * 1000) {
+            logger.warn(`Scenario did not trigger because still in cooldown period`, 'scenario');
+            return false;
+        }
+        this.lastAssetTime = currentTime;
+
 
         //Total executions with constraints
         let ranCallback = false
