@@ -6,9 +6,8 @@ capability.add('switchOn', (device) => {
     console.log(`Make API call to Tuya to switch device ${deviceId} on`)
 })
 
-scenario('Runs every minute')
-    .when()
-        .event('time.minute').on()
-    .then(() => {
-        console.log('On the minute')
-    })
+capability.add('lightOff', () => {
+    console.log('Light off!')
+})
+device.add('officeLight', {}, ['@lightOff'])
+device.get('officeLight').lightOff()
