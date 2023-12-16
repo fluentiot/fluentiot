@@ -55,7 +55,9 @@ This sets up a scenario and should explain the purpose of the scenario.
     .time.is('18:00')
 ```
 
-Specifying the triggers that will run the following actions. In this case the time is 6:00pm. Is it possible to use multiple triggers that are treated as an "or".
+Triggers that will make the scenario start executing. In this example if the time is 18:00 the following `.constraint()` will be checked.
+
+Multiple triggers act as an "or" and can be useful if a room has multiple PIR sensors.
 
 ### Constraints and Actions
 
@@ -63,17 +65,17 @@ Specifying the triggers that will run the following actions. In this case the ti
 .constraint()
     .day.is('Weekend')
     .then(() => {
-        device.get('office lights').warmLights()
+        device.get('officeLights').warmLights()
     })
 .else()
     .then(() => {
-        device.get('office lights').dayLights()
+        device.get('officeLights').dayLights()
     })
 ```
 
 Multiple constraint groups using the `day` component to decide which `capability` to use for the office lights.
 
-For this to example to work you would need to setup both `device` and the device `capability`.
+For this to example to work you would need to create a device called "officeLights" with two capabilities, "warmLights" and "dayLights".
 
 ### Simple Example
 
@@ -82,7 +84,7 @@ scenario('At 6:00pm turn on the office light')
     .when()
         .time.is('18:00')
     .then(() => {
-        device.get('office lights').turnOn()
+        device.get('officeLights').turnOn()
     })
 ```
 
@@ -90,7 +92,7 @@ In this example at 6:00pm the office lights are turned on. There are no constrai
 
 # API
 
-This API includes many working examples.
+This API includes working examples.
 
 ## Contents
 
@@ -205,7 +207,7 @@ scenario('constraint triggers at 19:00 and checks the days')
             console.log('Is it the weekend')
         })
 
-scenario('no constraints')
+scenario('trigger at 19:00 with no constraint checking')
     .when()
         .time.is('19:00')
     .then(() => {
@@ -493,7 +495,7 @@ const { device, capability } = require('fluent-iot')
 Create a new IoT device. All your IoT devices, from switches, buttons, lights etc.. must have a device so you can interact with them and update their state.
 ```javascript
 //Creating a basic device
-device.add('kitchen-switch')
+device.add('kitchenSwitch')
 ```
 
 Understanding the concept of IoT state provides clarity in device behavior. For instance, a switch, with a defined state (on or off), contrasts with a button, which lacks a persistent state and can be pressed multiple times, consistently triggering the same action. By default, devices are stateful. However, for buttons, setting them as stateless (`stateful: false`) is necessary. If a button is not explicitly set as stateless, it will respond to a single press only.
@@ -508,7 +510,7 @@ device.add('kitchenButton', { stateful: false })
 Example of adding devices with capabilities.
 ```javascript
 //Adding a device with default attributes
-device.add('kitchen-kettle', { id: 'Xyz', group: 'kettle' })
+device.add('kitchenKettle', { id: 'Xyz', group: 'kettle' })
 
 //Add on and off capabilities using the @ reference
 capability.add('on', () => {
@@ -517,21 +519,21 @@ capability.add('on', () => {
 capability.add('off', () => {
     console.log('Off!')
 })
-device.add('kitchen-light', {}, ['@on', '@off'])
+device.add('kitchenLight', {}, ['@on', '@off'])
 
 //Adding warm capability
 const warm = capability.add('warm', () => {
     console.log('Warm!')
 })
-device.add('office-light', {}, ['@on', '@off', '@warm'])
+device.add('officeLight', {}, ['@on', '@off', '@warm'])
 
 //Using the device capabilities
-device.get('kitchen-light').on()
-device.get('kitchen-light').off()
+device.get('kitchenLight').on()
+device.get('kitchenLight').off()
 
-device.get('office-light').on()
-device.get('office-light').off()
-device.get('office-light').warm()
+device.get('officeLight').on()
+device.get('officeLight').off()
+device.get('officeLight').warm()
 ```
 
 #### `device.get(name: string)`
@@ -540,13 +542,13 @@ Fetching a device.
 
 ```javascript
 //Basic add and get
-device.add('kitchen-light')
-const kitchenLight = device.get('kitchen-light')
+device.add('kitchenLight')
+const kitchenLight = device.get('kitchenLight')
 console.log(kitchenLight)
 
 //Fetching a device attribute
-device.add('office-switch', { id: 'Abc' })
-console.log(device.get('office-switch').attribute.get('id'))
+device.add('officeSwitch', { id: 'Abc' })
+console.log(device.get('officeSwitch').attribute.get('id'))
 ```
 
 #### `device.findOneByAttribute(attributeName: string, attributeValue: any)`
@@ -560,7 +562,7 @@ capability.add('switchOn', (device) => {
     console.log(`Make API call to Tuya to switch device ${deviceId} on`)
 })
 
-device.add('office-led-monitor', { id: '111' }, ['@switchOn'])
+device.add('officeLedMonitor', { id: '111' }, ['@switchOn'])
 
 //Switch this device on
 const matchedDevice = device.findOneByAttribute('id', '111')
@@ -581,8 +583,8 @@ capability.add('switchOn', (device) => {
 })
 
 //Grouped devices
-device.add('office-led-monitor', { id: '111', group: 'office' }, ['@switchOn'])
-device.add('office-led-desk', { id: '222', group: 'office' }, ['@switchOn'])
+device.add('officeLedMonitor', { id: '111', group: 'office' }, ['@switchOn'])
+device.add('officeLedDesk', { id: '222', group: 'office' }, ['@switchOn'])
 
 //Switch on devices that match this attribute group value
 const devices = device.findAllByAttribute('group', 'office')
@@ -600,17 +602,17 @@ Device triggers are an extension of the [Attributes DSL](#attributes-api) and [E
 If a devices attribute is updated to true
 
 ```javascript
-device.add('office-switch', { state: false })
+device.add('officeSwitch', { state: false })
 
 scenario('Detect when a switch is turned on')
     .when()
-        .device('office-switch').attribute('state').isTruthy()
+        .device('officeSwitch').attribute('state').isTruthy()
     .then(() => {
         console.log('Office switch is now on')
     })
 
 //Attribute updated by IoT gateway
-device.get('office-switch').attribute.set('state', true)
+device.get('officeSwitch').attribute.set('state', true)
 ```
 
 ### Events
@@ -647,8 +649,8 @@ Creation of a new reusable capability.
 capability.add('lightOff', () => {
     console.log('Light off!')
 })
-device.add('office-light', {}, ['@lightOff'])
-device.get('office-light').lightOff()
+device.add('officeLight', {}, ['@lightOff'])
+device.get('officeLight').lightOff()
 ```
 
 More advanced usage showing reusability.
@@ -661,11 +663,11 @@ capability.add('switchOn', (device) => {
 })
 
 //Devices with switchOn capability
-device.add('office-led-monitor', { id: 'tuya-id-111' }, ['@switchOn'])
-device.add('office-led-desk', { id: 'tuya-id-222' }, ['@switchOn'])
+device.add('officeLedMonitor', { id: 'tuya-id-111' }, ['@switchOn'])
+device.add('officeLedDesk', { id: 'tuya-id-222' }, ['@switchOn'])
 
-device.get('office-led-monitor').switchOn()
-device.get('office-led-desk').switchOn()
+device.get('officeLedMonitor').switchOn()
+device.get('officeLedDesk').switchOn()
 ```
 
 ---
@@ -863,12 +865,12 @@ Using this API with a scenario and simulating device updates.
 
 ```javascript
 room.add('office', { thresholdDuration: 5 })
-device.add('office-pir')
+device.add('officePir')
 
 //Listening to PIR updates
 scenario('Office PIR sensor with movement and update presence')
     .when()
-        .device('office-pir').attribute('sensor').is(true)
+        .device('officePir').attribute('sensor').is(true)
     .then(() => {
         room.get('office').updatePresence(true)
         console.log(room.get('office').isOccupied()) //true
@@ -877,7 +879,7 @@ scenario('Office PIR sensor with movement and update presence')
 
 scenario('Office PIR sensor with no movement')
     .when()
-        .device('office-pir').attribute('sensor').is(false)
+        .device('officePir').attribute('sensor').is(false)
     .then(() => {
         room.get('office').updatePresence(false)
         console.log(room.get('office').isOccupied()) //true
@@ -902,10 +904,10 @@ scenario('Office lights off when vacant')
     })
 
 //Simulate the office PIR sensor returning a true value
-device.get('office-pir').attribute.update('sensor', true)
+device.get('officePir').attribute.update('sensor', true)
 
 //Simulate the office PIR sensor returning a false value
-device.get('office-pir').attribute.update('sensor', false)
+device.get('officePir').attribute.update('sensor', false)
 ```
 
 ### Triggers
@@ -944,7 +946,9 @@ scenario('Office lights off when vacant')
 #### `.room(name: string).isOccupied()`
 Checking if the room is occupied.
 ```javascript
-scenario('')
+const office = room.add('office')
+office.updatePresence(true)
+scenario('Says good morning if the room is occupied')
     .when()
         .empty()
     .constraint()
@@ -952,10 +956,30 @@ scenario('')
         .then(() => {
             console.log('Good Morning')
         })
+    .else()
+        .then(() => {
+            console.log('Office is vacant')
+        })
     .assert()
 ```
 
+
+
 #### `.room(name: string).isVacant()`
+Checking if the room is vacant.
+```javascript
+// Rooms are automatically set to "vacant" state on creation.
+const office = room.add('office')
+scenario('Checking if vacant')
+    .when()
+        .empty()
+    .constraint()
+        .room('office').isVacant()
+        .then(() => {
+            console.log('Empty room')
+        })
+    .assert()
+```
 
 
 ---

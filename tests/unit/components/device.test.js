@@ -25,6 +25,10 @@ describe('Device add with basic attributes', () => {
         device.add('pir')
         expect(() => device.add('pir')).toThrow(Error)
     })
+
+    it('throws if scene name is not valid', () => {
+        expect(() => device.add('my name')).toThrow()
+    })
 })
 
 describe('Device attributes', () => {
@@ -34,8 +38,8 @@ describe('Device attributes', () => {
     })
 
     it('find single device by a certain attribute', () => {
-        const newDevice1 = device.add('pir-office', { id: '123' })
-        const newDevice2 = device.add('pir-living', { id: '321' })
+        const newDevice1 = device.add('pirOffice', { id: '123' })
+        const newDevice2 = device.add('pirLiving', { id: '321' })
 
         //Single found
         const device1 = device.findOneByAttribute('id', '123')
@@ -57,8 +61,8 @@ describe('Device attributes', () => {
     })
 
     it('find multiple devices by a certain attribute', () => {
-        const newDevice1 = device.add('pir-office', { foo: 'bar' })
-        const newDevice2 = device.add('pir-living', { foo: 'bar' })
+        const newDevice1 = device.add('pirOffice', { foo: 'bar' })
+        const newDevice2 = device.add('pirLiving', { foo: 'bar' })
 
         const devices = device.findAllByAttribute('foo', 'bar')
         expect(devices).toHaveLength(2)
@@ -77,7 +81,7 @@ describe('Device capabilities', () => {
 
     beforeEach(() => {
         device = new DeviceComponent(Fluent)
-        officeSwitch = device.add('office switch')
+        officeSwitch = device.add('officeSwitch')
 
         const fakeCapabilityComponent = {
             get: (name) => {
@@ -188,16 +192,16 @@ describe('Device capabilities', () => {
     })
 
     it('can create a new device with capabilities', () => {
-        const livingLight = device.add('living room light', {}, ['@switchOff'])
+        const livingLight = device.add('livingRoomLight', {}, ['@switchOff'])
         expect(livingLight.switchOff()).toBe(true)
     })
 
     it('will throw an error when setting up a device with a capability that does not exist', () => {
-        expect(() => device.add('living room light', {}, ['@doesNotExist'])).toThrow(Error)
+        expect(() => device.add('livingRoomLight', {}, ['@doesNotExist'])).toThrow(Error)
     })
 
     it('will throw an error if passed capability is not a reference', () => {
-        expect(() => device.add('living room light', {}, ['notReference'])).toThrow(Error)
+        expect(() => device.add('livingRoomLight', {}, ['notReference'])).toThrow(Error)
     })
 
     it('capability can be executed and returns a success or failure', () => {
@@ -292,7 +296,7 @@ describe('Device triggers', () => {
 
 
 
-describe.only('Device triggers with state', () => {
+describe('Device triggers with state', () => {
     let Scenario
     let device
 

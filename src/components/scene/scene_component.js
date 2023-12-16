@@ -1,6 +1,7 @@
 const Component = require('./../component')
 const Scene = require('./scene')
 const logger = require('./../../utils/logger')
+const { isValidName } = require('./../../utils')
 
 /**
  * Scene component
@@ -30,6 +31,9 @@ class SceneComponent extends Component {
     add(name, callback) {
         if (this.scenes[name]) {
             throw new Error(`Scene with the name "${name}" already exists`)
+        }
+        if (!isValidName(name)) {
+            throw new Error(`Scene name "${name} is not valid`);
         }
         if (!callback) {
             throw new Error(`Scene "${name}" requires a callback method`)

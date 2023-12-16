@@ -1,6 +1,7 @@
 const Component = require('./../component')
 const Room = require('./room')
 const logger = require('./../../utils/logger')
+const { isValidName } = require('./../../utils')
 
 /**
  * Room component
@@ -9,6 +10,7 @@ const logger = require('./../../utils/logger')
  * @class
  */
 class RoomComponent extends Component {
+
     /**
      * Constructor
      *
@@ -29,6 +31,9 @@ class RoomComponent extends Component {
     add(name, attributes) {
         if (this.rooms[name]) {
             throw new Error(`Room with the name "${name}" already exists`)
+        }
+        if (!isValidName(name)) {
+            throw new Error(`Room name "${name} is not valid`);
         }
         this.rooms[name] = new Room(this, name, attributes)
         return this.rooms[name]

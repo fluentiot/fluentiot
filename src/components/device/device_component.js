@@ -1,6 +1,7 @@
 const Device = require('./device')
 const Component = require('./../component')
 const logger = require('./../../utils/logger')
+const { isValidName } = require('./../../utils')
 
 /**
  * Device component
@@ -29,6 +30,9 @@ class DeviceComponent extends Component {
     add(name, attributes = {}, capabilities = []) {
         if (this.devices[name]) {
             throw new Error(`Device with the name "${name}" already exists`)
+        }
+        if (!isValidName(name)) {
+            throw new Error(`Device name "${name} is not valid`);
         }
         this.devices[name] = new Device(this, name, attributes, capabilities)
         return this.devices[name]
