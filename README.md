@@ -112,6 +112,17 @@ This API includes working examples.
 
 ## Scenario API
 
+#### `scenario(description: string[, properties: object])`
+Creating a new scenario with a unique description describing the purpose of the scenario.
+
+The `cooldown` property serves to prevent the occurrence of double-triggering in a scenario. For instance, when utilizing two PIR sensors in a living room, they may be triggered at slightly different times. The presence of a cooldown effectively inhibits the scenario from executing twice in quick succession.
+
+| Property      | Description                 | Default |
+| ------------- | --------------------------- | ---- |
+| `cooldown`    | Time interval in milliseconds, defining the period during which triggers are temporarily disabled to prevent the execution of actions. | 1000ms (1 sec) |
+
+
+
 #### `when()`
 
 Trigger or triggers for the scenario. If multiple triggers are used they act as an "or".
@@ -341,18 +352,19 @@ scenario('Only May 2024')
     .assert()
 ```
 
-Example date formats supported:
+| Date Format   | Description                                       |
+| ------------- | ------------------------------------------------- |
+| `1st May`      | Represents a specific day and month.              |
+| `5 May`        | Represents a specific day in May.                 |
+| `May 5th`      | Represents a specific day in May.                 |
+| `May 5`        | Represents a specific day and month.              |
+| `2023-12-31`   | Represents a specific date in the YYYY-MM-DD format. |
+| `January 15`   | Represents a specific day in January.             |
+| `15th January` | Represents a specific day in January.             |
+| `12/31/2023`   | Represents a specific date in MM/DD/YYYY format.  |
+| `31 Dec 2023`  | Represents a specific date in DD MMM YYYY format. |
+| `Dec 31 2023`  | Represents a specific date in MMM DD YYYY format. |
 
--   `1st May`: Represents a specific day and month.
--   `5 May`: Represents a specific day in May.
--   `May 5th`: Represents a specific day in May.
--   `May 5`: Represents a specific day and month.
--   `2023-12-31`: Represents a specific date in the YYYY-MM-DD format.
--   `January 15`: Represents a specific day in January.
--   `15th January`: Represents a specific day in January.
--   `12/31/2023`: Represents a specific date in MM/DD/YYYY format.
--   `31 Dec 2023`: Represents a specific date in DD MMM YYYY format.
--   `Dec 31 2023`: Represents a specific date in MMM DD YYYY format.
 
 ---
 
