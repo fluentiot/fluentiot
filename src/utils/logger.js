@@ -6,15 +6,16 @@ const config = require('./../config.js')
  * @class
  */
 class Logger {
+    
     /**
      * Constructor
      */
     constructor() {
         this.types = {
+            error: { color: '\x1b[31m', level: 0 },
             log: { color: '\x1b[37m', level: 0 },
             info: { color: '\x1b[36m', level: 1 },
             warn: { color: '\x1b[33m', level: 2 },
-            error: { color: '\x1b[31m', level: 3 },
             debug: { color: '\x1b[35m', level: 4 },
         }
 
@@ -49,7 +50,6 @@ class Logger {
         return `${month} ${day} ${hours}:${minutes}:${seconds}`;
     }
     
-
     /**
      * Get the log level
      *
@@ -100,8 +100,16 @@ class Logger {
         const logTimestamp = `${timeStampColor}${timestamp}\x1b[0m`;
         const logComponent = `${componentColor}${component}\x1b[0m`
         const logType = `${logTypeBackground}${logTypeColour}${type.toUpperCase()}\x1b[0m`
-        
-        let logMessage = typeof message === 'object' ? JSON.stringify(message) : message;
+
+        // Message
+        let logMessage;
+        if (message instanceof Error) {
+            logMessage = `${message.message}\n${message.stack}`
+        } else if(typeof message === 'object') {
+            logMessage = JSON.stringify(message)
+        } else {
+            logMessage = message
+        }
         logMessage = `${messageColor}${logMessage}\x1b[0m`
 
         // Highlight quotes
@@ -112,7 +120,6 @@ class Logger {
 
         console.log(logString);
     }
-
 
 }
 

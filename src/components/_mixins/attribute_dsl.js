@@ -33,7 +33,7 @@ const AttributeDslMixin = (parent, name) => {
                     (!parent.attributes.stateful || parent.attributes.stateful.value) &&
                     parent.attributes[attributeName]?.value === attributeValue
                 ) {
-                    return;
+                    return
                 }
 
                 // Set it

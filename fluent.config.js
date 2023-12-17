@@ -17,12 +17,12 @@ const config = {
         },
     },
     tuya: {
-        uid: "",
-        base_url: "https://openapi.tuyaus.com",
-        access_key: "",
-        secret_key: "",
-        username: "",
-        password: ""
+        uid: '',
+        base_url: 'https://openapi.tuyaus.com',
+        access_key: '',
+        secret_key: '',
+        username: '',
+        password: ''
     }
 }
 

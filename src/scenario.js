@@ -220,7 +220,7 @@ class Scenario {
 
         // Cooldown checks
         const currentTime = Date.now();
-        if (this.properties.cooldown > 0 && currentTime - this.lastAssetTime < this.properties.cooldown * 1000) {
+        if (this.properties.cooldown > 0 && currentTime - this.lastAssetTime < this.properties.cooldown) {
             logger.warn(`Scenario "${this.description}" did not trigger because in cooldown period`, 'scenario');
             return false;
         }
@@ -244,8 +244,16 @@ class Scenario {
             // Run constraint group callback
             if (constraintsMet) {
                 logger.info(`Scenario "${this.description}" triggered`, 'scenario')
-                ranCallback = true
-                callbackItem.callback(this, ...args)
+
+                try {
+                    callbackItem.callback(this, ...args)
+                    ranCallback = true
+                } catch(e) {
+                    logger.error(`Scenario "${this.description}" has an error with the actions`, 'scenario')
+                    logger.error(e, 'scenario')
+                    return false
+                }
+
                 if (constraints.length > 0) {
                     executionsWithConstraints++
                 }
