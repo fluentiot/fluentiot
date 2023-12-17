@@ -141,6 +141,13 @@ class DeviceComponent extends Component {
                 return
             }
 
+            // If device is stateful and value has not changed then return
+            // A button, it's not stateful and can be pressed multiple times
+            // A switch, it is stateful, and each time it's pressed the state changes
+            if(device.attribute.get('stateful') === true && changedData.changed === false) {
+                return
+            }
+
             if (
                 (operator === 'is' && changedData.value === attributeValue) ||
                 (operator === 'not' && changedData.value !== attributeValue) ||

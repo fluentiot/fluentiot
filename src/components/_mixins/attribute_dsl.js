@@ -24,16 +24,17 @@ const AttributeDslMixin = (parent, name) => {
                 return parent.attributes[attributeName].value
             },
             set: (attributeName, attributeValue) => {
-                parent.attributes[attributeName] = { value: attributeValue }
+                parent.attributes[attributeName] = {
+                    value: attributeValue,
+                    changed: true
+                }
                 return true
             },
             update: (attributeName, attributeValue) => {
-                // Do not allow double setting
-                if (
-                    (!parent.attributes.stateful || parent.attributes.stateful.value) &&
-                    parent.attributes[attributeName]?.value === attributeValue
-                ) {
-                    return
+                // Has the value changed?
+                changed = true
+                if (parent.attributes[attributeName]?.value === attributeValue) {
+                    changed = false
                 }
 
                 // Set it
@@ -44,6 +45,7 @@ const AttributeDslMixin = (parent, name) => {
                 parent.parent.emit(`${name}.${parent.name}.attribute`, {
                     name: attributeName,
                     value: attributeValue,
+                    changed
                 })
             },
         },

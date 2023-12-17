@@ -55,12 +55,12 @@ describe('Room attributes DSL', () => {
         expect(office.attribute.get('foo')).toBe(null)
     })
 
-    it('can update attribute and emit, updating twice does not emit twice', () => {
+    it('can update attribute and emit, updating twice', () => {
         const office = room.add('officeRoom')
         jest.spyOn(room, 'emit')
         office.attribute.update('foo', 'bar')
         office.attribute.update('foo', 'bar')
-        expect(room.emit).toHaveBeenCalledTimes(1)
+        expect(room.emit).toHaveBeenCalledTimes(2)
     })
 })
 
