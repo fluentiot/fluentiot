@@ -84,7 +84,6 @@ class TuyaOpenMQ extends EventEmitter {
         }
     }
 
-
     /**
      * Start MQTT connection
      */
@@ -92,9 +91,9 @@ class TuyaOpenMQ extends EventEmitter {
         this.__run_mqtt();
 
         //Reconnect
-        setTimeout(() => {
+        setInterval(() => {
             this.reconnect(true);
-        }, 30000);
+        }, 600000); //10 minutes
     }
 
     /**

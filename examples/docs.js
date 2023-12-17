@@ -5,3 +5,8 @@ capability.add('lightOff', () => {
 })
 device.add('officeLight', {}, ['@lightOff'])
 device.get('officeLight').lightOff()
+
+// Example usage
+const logMessage = 'The "user" field in the JSON {"name": "John", "joe": { "a":"b" } } is: ' + JSON.stringify({ name: 'Jane' });
+
+logger.log(logMessage)

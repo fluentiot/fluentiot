@@ -92,9 +92,6 @@ class Logger {
         const logTypeBackground = '\x1b[40m'
         const timeStampColor = '\x1b[37m'
         const componentColor = '\x1b[94m'
-        const highlightColor = '\x1b[92m'
-        const messageColor = '\x1b[97m'
-        const jsonColour = '\x1b[91m'
 
         // Construct log components
         const logTimestamp = `${timeStampColor}${timestamp}\x1b[0m`;
@@ -110,16 +107,57 @@ class Logger {
         } else {
             logMessage = message
         }
-        logMessage = `${messageColor}${logMessage}\x1b[0m`
-
-        // Highlight quotes
-        logMessage = logMessage.replace(/"([^"]*)"/g, `${highlightColor}"$1"\x1b[0m${messageColor}`);
+        logMessage = this._formatLogMessage(logMessage)
 
         // Construct the final log string
         const logString = `${logTimestamp} ${logComponent} ${logType} ${logMessage}`;
 
         console.log(logString);
     }
+
+    /**
+     * Formats a log message, highlighting JSON strings and quoted strings.
+     *
+     * @param {string} message - The log message to format.
+     * @returns {string} The formatted log message with highlighted JSON and quotes.
+     */
+    _formatLogMessage(message) {
+        let formattedMessage = ''
+        let insideQuotes = false
+        let insideJson = false
+        let jsonDepth = 0
+    
+        // Escape sequences for colors
+        const reset = '\x1b[97m';
+        const jsonColor = '\x1b[38;5;208m'; // Magenta
+        const quoteColor = '\x1b[92m'; // Cyan
+    
+        // Iterate over each character
+        for (let i = 0; i < message.length; i++) {
+            const char = message[i];
+    
+            if (char === '{' && !insideQuotes) {
+                insideJson = true;
+                jsonDepth++;
+                formattedMessage += jsonColor + char;
+            } else if (char === '}' && !insideQuotes) {
+                jsonDepth--;
+                if(jsonDepth === 0) { insideJson = false; }
+                formattedMessage += jsonColor + char;
+            } else if (char === '"' && !insideJson) {
+                insideQuotes = !insideQuotes;
+                formattedMessage += quoteColor + char;
+            } else {
+                formattedMessage += insideJson || insideQuotes ? char : reset + char;
+            }
+        }
+    
+        return reset + formattedMessage;
+    }
+    
+
+      
+      
 
 }
 
