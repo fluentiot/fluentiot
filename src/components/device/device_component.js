@@ -24,13 +24,14 @@ class DeviceComponent extends Component {
      *
      * @param {string} name - The name of the device.
      * @param {object} [attributes={}] - Attributes for the device.
+     * @param {object} [properties={}] - Properties for the device.
      * @param {array} [capabilities=[]] - Capabilities the device will have, must be passed as @ reference.
      */
-    add(name, attributes = {}, capabilities = []) {
+    add(name, attributes = {}, properties = {}, capabilities = []) {
         if (this.devices[name]) {
             throw new Error(`Device with the name "${name}" already exists`)
         }
-        this.devices[name] = new Device(this, name, attributes, capabilities)
+        this.devices[name] = new Device(this, name, attributes, properties, capabilities)
         return this.devices[name]
     }
 
