@@ -395,7 +395,10 @@ describe('Triggers', () => {
     test('will put the scenario into test mode in the DSL', () => {
         const mockCallback = jest.fn()
 
-        const scenario = new Scenario(Fluent, 'Foobar').when().empty().then(mockCallback).test()
+        const scenario = new Scenario(Fluent, 'Foobar', { only:true })
+            .when()
+                .empty()
+            .then(mockCallback)
 
         expect(scenario.testMode).toBe(true)
     })

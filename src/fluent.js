@@ -123,7 +123,7 @@ class Fluent {
      * @returns {object|array} - Scenario instance or instances
      */
     static scenario() {
-        const create = (description) => {
+        const create = (description, ...args) => {
             // Description is always needed
             if (!description) {
                 throw new Error(`Scenario description must be defined`)
@@ -136,7 +136,7 @@ class Fluent {
                 }
             }
 
-            const scenario = new Scenario(this, description)
+            const scenario = new Scenario(this, description, ...args)
             Fluent.scenarios.push(scenario)
 
             // Make sure all future creations of scenario are updated if test mode is on
@@ -146,8 +146,8 @@ class Fluent {
         }
 
         return {
-            create: (description) => {
-                return create(description)
+            create: (description, ...args) => {
+                return create(description, ...args)
             },
             all: () => {
                 return Fluent.scenarios

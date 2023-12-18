@@ -5,6 +5,12 @@ const DeviceComponent = require('./../../../src/components/device/device_compone
 const Fluent = require('./../../../src/fluent')
 const ComponentHelper = require('./../../helpers/component_helper.js')
 
+
+console.log(describe)
+console.log(describe.only)
+
+
+
 let device
 beforeEach(() => {
     device = new DeviceComponent(Fluent)

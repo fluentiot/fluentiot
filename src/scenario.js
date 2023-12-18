@@ -6,6 +6,7 @@ const logger = require('./utils/logger')
  * @class
  */
 class Scenario {
+
     /**
      * Constructor of a new scenario
      *
@@ -34,9 +35,16 @@ class Scenario {
 
         //Scenario rules
         const defaultProperties = {
-            cooldown: 1000
+            cooldown: 1000,
+            only: false
         }
         this.properties = { ...defaultProperties, ...properties }
+
+        // Test mode?
+        if (this.properties.only === true) {
+            this.testMode = true
+            this.Fluent.updateTestMode(this)
+        }
 
         //Fetch all required components from the Fluent / config file
         this.components = this.Fluent.component().all()
@@ -194,15 +202,6 @@ class Scenario {
             callback,
             constraints,
         })
-        return this
-    }
-
-    /**
-     * Set scenario to test mode
-     */
-    test() {
-        this.testMode = true
-        this.Fluent.updateTestMode(this)
         return this
     }
 

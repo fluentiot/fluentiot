@@ -149,43 +149,6 @@ scenario('using empty can be useful for debugging a scenario')
     .assert()
 ```
 
-#### `test()`
-
-For debugging if `.test()` is added to any scenario only these scenarios can be triggered and all other scenarios are disabled from running.
-
-```javascript
-scenario('will not run at 17:00 and not in test mode')
-    .when()
-        .time.is('17:00')
-    .then(() => {})
-
-scenario('will run at 18:00 because in test mode')
-    .when()
-        .time.is('18:00')
-    .then(() => {})
-    .test()
-
-scenario('will run at 19:00 because also in test mode')
-    .when()
-        .time.is('19:00')
-    .then(() => {})
-    .test()
-```
-
-#### `assert()`
-
-For debugging if `.assert()` is added to any scenario the scenario will be triggered.
-
-```javascript
-scenario('forced to run because assert() was used')
-    .when()
-        .time.is('19:00')
-    .then(() => {
-        console.log('Triggered')
-    })
-    .assert()
-```
-
 #### `.constraint()`
 
 Constraints are optional. Each component has it's own set of constraints and in the examples below they are using the `datetime` component. Multiple constraints can be used, creating constraint groups. Each constraint must have a `then()`.
@@ -247,6 +210,28 @@ scenario('assert and triggers can return args to then()')
         console.log(`Colour 2: "${colour2}"`) //green
     })
     .assert('red', 'green')
+```
+
+
+### Testing scenarios
+
+If a scenario is failing, one of the first steps is to investigate if it fails when it's the only scenario running. To run only one scenario temporarily modify its command to scenario.only within the relevant code block.
+
+```javascript
+scenario.only('this is the only scenario that will run')
+    .when()
+        .time.is('18:00')
+    .then(() => { console.log('it ran') })
+event.emit('time', '18:00')
+```
+
+To skip the triggers entirely use an `assert`.
+```javascript
+scenario.only('this is the only scenario that will run')
+    .when()
+        .time.is('18:00')
+    .then(() => { console.log('it ran') })
+    .assert()
 ```
 
 ---
