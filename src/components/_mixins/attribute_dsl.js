@@ -32,7 +32,7 @@ const AttributeDslMixin = (parent, name) => {
             },
             update: (attributeName, attributeValue) => {
                 // Has the value changed?
-                changed = true
+                let changed = true
                 if (parent.attributes[attributeName]?.value === attributeValue) {
                     changed = false
                 }
@@ -41,7 +41,7 @@ const AttributeDslMixin = (parent, name) => {
                 parent.attributes[attributeName] ??= {}
                 parent.attributes[attributeName].value = attributeValue
 
-                logger.info(`Attribute, ${parent.name} updated "${attributeName}" to "${attributeValue}"`, name)
+                logger.info(`Attribute, "${parent.name}" updated "${attributeName}" to "${attributeValue}"`, name)
                 parent.parent.emit(`${name}.${parent.name}.attribute`, {
                     name: attributeName,
                     value: attributeValue,
