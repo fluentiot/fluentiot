@@ -2,7 +2,6 @@ const logger = require('./../../utils/logger')
 
 /**
  * Attributes
- * Dynamic, real-time data with limited value range
  * 
  * @param {*} parent 
  * @param {*} name 
