@@ -36,6 +36,10 @@ describe('Variable set, remove and get', () => {
         expect(variable.remove('foo')).toBe(true)
         expect(variable.get('foo')).toBe(null)
     })
+
+    it('throws if variable name is not valid', () => {
+        expect(() => variable.set('my name', 'foo')).toThrow()
+    })
 })
 
 describe('Variable expiry', () => {

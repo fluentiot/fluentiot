@@ -73,21 +73,28 @@ class Room {
         }
     }
 
-    /**
+    /**wwwsasd
      * Add presence sensor
      * 
      * @param {Device} device - Device object
-     * @param {string} attributeKey - Sensor key/code to detect on
-     * @param {string} attributeValue - Sensor value to detect on
+     * @param {string} expectedKey - Sensor key/code to detect on
+     * @param {string} expectedValue - Sensor value to detect on
      */
-    addPresenceSensor(device, attributeKey, attributeValue) {
+    addPresenceSensor(device, expectedKey, expectedValue) {
         this.parent.event().on(`device.${device.name}.attribute`, (data) => {
             // Not the right event
-            if (data.name !== attributeKey || data.value !== attributeValue) {
+            if (data.name !== expectedKey) {
                 return
             }
 
-            this.updatePresence(true)
+            // By default the sensor is not detecting presence
+            // If the expected key and value is detected then there is presence
+            let presence = false
+            if(data.value === expectedValue) {
+                presence = true
+            }
+
+            this.updatePresence(presence)
         });
     }
 

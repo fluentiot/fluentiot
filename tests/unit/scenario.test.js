@@ -377,7 +377,11 @@ describe('Triggers', () => {
     it('will handle two triggers for two different events acting as an OR', () => {
         const mockCallback = jest.fn()
 
-        new Scenario(Fluent, 'Foobar').when().foobar().onEvent('foo').foobar().onEvent('bar').then(mockCallback)
+        new Scenario(Fluent, 'Foobar', { cooldown:0 })
+            .when()
+                .foobar().onEvent('foo')
+                .foobar().onEvent('bar')
+            .then(mockCallback)
 
         event.emit('foo') //Assert
         event.emit('bar') //Assert
@@ -393,4 +397,38 @@ describe('Triggers', () => {
 
         expect(scenario.testMode).toBe(true)
     })
+})
+
+
+describe('Double triggering', () => {
+
+    it('will not double trigger if two triggers are close to each other', () => {
+        const mockCallback = jest.fn()
+
+        new Scenario(Fluent, 'Foobar')
+            .when()
+                .foobar().onEvent('hey')
+                .foobar().onEvent('hey')
+            .then(mockCallback)
+
+        event.emit('hey')
+
+        expect(mockCallback.mock.calls).toHaveLength(1)
+    })
+
+    it('can trigger multiple times if cooldown is set to 0', () => {
+        const mockCallback = jest.fn()
+
+        new Scenario(Fluent, 'Foobar', { cooldown:0 })
+            .when()
+                .foobar().onEvent('hey')
+                .foobar().onEvent('hey')
+            .then(mockCallback)
+
+        event.emit('hey')
+
+        expect(mockCallback.mock.calls).toHaveLength(2)
+    })
+
+
 })

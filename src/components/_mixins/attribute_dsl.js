@@ -38,21 +38,17 @@ const AttributeDslMixin = (parent, name) => {
             update: (attributeName, attributeValue) => {
                 // Do not allow double setting
                 if (
-                    (!parent.attributes.stateful || parent.attributes.stateful.value === true) &&
-                    parent.attributes[attributeName] && 
-                    parent.attributes[attributeName].value === attributeValue) {
-                    return
+                    (!parent.attributes.stateful || parent.attributes.stateful.value) &&
+                    parent.attributes[attributeName]?.value === attributeValue
+                ) {
+                    return;
                 }
 
-                // Make sure it's defined if not already
-                if (!parent.attributes[attributeName]) {
-                    parent.attributes[attributeName] = {}
-                }
-
-                //Set it
+                // Set it
+                parent.attributes[attributeName] ??= {}
                 parent.attributes[attributeName].value = attributeValue
 
-                logger.info(`Attribute, ${parent.name} set "${attributeName}" to "${attributeValue}"`, name)
+                logger.info(`Attribute, ${parent.name} updated "${attributeName}" to "${attributeValue}"`, name)
                 parent.parent.emit(`${name}.${parent.name}.attribute`, {
                     name: attributeName,
                     value: attributeValue,

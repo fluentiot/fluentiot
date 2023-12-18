@@ -28,6 +28,10 @@ describe('Scene', () => {
         expect(() => scene.add('foobar', () => {})).toThrow(Error)
     })
 
+    it('throws if scene name is not valid', () => {
+        expect(() => scene.add('my name', () => {})).toThrow()
+    })
+
     it('returns false if the scene does not exist', () => {
         expect(scene.get('foobar')).toBeNull()
     })
