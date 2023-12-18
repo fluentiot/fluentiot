@@ -1,4 +1,5 @@
 const { AttributeDslMixin } = require('./../_mixins/attribute_dsl')
+const { PropertyDslMixin } = require('./../_mixins/property_dsl')
 
 /**
  * Device
@@ -13,23 +14,27 @@ class Device {
      * @param {object} parent - The parent object to which this device belongs.
      * @param {string} name - The name of the device.
      * @param {object} [attributes={}] - The attributes associated with the device.
+     * @param {object} [properties={}] - The properties associated with the device.
      * @param {string[]} [capabilities=[]] - An array of capability references associated with the device.
      * @throws Will throw an error if capabilities are not passed as references (e.g., '@switchOn').
-     * @example
-     * const myDevice = new Device(parentObject, 'DeviceName', { attribute1: 'value1' }, ['@switchOn', '@dim']);
      */
-    constructor(parent, name, attributes = {}, capabilities = []) {
+    constructor(parent, name, attributes = {}, properties = {}, capabilities = []) {
         this.parent = parent
         this.name = name
         this.capabilities = {}
 
         // Mixins
         Object.assign(this, AttributeDslMixin(this, 'device'))
+        Object.assign(this, PropertyDslMixin(this, 'device'))
 
-        //Attributes
-        const defaultAttributes = {
+        // Properties
+        const defaultProperties = {
             stateful: true
         };
+        this.property.setup(this, defaultProperties, properties)
+
+        // Attributes
+        const defaultAttributes = {};
         this.attribute.setup(this, defaultAttributes, attributes)
 
         // Abstracting capability method so to reflect similar DSL in system
