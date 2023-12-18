@@ -60,7 +60,7 @@ describe('get', () => {
         jest.spyOn(Config.prototype, 'loadConfigFile').mockReturnValueOnce({});
     });
 
-    it.only('returns first level property from config', () => {
+    it('returns first level property from config', () => {
         const mockConfig = {
             database: {
                 host: 'localhost',
