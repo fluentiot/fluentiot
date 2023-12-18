@@ -33,13 +33,13 @@ describe('Device add', () => {
 
 describe('Device attributes', () => {
     it('creates a device with passed attributes', () => {
-        const newDevice = device.add('pir', { foo: 'bar' })
+        const newDevice = device.add('pir', {}, { foo: 'bar' })
         expect(newDevice.attribute.get('foo')).toBe('bar')
     })
 
     it('find single device by a certain attribute', () => {
-        const newDevice1 = device.add('pirOffice', { id: '123' })
-        const newDevice2 = device.add('pirLiving', { id: '321' })
+        const newDevice1 = device.add('pirOffice', {}, { id: '123' })
+        const newDevice2 = device.add('pirLiving', {}, { id: '321' })
 
         //Single found
         const device1 = device.findOneByAttribute('id', '123')
@@ -61,8 +61,8 @@ describe('Device attributes', () => {
     })
 
     it('find multiple devices by a certain attribute', () => {
-        const newDevice1 = device.add('pirOffice', { foo: 'bar' })
-        const newDevice2 = device.add('pirLiving', { foo: 'bar' })
+        const newDevice1 = device.add('pirOffice', {}, { foo: 'bar' })
+        const newDevice2 = device.add('pirLiving', {}, { foo: 'bar' })
 
         const devices = device.findAllByAttribute('foo', 'bar')
         expect(devices).toHaveLength(2)
@@ -76,21 +76,21 @@ describe('Device attributes', () => {
     })
 })
 
-describe.only('Device properties', () => {
+describe('Device properties', () => {
 
     it('creates a device with passed properties', () => {
-        const newDevice = device.add('pir', {}, { foo: 'bar' })
+        const newDevice = device.add('pir', { foo: 'bar' })
         expect(newDevice.property.get('foo')).toBe('bar')
     })
 
     it('handles being passed as null/empty/false', () => {
-        const newDevice1 = device.add('pir1', {})
+        const newDevice1 = device.add('pir1')
         expect(newDevice1.property.get('foo')).toBe(null)
 
-        const newDevice2 = device.add('pir2', {}, null)
+        const newDevice2 = device.add('pir2', null)
         expect(newDevice2.property.get('foo')).toBe(null)
 
-        const newDevice3 = device.add('pir3', {}, false)
+        const newDevice3 = device.add('pir3', false)
         expect(newDevice3.property.get('foo')).toBe(null)
 
         const newDevice4 = device.add('pir4')
@@ -107,7 +107,7 @@ describe.only('Device properties', () => {
         const newDevice1 = device.add('pir')
         expect(newDevice1.property.get('stateful')).toBe(true)
 
-        const newDevice2 = device.add('pir2', {}, { stateful:false })
+        const newDevice2 = device.add('pir2', { stateful:false })
         expect(newDevice2.property.get('stateful')).toBe(false)
     })
 
@@ -247,16 +247,16 @@ describe('Device capabilities', () => {
     })
 
     it('can create a new device with capabilities', () => {
-        const livingLight = device.add('livingRoomLight', {}, ['@switchOff'])
+        const livingLight = device.add('livingRoomLight', {}, {}, ['@switchOff'])
         expect(livingLight.switchOff()).toBe(true)
     })
 
     it('will throw an error when setting up a device with a capability that does not exist', () => {
-        expect(() => device.add('livingRoomLight', {}, ['@doesNotExist'])).toThrow(Error)
+        expect(() => device.add('livingRoomLight', {}, {}, ['@doesNotExist'])).toThrow(Error)
     })
 
     it('will throw an error if passed capability is not a reference', () => {
-        expect(() => device.add('livingRoomLight', {}, ['notReference'])).toThrow(Error)
+        expect(() => device.add('livingRoomLight', {}, {}, ['notReference'])).toThrow(Error)
     })
 
     it('capability can be executed and returns a success or failure', () => {
@@ -377,11 +377,11 @@ describe('Device triggers with state', () => {
         expect(Scenario.assert).toHaveBeenCalledTimes(1)
     })
 
-    it('it can trigger multiple times because it is a none stateful button', () => {
-        const playroomSwitch = device.add('playroomSwitch', { stateful: false })
-        device.triggers(Scenario).device('playroomSwitch').attribute('switch').is('on')
-        playroomSwitch.attribute.update('switch', 'on')
-        playroomSwitch.attribute.update('switch', 'on')      
+    it.only('it can trigger multiple times because it is a none stateful button', () => {
+        const playroomButton = device.add('playroomButton', { stateful: false })
+        device.triggers(Scenario).device('playroomButton').attribute('switch').is('on')
+        playroomButton.attribute.update('switch', 'on')
+        playroomButton.attribute.update('switch', 'on')      
         expect(Scenario.assert).toHaveBeenCalledTimes(2)
     })
 
