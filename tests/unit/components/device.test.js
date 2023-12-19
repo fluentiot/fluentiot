@@ -5,12 +5,6 @@ const DeviceComponent = require('./../../../src/components/device/device_compone
 const Fluent = require('./../../../src/fluent')
 const ComponentHelper = require('./../../helpers/component_helper.js')
 
-
-console.log(describe)
-console.log(describe.only)
-
-
-
 let device
 beforeEach(() => {
     device = new DeviceComponent(Fluent)
@@ -39,13 +33,13 @@ describe('Device add', () => {
 
 describe('Device attributes', () => {
     it('creates a device with passed attributes', () => {
-        const newDevice = device.add('pir', {}, { foo: 'bar' })
+        const newDevice = device.add('pir', { foo: 'bar' })
         expect(newDevice.attribute.get('foo')).toBe('bar')
     })
 
     it('find single device by a certain attribute', () => {
-        const newDevice1 = device.add('pirOffice', {}, { id: '123' })
-        const newDevice2 = device.add('pirLiving', {}, { id: '321' })
+        const newDevice1 = device.add('pirOffice', { id: '123' })
+        const newDevice2 = device.add('pirLiving', { id: '321' })
 
         //Single found
         const device1 = device.findOneByAttribute('id', '123')
@@ -67,8 +61,8 @@ describe('Device attributes', () => {
     })
 
     it('find multiple devices by a certain attribute', () => {
-        const newDevice1 = device.add('pirOffice', {}, { foo: 'bar' })
-        const newDevice2 = device.add('pirLiving', {}, { foo: 'bar' })
+        const newDevice1 = device.add('pirOffice', { foo: 'bar' })
+        const newDevice2 = device.add('pirLiving', { foo: 'bar' })
 
         const devices = device.findAllByAttribute('foo', 'bar')
         expect(devices).toHaveLength(2)
@@ -236,16 +230,16 @@ describe('Device capabilities', () => {
     })
 
     it('can create a new device with capabilities', () => {
-        const livingLight = device.add('livingRoomLight', {}, {}, ['@switchOff'])
+        const livingLight = device.add('livingRoomLight', {}, ['@switchOff'])
         expect(livingLight.switchOff()).toBe(true)
     })
 
     it('will throw an error when setting up a device with a capability that does not exist', () => {
-        expect(() => device.add('livingRoomLight', {}, {}, ['@doesNotExist'])).toThrow(Error)
+        expect(() => device.add('livingRoomLight', {}, ['@doesNotExist'])).toThrow(Error)
     })
 
     it('will throw an error if passed capability is not a reference', () => {
-        expect(() => device.add('livingRoomLight', {}, {}, ['notReference'])).toThrow(Error)
+        expect(() => device.add('livingRoomLight', {}, ['notReference'])).toThrow(Error)
     })
 
     it('capability can be executed and returns a success or failure', () => {
@@ -366,7 +360,7 @@ describe('Device triggers with state', () => {
         expect(Scenario.assert).toHaveBeenCalledTimes(1)
     })
 
-    it.only('it can trigger multiple times because it is a none stateful button', () => {
+    it('it can trigger multiple times because it is a none stateful button', () => {
         const playroomButton = device.add('playroomButton', { stateful: false })
         device.triggers(Scenario).device('playroomButton').attribute('switch').is('on')
         playroomButton.attribute.update('switch', 'on')

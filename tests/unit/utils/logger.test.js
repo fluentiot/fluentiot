@@ -1,6 +1,8 @@
 const logger = require('./../../../src/utils/logger')
 
-beforeEach(() => {})
+const _originalTypes = logger.types
+const _originalConfig = logger.config
+
 
 describe('Logger basic methods and setup', () => {
     it('is correctly setup', () => {
@@ -55,6 +57,9 @@ describe('Logger basic methods and setup', () => {
     })
 })
 
+
+
+
 describe('Logging messages', () => {
     beforeEach(() => {
         jest.spyOn(console, 'log').mockImplementation(() => {})
@@ -72,10 +77,10 @@ describe('Logging messages', () => {
         expect(console.log).toHaveBeenCalledTimes(5)
     })
 
-    it('will use default if the logging level was not found and an additional error is outputted', () => {
+    it('will use default if the logging level was not found', () => {
         logger.config.levels = { popcorn: 'not-exist' }
         logger.log('message', 'popcorn')
-        expect(console.log).toHaveBeenCalledTimes(2)
+        expect(console.log).toHaveBeenCalledTimes(1)
     })
 
     it('only log and error should output', () => {
@@ -119,6 +124,48 @@ describe('Logging messages', () => {
         logger.error('message', 'popcorn')
         logger.debug('message', 'popcorn')
         expect(console.log).toHaveBeenCalledTimes(5)
+    })
+
+})
+
+
+
+describe('Logging only and ignore', () => {
+
+    beforeEach(() => {
+        jest.spyOn(console, 'log').mockImplementation()
+        console.log.mockClear()
+
+        logger._ignored = []
+        logger._only = []
+
+        logger.types = _originalTypes
+        logger.config.levels = { default: 'debug' }
+    })
+
+    it('will ignore log messages', () => {
+        logger.ignore('foobar')
+        logger.log('before foobar after')
+        logger.log('foobar after')
+        logger.log('before foobar')
+        logger.log('foobar')
+        expect(console.log).toHaveBeenCalledTimes(0)
+    })
+
+    it('will ignore some log messages', () => {
+        logger.ignore('foobar')
+        logger.log('foobar')
+        logger.log('foo bar')
+        expect(console.log).toHaveBeenCalledTimes(1)
+    })
+
+    it('will only allow certain messages', () => {
+        logger.only('foobar')
+        logger.log('foobar allow')
+        logger.log('foobar')
+        logger.log('foo bar reject')
+        logger.log('reject')
+        expect(console.log).toHaveBeenCalledTimes(2)
     })
 
 })

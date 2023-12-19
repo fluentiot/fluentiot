@@ -3,9 +3,10 @@ jest.mock('./../../src/config')
 jest.mock('./../../src/scenario', () => require('./../__mocks__/scenario'))
 const path = require('path')
 
-const Fluent = require('./../../src/fluent')
+// Jest to mock console.log to stop splash
+jest.spyOn(console, 'log').mockImplementation(() => {})
 
-beforeEach(() => {})
+const Fluent = require('./../../src/fluent')
 
 describe('Fluent setup', () => {
     it('is correctly setup', () => {

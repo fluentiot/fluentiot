@@ -1,4 +1,5 @@
-const { isValidName } = require('./../../../src/utils')
+
+const { isValidName } = require('./../../../src/utils/validation')
 
 beforeEach(() => {})
 

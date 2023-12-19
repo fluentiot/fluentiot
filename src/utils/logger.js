@@ -11,6 +11,10 @@ class Logger {
      * Constructor
      */
     constructor() {
+        this._ignored = []  // Array of log messages to ignore
+        this._only = []     // Array of log messages to only show
+
+        // Types of log messages
         this.types = {
             error: { color: '\x1b[31m', level: 0 },
             log: { color: '\x1b[37m', level: 0 },
@@ -29,6 +33,26 @@ class Logger {
 
         // Load config
         this.config = config.get('logging') || { levels: { default: 'debug' } }
+    }
+
+    /**
+     * Method to ignore log messages by a regular expression
+     * 
+     * @param {string} regex - Regular expression to match against log messages
+     * @param {string} [component=null] - Component to ignore log messages from
+     */
+    ignore(regex, component = null) {
+        this._ignored.push({ regex, component })
+    }
+
+    /**
+     * Method to only show log messages by a regular expression
+     * 
+     * @param {string} regex - Regular expression to match against log messages
+     * @param {string} [component=null] - Component to only show log messages from
+     */
+    only(regex, component = null) {
+        this._only.push({ regex, component })
     }
 
     /**
@@ -62,9 +86,6 @@ class Logger {
 
         //The defined log type in the config file was not correct
         if (!this.types[type]) {
-            const timestamp = this._getCurrentTimestamp()
-            const coloredType = this.types.error.color + 'ERROR' + '\x1b[0m'
-            console.log(`[${timestamp}] [${coloredType}] Your logging level for ${type} is not correct`)
             return this.types.debug.level
         }
 
@@ -107,6 +128,27 @@ class Logger {
         } else {
             logMessage = message
         }
+
+        // Check if the message should be ignored or only
+        if (!(message instanceof Error)) {
+            // Check if the message should be ignored
+            const ignore = this._ignored.some((ignore) => {
+                const regex = new RegExp(ignore.regex);
+                return regex.test(logMessage);
+            });
+            if (ignore) { return }
+
+            // Check if the message should be only
+            if(this._only.length > 0) {
+                const only = this._only.some((only) => {
+                    const regex = new RegExp(only.regex)
+                    return regex.test(logMessage)
+                })
+                if (!only) { return }
+            }
+        }
+
+        // Format the log message
         logMessage = this._formatLogMessage(logMessage)
 
         // Construct the final log string
