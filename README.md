@@ -107,6 +107,7 @@ This API includes working examples.
 -   [Scene API](#scene-api)
 -   [Variable API](#variable-api)
 -   [Attributes API](#attributes-api)
+-   [Logging API](#Logging-api)
 
 ---
 
@@ -1290,6 +1291,108 @@ scenario('matches')
         .device('switch').attribute('colour').contain()
         .then(() => { console.log('Matches') })
 ```
+
+
+
+
+---
+
+## Attributes API
+
+### Management
+
+
+
+---
+
+## Logging API
+
+```javascript
+logger.info(`Turning on living room lights`)
+```
+
+### Anatomy of a log
+
+<span style="background-color:black;"><span style="color:gray;">Dec 19 14:25:36</span> <span style="color:blue;">scenario</span> <span style="color:cyan;">INFO</span> <span style="color:white;">Scenario "Weekends or weekdays" loaded </span></span>
+
+| Type       | Description          | Example                                |
+|------------|----------------------|----------------------------------------|
+| Timestamp  | Date and time        | Dec 19 14:25:36                        |
+| Component  | Category or context   | scenario                               |
+| Log Level  | Severity or type      | INFO                                   |
+| Log Message| Details of the event  | Scenario "Weekends or weekdays" loaded |
+
+
+
+### Logging types
+
+There are multiple types of logging at various levels. All encountered errors will be reported.
+
+While in development set the default logging to `3`. Outside of development it's advised to set the logging to `2` so warnings can still be reported.
+
+| Log Type | Level | Description               |
+|----------|-------|---------------------------|
+| error    | 0     | Error-level log message   |
+| log      | 0     | General log message       |
+| info     | 1     | Informational log message |
+| warn     | 2     | Warning-level log message |
+| debug    | 3     | Debug-level log message   |
+
+
+### Logging Config
+The `fluent.config.js`` file provides a centralized configuration for the Fluent framework, allowing users to customize logging settings and define specific logging levels for individual components.
+
+It is advisable not to directly edit this file; instead, make a copy in your main app directory to implement changes.
+
+The `logging`` object within the configuration file enables users to define logging levels for different components. The levels key specifies the default logging level for any component not explicitly defined. For example:
+
+```javascript
+const config = {
+    logging: {
+        levels: {
+            default: 'debug',
+            //datetime: 'info',
+            //device: 'warn',
+            //event: 'debug',
+            //expect: 'info',
+            //room: 'debug',
+            //variable: 'info',
+            //scene: 'debug',
+            //tuya: 'debug'
+        },
+    },
+    // Other configuration settings...
+}
+```
+
+
+
+### Management
+
+#### `logger.<type>(message: string[, string component])`
+
+```javascript
+logger.info(`Turning on living room lights`, 'app')
+logger.error(`Failed to connect to Home Wifi`, 'app')
+logger.debug({ "foo": "bar" }, 'app')
+```
+
+####  `logger.only(string: regex|string)`
+The `only`` method, when applied, refines the logger's output to messages that specifically match the provided string or regex. This feature facilitates the isolation and analysis of logs, focusing on particular types of messages.
+```javascript
+logger.only('button');
+```
+
+####  `logger.ignore(string: regex|string)`
+The `ignore`` method in the logger allows for exclusion based on specified criteria, such as strings or regular expressions. This feature proves beneficial for devices that frequently update their attributes, such as temperature or light sensors.
+```javascript
+logger.ignore('temperature');
+```
+
+
+
+---
+
 
 ## License
 
