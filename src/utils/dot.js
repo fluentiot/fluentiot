@@ -1,26 +1,30 @@
 class dot {
     static get(data, key) {
-        const keys = key.split('.');
-        
+        // Check if key is a string before splitting
+        const keys = typeof key === 'string' ? key.split('.') : [];
+
         function recursiveLookup(obj, keys) {
             const currentKey = keys.shift();
-            
-            console.log('Current Key:', currentKey);
 
-            if (obj && typeof obj === 'object' && currentKey in obj) {
-                const nextObj = obj[currentKey];
-
-                // If the next object is a non-object, return it
-                if (!keys.length && typeof nextObj !== 'object') {
-                    console.log('Found:', nextObj);
-                    return nextObj;
+            if (obj && typeof obj === 'object') {
+                // If the current key is undefined, return the entire object
+                if (!currentKey) {
+                    return obj;
                 }
 
-                return recursiveLookup(nextObj, keys);
-            } else {
-                console.log('Not Found');
-                return null;
+                if (currentKey in obj) {
+                    const nextObj = obj[currentKey];
+
+                    // If the next object is a non-object and there are no more keys, return it
+                    if (!keys.length && typeof nextObj !== 'object') {
+                        return nextObj;
+                    }
+
+                    return recursiveLookup(nextObj, keys);
+                }
             }
+
+            return null;
         }
 
         return recursiveLookup(data, keys);

@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const logger = require('./utils/logger');
-const { getDotValue } = require('./utils');
+const { dot } = require('./utils');
 
 /**
  * Config
@@ -78,7 +78,7 @@ class Config {
             return null;
         }
 
-        const value = getDotValue(this.config, key);
+        const value = dot.get(this.config, key);
 
         if (value === null) {
             logger.warn(`Config key "${key}" not found`, 'core');

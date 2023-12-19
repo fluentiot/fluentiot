@@ -3,9 +3,12 @@ jest.mock('fs');
 
 const { Config } = require('./../../src/config');
 
-jest.mock('./../../src/utils/logger');
+jest.mock('./../../src/utils/logger', () => ({
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn()
+}))
 const logger = require('./../../src/utils/logger');
-
 
 let originalCwd;
 
@@ -20,6 +23,7 @@ afterAll(() => {
 
 
 describe('load', () => {
+
     it('loads config from project root if exists', () => {
         const mockConfig = { key: 'value' };
         fs.existsSync.mockReturnValueOnce(true);

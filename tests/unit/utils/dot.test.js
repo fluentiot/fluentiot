@@ -20,11 +20,15 @@ describe('Dot tests', () => {
         };
     });
 
+    it('should retrieve entire person', () => {
+        expect(dot.get(data, 'person')).toBe(data.person);
+    });
+
     it('should retrieve the first name', () => {
         expect(dot.get(data, 'person.name.first')).toBe('John');
     });
 
-    it.only('should retrieve the city', () => {
+    it('should retrieve the city', () => {
         expect(dot.get(data, 'address.city')).toBe('Example City');
     });
 
