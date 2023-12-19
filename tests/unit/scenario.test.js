@@ -1,4 +1,6 @@
+
 jest.mock('./../../src/utils/logger')
+const logger = require('./../../src/utils/logger')
 
 const EventEmitter = require('events')
 class MyEmitter extends EventEmitter {}
@@ -393,14 +395,17 @@ describe('Triggers', () => {
     test('will put the scenario into test mode in the DSL', () => {
         const mockCallback = jest.fn()
 
-        const scenario = new Scenario(Fluent, 'Foobar').when().empty().then(mockCallback).test()
+        const scenario = new Scenario(Fluent, 'Foobar', { only:true })
+            .when()
+                .empty()
+            .then(mockCallback)
 
         expect(scenario.testMode).toBe(true)
     })
 })
 
 
-describe('Double triggering', () => {
+describe('Scenario cooldown', () => {
 
     it('will not double trigger if two triggers are close to each other', () => {
         const mockCallback = jest.fn()
@@ -430,5 +435,28 @@ describe('Double triggering', () => {
         expect(mockCallback.mock.calls).toHaveLength(2)
     })
 
+
+})
+
+
+describe('Scenario prevent crashing', () => {
+
+    it('returns false if the scenario then() has errors', () => {
+        const spyError = jest.spyOn(logger, 'error')
+        const mockDevice = () => { return null }
+
+        const scenario = new Scenario(Fluent, 'Foobar')
+            .when()
+                .empty()
+            .then(() => {
+                const device = mockDevice()
+                device.noSuchMethod()
+            })
+
+        const result = scenario.assert()
+
+        expect(result).toBe(false)
+        expect(spyError).toHaveBeenCalled()
+    })
 
 })

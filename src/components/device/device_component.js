@@ -24,18 +24,17 @@ class DeviceComponent extends Component {
      * Creates a new device
      *
      * @param {string} name - The name of the device.
-     * @param {object} [properties={}] - Properties for the device.
      * @param {object} [attributes={}] - Attributes for the device.
      * @param {array} [capabilities=[]] - Capabilities the device will have, must be passed as @ reference.
      */
-    add(name, properties = {}, attributes = {}, capabilities = []) {
+    add(name, attributes = {}, capabilities = []) {
         if (this.devices[name]) {
             throw new Error(`Device with the name "${name}" already exists`)
         }
         if (!isValidName(name)) {
             throw new Error(`Device name "${name} is not valid`);
         }
-        this.devices[name] = new Device(this, name, attributes, properties, capabilities)
+        this.devices[name] = new Device(this, name, attributes, capabilities)
         return this.devices[name]
     }
 
@@ -139,6 +138,13 @@ class DeviceComponent extends Component {
     _is(Scenario, device, attributeName, attributeValue, operator = 'is') {
         const handler = (changedData) => {
             if (changedData.name !== attributeName) {
+                return
+            }
+
+            // If device is stateful and value has not changed then return
+            // A button, it's not stateful and can be pressed multiple times
+            // A switch, it is stateful, and each time it's pressed the state changes
+            if(device.attribute.get('stateful') === true && changedData.changed === false) {
                 return
             }
 

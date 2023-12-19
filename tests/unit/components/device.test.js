@@ -5,6 +5,12 @@ const DeviceComponent = require('./../../../src/components/device/device_compone
 const Fluent = require('./../../../src/fluent')
 const ComponentHelper = require('./../../helpers/component_helper.js')
 
+
+console.log(describe)
+console.log(describe.only)
+
+
+
 let device
 beforeEach(() => {
     device = new DeviceComponent(Fluent)
@@ -74,59 +80,42 @@ describe('Device attributes', () => {
         const devices = device.findOneByAttribute('foo', 'bar')
         expect(devices).toBe(null)
     })
-})
-
-describe('Device properties', () => {
-
-    it('creates a device with passed properties', () => {
-        const newDevice = device.add('pir', { foo: 'bar' })
-        expect(newDevice.property.get('foo')).toBe('bar')
-    })
 
     it('handles being passed as null/empty/false', () => {
         const newDevice1 = device.add('pir1')
-        expect(newDevice1.property.get('foo')).toBe(null)
+        expect(newDevice1.attribute.get('foo')).toBe(null)
 
         const newDevice2 = device.add('pir2', null)
-        expect(newDevice2.property.get('foo')).toBe(null)
+        expect(newDevice2.attribute.get('foo')).toBe(null)
 
         const newDevice3 = device.add('pir3', false)
-        expect(newDevice3.property.get('foo')).toBe(null)
-
-        const newDevice4 = device.add('pir4')
-        expect(newDevice4.property.get('foo')).toBe(null)
-
-        const newDevice5 = device.add('pir5', false)
-        expect(newDevice5.property.get('foo')).toBe(null)
-
-        const newDevice6 = device.add('pir6', null)
-        expect(newDevice6.property.get('foo')).toBe(null)
+        expect(newDevice3.attribute.get('foo')).toBe(null)
     })
 
     it('stateful as default', () => {
         const newDevice1 = device.add('pir')
-        expect(newDevice1.property.get('stateful')).toBe(true)
+        expect(newDevice1.attribute.get('stateful')).toBe(true)
 
         const newDevice2 = device.add('pir2', { stateful:false })
-        expect(newDevice2.property.get('stateful')).toBe(false)
+        expect(newDevice2.attribute.get('stateful')).toBe(false)
     })
 
-    it('set properties with various values', () => {
+    it('set attributes with various values', () => {
         const newDevice1 = device.add('pir')
-        newDevice1.property.set('stateful', false)
+        newDevice1.attribute.set('stateful', false)
 
-        newDevice1.property.set('test1', true)
-        newDevice1.property.set('test2', false)
-        newDevice1.property.set('test3', 123)
-        newDevice1.property.set('test4', 10.12)
-        newDevice1.property.set('test5', "foobar")
+        newDevice1.attribute.set('test1', true)
+        newDevice1.attribute.set('test2', false)
+        newDevice1.attribute.set('test3', 123)
+        newDevice1.attribute.set('test4', 10.12)
+        newDevice1.attribute.set('test5', "foobar")
 
-        expect(newDevice1.property.get('stateful')).toBe(false)
-        expect(newDevice1.property.get('test1')).toBe(true)
-        expect(newDevice1.property.get('test2')).toBe(false)
-        expect(newDevice1.property.get('test3')).toBe(123)
-        expect(newDevice1.property.get('test4')).toBe(10.12)
-        expect(newDevice1.property.get('test5')).toBe("foobar")
+        expect(newDevice1.attribute.get('stateful')).toBe(false)
+        expect(newDevice1.attribute.get('test1')).toBe(true)
+        expect(newDevice1.attribute.get('test2')).toBe(false)
+        expect(newDevice1.attribute.get('test3')).toBe(123)
+        expect(newDevice1.attribute.get('test4')).toBe(10.12)
+        expect(newDevice1.attribute.get('test5')).toBe("foobar")
     })
 
 })

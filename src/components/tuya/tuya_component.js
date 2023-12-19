@@ -89,8 +89,7 @@ class TuyaComponent extends Component {
         const device = this.Device.findOneByAttribute('id', data.id);
         const deviceName = device?.name || 'Unknown';
         
-        logger.debug(`Device: ${deviceName} (${data.id}) payload:`,'tuya');
-        logger.debug(data.payload,'tuya');
+        logger.debug(`Device "${deviceName}" (${data.id}) sent a payload: ${JSON.stringify(data.payload)}`,'tuya');
 
         if(device) {
             let value = data.payload.value;

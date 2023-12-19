@@ -12,6 +12,7 @@ const config = require('./config')
  * @class
  */
 class Fluent {
+
     /**
      * Setup
      */
@@ -20,6 +21,8 @@ class Fluent {
         Fluent.components = {} //Components loaded in
         Fluent.scenarios = [] //Scenarios defined
         Fluent.inTestMode = false //If in test mode
+
+        Fluent.splash()
 
         // Load components defined in the config
         let components = config.get('components') || []
@@ -31,6 +34,22 @@ class Fluent {
                 Fluent.components[key].afterLoad()
             }
         }
+
+        logger.info(`Fluent IoT Ready`, 'fluent');
+    }
+
+    /**
+     * Show splash screen
+     */
+    static splash() {
+        console.log(
+            " _____ _                  _   ___    _____ \n" +
+            "|  ___| |_   _  ___ _ __ | |_|_ _|__|_   _|\n" +
+            "| |_  | | | | |/ _ \\ '_ \\| __|| |/ _ \\| |  \n" +
+            "|  _| | | |_| |  __/ | | | |_ | | (_) | |  \n" +
+            "|_|   |_|\\__,_|\\___|_| |_|\\__|___\\___/|_|  "
+        );
+        console.log("\nhttps://github.com/darrenmoore/fluent-iot\n");
     }
 
     /**
@@ -104,7 +123,7 @@ class Fluent {
      * @returns {object|array} - Scenario instance or instances
      */
     static scenario() {
-        const create = (description) => {
+        const create = (description, ...args) => {
             // Description is always needed
             if (!description) {
                 throw new Error(`Scenario description must be defined`)
@@ -117,7 +136,7 @@ class Fluent {
                 }
             }
 
-            const scenario = new Scenario(this, description)
+            const scenario = new Scenario(this, description, ...args)
             Fluent.scenarios.push(scenario)
 
             // Make sure all future creations of scenario are updated if test mode is on
@@ -127,8 +146,8 @@ class Fluent {
         }
 
         return {
-            create: (description) => {
-                return create(description)
+            create: (description, ...args) => {
+                return create(description, ...args)
             },
             all: () => {
                 return Fluent.scenarios

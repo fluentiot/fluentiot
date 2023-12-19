@@ -182,4 +182,3 @@ class DayComponent extends Component {
 }
 
 module.exports = DayComponent
-

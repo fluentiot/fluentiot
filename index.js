@@ -5,12 +5,22 @@ const Fluent = require('./src/fluent')
 const logger = require('./src/utils/logger')
 const components = Fluent.component().all()
 
+// Scenario
+function scenario(description, properties = {}) {
+    return Fluent.scenario().create(description, properties);
+}
+  
+// Define "only" version of describe
+scenario.only = (description, properties = {}) => {
+    properties.only = true
+    return scenario(description, properties)
+}
+
+
 // Combine components and Scenario in the export
 module.exports = {
     Fluent,
     logger,
-    scenario: (description) => {
-        return Fluent.scenario().create(description)
-    },
+    scenario,
     ...components,
 }

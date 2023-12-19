@@ -6,6 +6,7 @@ const logger = require('./utils/logger')
  * @class
  */
 class Scenario {
+
     /**
      * Constructor of a new scenario
      *
@@ -34,9 +35,16 @@ class Scenario {
 
         //Scenario rules
         const defaultProperties = {
-            cooldown: 1000
+            cooldown: 1000,
+            only: false
         }
         this.properties = { ...defaultProperties, ...properties }
+
+        // Test mode?
+        if (this.properties.only === true) {
+            this.testMode = true
+            this.Fluent.updateTestMode(this)
+        }
 
         //Fetch all required components from the Fluent / config file
         this.components = this.Fluent.component().all()
@@ -198,15 +206,6 @@ class Scenario {
     }
 
     /**
-     * Set scenario to test mode
-     */
-    test() {
-        this.testMode = true
-        this.Fluent.updateTestMode(this)
-        return this
-    }
-
-    /**
      * Assert scenario
      *
      * @param {*} ...args - To be passed to the callback
@@ -220,14 +219,14 @@ class Scenario {
 
         // Cooldown checks
         const currentTime = Date.now();
-        if (this.properties.cooldown > 0 && currentTime - this.lastAssetTime < this.properties.cooldown * 1000) {
-            logger.warn(`Scenario did not trigger because still in cooldown period`, 'scenario');
+        if (this.properties.cooldown > 0 && currentTime - this.lastAssetTime < this.properties.cooldown) {
+            logger.warn(`Scenario "${this.description}" did not trigger because in cooldown period`, 'scenario');
             return false;
         }
         this.lastAssetTime = currentTime;
 
 
-        //Total executions with constraints
+        // Total executions with constraints
         let ranCallback = false
         let executionsWithConstraints = 0
 
@@ -235,17 +234,25 @@ class Scenario {
             const constraints = callbackItem.constraints || []
             const constraintsMet = constraints.length === 0 || constraints.every((constraint) => constraint())
 
-            //If a callback has run with constraints already and this callback
-            //has no constraints then do not run. This is probably an else()
+            // If a callback has run with constraints already and this callback
+            // has no constraints then do not run. This is probably an else()
             if (executionsWithConstraints > 0 && constraints.length === 0) {
                 return ranCallback
             }
 
-            //Run constraint group callback
+            // Run constraint group callback
             if (constraintsMet) {
                 logger.info(`Scenario "${this.description}" triggered`, 'scenario')
-                ranCallback = true
-                callbackItem.callback(this, ...args)
+
+                try {
+                    callbackItem.callback(this, ...args)
+                    ranCallback = true
+                } catch(e) {
+                    logger.error(`Scenario "${this.description}" has an error with the actions`, 'scenario')
+                    logger.error(e, 'scenario')
+                    return false
+                }
+
                 if (constraints.length > 0) {
                     executionsWithConstraints++
                 }

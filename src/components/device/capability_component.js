@@ -35,10 +35,21 @@ class CapabilityComponent extends Component {
             throw new Error(`Capability "${name}" requires a callback method`)
         }
         if (!isValidName(name)) {
-            throw new Error(`Capability name "${name} is not valid`);
+            throw new Error(`Capability name "${name} is not valid`)
         }
 
-        this.capabilities[name] = callback
+        // Wrapper for callback
+        this.capabilities[name] = (...args) => {
+            const [device] = args
+
+            if (device && typeof device === 'object' && device.name) {
+                logger.info(`Capability "${name}" running for device "${device.name}"`, 'device');
+            } else {
+                logger.info(`Capability "${name}" running`, 'device');
+            }
+
+            return callback(...args)
+        }
         return this.capabilities[name]
     }
 

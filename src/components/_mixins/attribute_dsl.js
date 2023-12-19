@@ -2,7 +2,6 @@ const logger = require('./../../utils/logger')
 
 /**
  * Attributes
- * Dynamic, real-time data with limited value range
  * 
  * @param {*} parent 
  * @param {*} name 
@@ -32,26 +31,28 @@ const AttributeDslMixin = (parent, name) => {
                 return parent.attributes[attributeName].value
             },
             set: (attributeName, attributeValue) => {
-                parent.attributes[attributeName] = { value: attributeValue }
+                parent.attributes[attributeName] = {
+                    value: attributeValue,
+                    changed: true
+                }
                 return true
             },
             update: (attributeName, attributeValue) => {
-                // Do not allow double setting
-                if (
-                    (!parent.attributes.stateful || parent.attributes.stateful.value) &&
-                    parent.attributes[attributeName]?.value === attributeValue
-                ) {
-                    return;
+                // Has the value changed?
+                let changed = true
+                if (parent.attributes[attributeName]?.value === attributeValue) {
+                    changed = false
                 }
 
                 // Set it
                 parent.attributes[attributeName] ??= {}
                 parent.attributes[attributeName].value = attributeValue
 
-                logger.info(`Attribute, ${parent.name} updated "${attributeName}" to "${attributeValue}"`, name)
+                logger.info(`Attribute, "${parent.name}" updated "${attributeName}" to "${attributeValue}"`, name)
                 parent.parent.emit(`${name}.${parent.name}.attribute`, {
                     name: attributeName,
                     value: attributeValue,
+                    changed
                 })
             },
         },

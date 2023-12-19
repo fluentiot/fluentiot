@@ -92,26 +92,84 @@ class TimeComponent extends Component {
             time: {
                 between: (targetStart, targetEnd) => {
                     return () => {
-                        if (!dayjs(targetStart, 'HH:mm', true).isValid()) {
-                            logger.error(
-                                `Start date "${targetStart}" is not in the correct format of HH:mm`,
-                                'datetime'
-                            )
-                            return false
-                        }
-                        if (!dayjs(targetEnd, 'HH:mm', true).isValid()) {
-                            logger.error(
-                                `Start date "${targetStart}" is not in the correct format of HH:mm`,
-                                'datetime'
-                            )
-                            return false
-                        }
-                        const currentTime = dayjs().format('HH:mm')
-                        return currentTime >= targetStart && currentTime <= targetEnd
+                        return this.isTimeBetween(targetStart, targetEnd)
                     }
                 },
+                isAfter: (targetStart) => {
+                    return () => {
+                        return this.isAfter(targetStart)
+                    }
+                },
+                isBefore: (targetStart) => {
+                    return () => {
+                        return this.isBefore(targetStart)
+                    }
+                }
             },
         }
+    }
+
+    /**
+     * Checks if the current time is before now
+     *
+     * @param {string} start - The start time in the format 'HH:mm'.
+     * @returns {boolean} True is the current time is before now, false otherwise.
+     */
+    isBefore(start) {
+        if (!dayjs(start, 'HH:mm', true).isValid()) {
+            logger.error(`"${start}" is not in the correct format of HH:mm`,'datetime')
+            return false
+        }
+
+        const currentTime = dayjs();
+        const startTime = dayjs(start, 'HH:mm');
+        return currentTime.isBefore(startTime) || currentTime.isSame(startTime, 'minute');
+    }
+
+    /**
+     * Checks if current time is before now
+     *
+     * @param {string} start - The start time in the format 'HH:mm'.
+     * @returns {boolean} True is the current time is after now, false otherwise.
+     */
+    isAfter(start) {
+        if (!dayjs(start, 'HH:mm', true).isValid()) {
+            logger.error(`"${start}" is not in the correct format of HH:mm`,'datetime')
+            return false
+        }
+
+        const currentTime = dayjs();
+        const startTime = dayjs(start, 'HH:mm');
+        return currentTime.isAfter(startTime) || currentTime.isSame(startTime, 'minute');
+    }
+
+    /**
+     * Checks if the current time is within a specified time range.
+     *
+     * @param {string} start - The start time in the format 'HH:mm'.
+     * @param {string} end - The end time in the format 'HH:mm'.
+     * @returns {boolean} True if the current time is within the specified range, false otherwise.
+     */
+    isTimeBetween(start, end) {
+        if (!dayjs(start, 'HH:mm', true).isValid()) {
+            logger.error(`Start time "${start}" is not in the correct format of HH:mm`,'datetime')
+            return false
+        }
+        if (!dayjs(end, 'HH:mm', true).isValid()) {
+            logger.error(`End time "${end}" is not in the correct format of HH:mm`,'datetime')
+            return false
+        }
+
+        const currentTime = dayjs();
+        const startTime = dayjs(start, 'HH:mm');
+        const endTime = dayjs(end, 'HH:mm');
+    
+        // If the end time is before or the same as the start time, it means the range crosses midnight
+        if (endTime.isBefore(startTime) || endTime.isSame(startTime, 'minute')) {
+            return currentTime.isAfter(startTime) || currentTime.isBefore(endTime);
+        }
+    
+        return currentTime.isAfter(startTime) && currentTime.isBefore(endTime);    
     }
 
     /**

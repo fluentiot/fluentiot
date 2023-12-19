@@ -1,9 +1,11 @@
 const schedule = require('node-schedule')
 schedule.scheduleJob = jest.fn()
 
+const mockdate = require('mockdate')
 const dayjs = require('dayjs')
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'))
 jest.mock('./../../../src/utils/logger')
+
 
 const TimeComponent = require('./../../../src/components/datetime/time_component')
 const Fluent = require('./../../../src/fluent')
@@ -18,6 +20,89 @@ describe('Time setup', () => {
         expect(schedule.scheduleJob).toHaveBeenNthCalledWith(3, '* * * * * *', expect.anything())
     })
 })
+
+describe('Time isTimeBetween', () => {
+    let time
+    beforeEach(() => {
+        schedule.scheduleJob = jest.fn()
+        time = new TimeComponent(Fluent)
+    })
+
+    afterEach(() => {
+        mockdate.reset()
+    })
+
+    it('returns true within a normal time range', () => {
+        mockdate.set('2000-11-22 12:30:00');
+        expect(time.isTimeBetween('10:00', '15:00')).toBe(true);
+    });
+
+    it('returns true within a time range crossing midnight when it is before midnight', () => {
+        mockdate.set('2000-11-22 23:30:00');
+        expect(time.isTimeBetween('23:00', '03:00')).toBe(true);
+    });
+
+    it('returns true within a time range crossing midnight when it is after midnight', () => {
+        mockdate.set('2000-11-22 01:30:00');
+        expect(time.isTimeBetween('23:00', '03:00')).toBe(true);
+    });
+
+    it('returns false for a time range that does not include the current time', () => {
+        mockdate.set('2000-11-22 18:30:00');
+        expect(time.isTimeBetween('20:00', '22:00')).toBe(false);
+    });
+
+    it('returns false when the current time is the same as the end time (not in range)', () => {
+        mockdate.set('2000-11-22 09:30:00');
+        expect(time.isTimeBetween('08:00', '09:30')).toBe(false);
+    });
+
+    it('returns false when the current time is the same as the start time (not in range)', () => {
+        mockdate.set('2000-11-22 15:30:00');
+        expect(time.isTimeBetween('15:30', '17:00')).toBe(false);
+    });
+
+})
+
+
+describe('Time constraints for "isAfter" and "isBefore"', () => {
+    let time
+    beforeEach(() => {
+        schedule.scheduleJob = jest.fn()
+        time = new TimeComponent(Fluent)
+    })
+
+    afterEach(() => {
+        mockdate.reset()
+    })
+
+    it('returns true if is after a certain time', () => {
+        mockdate.set('2000-11-22 15:00:00');
+        expect(time.constraints().time.isAfter('13:00')()).toBe(true)
+    })
+
+    it('returns false if is before a certain time', () => {
+        mockdate.set('2000-11-22 10:00:00');
+        expect(time.constraints().time.isAfter('13:00')()).toBe(false)
+    })
+
+    it('returns true if is before a certain time', () => {
+        mockdate.set('2000-11-22 15:00:00');
+        expect(time.constraints().time.isBefore('16:00')()).toBe(true)
+    })
+
+    it('returns false if is before a certain time', () => {
+        mockdate.set('2000-11-22 15:00:00');
+        expect(time.constraints().time.isBefore('13:00')()).toBe(false)
+    })
+
+    it('returns false if date format is incorrect', () => {
+        expect(time.constraints().time.isAfter('xx:xx')()).toBe(false)
+        expect(time.constraints().time.isBefore('xx:xx')()).toBe(false)
+    })
+
+})
+
 
 describe('Time constraints for "between"', () => {
     let time
@@ -49,6 +134,12 @@ describe('Time constraints for "between"', () => {
         expect(time.constraints().time.between('zz:aa', any)()).toBe(false)
         expect(time.constraints().time.between(any, 'zz:aa')()).toBe(false)
     })
+
+    it('times between days', () => {
+        mockdate.set('2000-11-22 21:00:00');
+        expect(time.constraints().time.between('20:00', '03:00')()).toBe(true)
+    })
+
 })
 
 describe('Time triggers', () => {

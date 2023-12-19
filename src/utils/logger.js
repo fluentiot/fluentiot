@@ -6,15 +6,16 @@ const config = require('./../config.js')
  * @class
  */
 class Logger {
+    
     /**
      * Constructor
      */
     constructor() {
         this.types = {
+            error: { color: '\x1b[31m', level: 0 },
             log: { color: '\x1b[37m', level: 0 },
             info: { color: '\x1b[36m', level: 1 },
             warn: { color: '\x1b[33m', level: 2 },
-            error: { color: '\x1b[31m', level: 3 },
             debug: { color: '\x1b[35m', level: 4 },
         }
 
@@ -37,13 +38,18 @@ class Logger {
      * @returns {string} - Timestamp
      */
     _getCurrentTimestamp() {
-        const now = new Date()
-        const hours = now.getHours().toString().padStart(2, '0')
-        const minutes = now.getMinutes().toString().padStart(2, '0')
-        const seconds = now.getSeconds().toString().padStart(2, '0')
-        return `${hours}:${minutes}:${seconds}`
+        const now = new Date();
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+        const month = monthNames[now.getMonth()];
+        const day = now.getDate().toString().padStart(2, '0');
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+    
+        return `${month} ${day} ${hours}:${minutes}:${seconds}`;
     }
-
+    
     /**
      * Get the log level
      *
@@ -69,24 +75,90 @@ class Logger {
      * Log
      *
      * @private
-     * @param {string} type - Type of log message, info, debug, error, etc..
+     * @param {string} type - Type of log message, info, debug, error, etc.
      * @param {any} message - Text of the log or an object.
      * @param {string} component - Which component or area of the framework is logging.
      */
     _log(type, message, component = 'default') {
-        const timestamp = this._getCurrentTimestamp()
-        const coloredType = this.types[type].color + type.toUpperCase() + '\x1b[0m' // Reset color
-        const logLevel = this._getLogLevel(component)
+        // Exit early if the log level condition is not met
+        const logLevel = this._getLogLevel(component);
+        if (this.types[type].level > logLevel) {
+            return;
+        }
 
-        if (this.types[type].level <= logLevel) {
-            const formattedMessage = typeof message === 'object' ? JSON.stringify(message) : message
-            if (component === 'default') {
-                console.log(`[${timestamp}] [${coloredType}] ${formattedMessage}`)
+        const timestamp = this._getCurrentTimestamp();
+        
+        const logTypeColour = this.types[type].color
+        const logTypeBackground = '\x1b[40m'
+        const timeStampColor = '\x1b[37m'
+        const componentColor = '\x1b[94m'
+
+        // Construct log components
+        const logTimestamp = `${timeStampColor}${timestamp}\x1b[0m`;
+        const logComponent = `${componentColor}${component}\x1b[0m`
+        const logType = `${logTypeBackground}${logTypeColour}${type.toUpperCase()}\x1b[0m`
+
+        // Message
+        let logMessage;
+        if (message instanceof Error) {
+            logMessage = `${message.message}\n${message.stack}`
+        } else if(typeof message === 'object') {
+            logMessage = JSON.stringify(message)
+        } else {
+            logMessage = message
+        }
+        logMessage = this._formatLogMessage(logMessage)
+
+        // Construct the final log string
+        const logString = `${logTimestamp} ${logComponent} ${logType} ${logMessage}`;
+
+        console.log(logString);
+    }
+
+    /**
+     * Formats a log message, highlighting JSON strings and quoted strings.
+     *
+     * @param {string} message - The log message to format.
+     * @returns {string} The formatted log message with highlighted JSON and quotes.
+     */
+    _formatLogMessage(message) {
+        let formattedMessage = ''
+        let insideQuotes = false
+        let insideJson = false
+        let jsonDepth = 0
+    
+        // Escape sequences for colors
+        const reset = '\x1b[97m';
+        const jsonColor = '\x1b[38;5;208m'; // Magenta
+        const quoteColor = '\x1b[92m'; // Cyan
+    
+        // Iterate over each character
+        for (let i = 0; i < message.length; i++) {
+            const char = message[i];
+    
+            if (char === '{' && !insideQuotes) {
+                insideJson = true;
+                jsonDepth++;
+                formattedMessage += jsonColor + char;
+            } else if (char === '}' && !insideQuotes) {
+                jsonDepth--;
+                if(jsonDepth === 0) { insideJson = false; }
+                formattedMessage += jsonColor + char;
+            } else if (char === '"' && !insideJson) {
+                insideQuotes = !insideQuotes;
+                formattedMessage += quoteColor + char;
             } else {
-                console.log(`[${timestamp}] [${coloredType}] [${component}] ${formattedMessage}`)
+                formattedMessage += insideJson || insideQuotes ? char : reset + char;
             }
         }
+    
+        return reset + formattedMessage;
     }
+    
+
+      
+      
+
 }
 
 module.exports = new Logger()

@@ -99,7 +99,7 @@ class RoomComponent extends Component {
             room: (name) => {
                 const room = this.get(name)
                 if (!room) {
-                    throw new Error(`Room ${name} does not exist`, 'room')
+                    throw new Error(`Room "${name}" does not exist`, 'room')
                 }
                 
                 return {
