@@ -1,16 +1,30 @@
-function getDotValue(obj, key) {
-    const keys = key.split('.');
-    let value = obj;
+class dot {
+    static get(data, key) {
+        const keys = key.split('.');
+        
+        function recursiveLookup(obj, keys) {
+            const currentKey = keys.shift();
+            
+            console.log('Current Key:', currentKey);
 
-    for (const k of keys) {
-        if (value && typeof value === 'object' && k in value) {
-            value = value[k];
-        } else {
-            return null;
+            if (obj && typeof obj === 'object' && currentKey in obj) {
+                const nextObj = obj[currentKey];
+
+                // If the next object is a non-object, return it
+                if (!keys.length && typeof nextObj !== 'object') {
+                    console.log('Found:', nextObj);
+                    return nextObj;
+                }
+
+                return recursiveLookup(nextObj, keys);
+            } else {
+                console.log('Not Found');
+                return null;
+            }
         }
-    }
 
-    return value;
+        return recursiveLookup(data, keys);
+    }
 }
 
-module.exports = getDotValue
+module.exports = dot;

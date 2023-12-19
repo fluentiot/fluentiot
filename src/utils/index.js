@@ -2,7 +2,7 @@
 module.exports = {
     isValidName: require('./validation').isValidName,
     delay: require('./delay'),
-    getDotValue: require('./dot'),
+    dot: require('./dot'),
     logger: require('./logger'),
     expect: require('./expect')
 }

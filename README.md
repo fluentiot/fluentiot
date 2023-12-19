@@ -235,6 +235,35 @@ scenario.only('this is the only scenario that will run')
     .assert()
 ```
 
+
+### Asynchronous actions
+
+To handle asynchronous add `async` to the `then` method.
+
+```javascript
+.then(() => {}) // To...
+.then(async () => {})
+```
+
+An example using the `delay` utility and `async`.
+```javascript
+const { delay } = require('../src/utils')
+scenario('Countdown')
+    .when()
+        .empty()
+    .then(async () => {
+        console.log('3')
+        await delay(1000)
+        console.log('2')
+        await delay(1000)
+        console.log('1')
+        await delay(1000)
+        console.log('Go!')
+    })
+    .assert()
+```
+
+
 ---
 
 ## Day API

@@ -1,39 +1,17 @@
 const { scenario } = require('../index')
+const { delay } = require('../src/utils')
 
-scenario('Only on Saturday at 7am')
-    .when()
-        .time.is('07:00')
-    .constraint()
-        .day.is('Saturday')
-        .then(() => {
-            console.log('It is 7am Saturday ')
-        })
-    .else()
-        .then(() => { console.log('It is 7am but not Saturday'); })
-    .assert()
-
-scenario('Weekends or weekdays')
+scenario('Countdown')
     .when()
         .empty()
-    .constraint()
-        .day.is('weekend')
-        .then(() => {
-            console.log('It is the weekend')
-        })
-    .constraint()
-        .day.is('weekday')
-        .then(() => {
-            console.log('It is weekday')
-        })
-    .assert()
-
-scenario('First week of May')
-    .when()
-        .empty()
-    .constraint()
-        .day.between('1st May', '7th May')
-        .then((Scenario) => {
-            console.log(Scenario.description)
-        })
+    .then(async () => {
+        console.log('3')
+        await delay(1000)
+        console.log('2')
+        await delay(1000)
+        console.log('1')
+        await delay(1000)
+        console.log('Go!')
+    })
     .assert()
 
