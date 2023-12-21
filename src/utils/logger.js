@@ -16,7 +16,7 @@ class Logger {
             log: { color: '\x1b[37m', level: 0 },
             info: { color: '\x1b[36m', level: 1 },
             warn: { color: '\x1b[33m', level: 2 },
-            debug: { color: '\x1b[35m', level: 4 },
+            debug: { color: '\x1b[35m', level: 3 },
         }
 
         // For each log type create a new method

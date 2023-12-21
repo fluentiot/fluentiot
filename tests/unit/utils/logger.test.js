@@ -40,9 +40,9 @@ describe('Logger basic methods and setup', () => {
     
 
     it('returns the default log level if component is not found', () => {
-        expect(logger._getLogLevel()).toBe(4) //Debug level
-        expect(logger._getLogLevel('unknown')).toBe(4) //Debug level
-        expect(logger._getLogLevel('debug')).toBe(4) //Debug level
+        expect(logger._getLogLevel()).toBe(3) //Debug level
+        expect(logger._getLogLevel('unknown')).toBe(3) //Debug level
+        expect(logger._getLogLevel('debug')).toBe(3) //Debug level
     })
 
     it('returns the correct log level if defined', () => {
