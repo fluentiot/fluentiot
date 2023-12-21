@@ -93,7 +93,7 @@ class RoomComponent extends Component {
     /**
      * Defines constraints related to room.
      *
-     * @returns {object} - An object with constraint methods for datetime.
+     * @returns {object} - An object with constraint methods
      */
     constraints() {
         return {
