@@ -29,7 +29,7 @@ class Room {
             occupiedStartTime: null,
             thresholdDuration: 15,      // Default threshold duration in minutes
         };
-        this.attribute.setup(this, defaultAttributes, attributes);
+        this.attribute.setup(defaultAttributes, attributes);
 
         // Last sensor time
         // For example each time a PIR sensor detects someone this variable will get updated

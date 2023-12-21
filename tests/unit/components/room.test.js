@@ -257,7 +257,7 @@ describe('Room constraints', () => {
         expect(room.constraints().room('office').isVacant()()).toBe(false)
     })
 
-    it('passes if the room is occupied by using presense', () => {
+    it('passes if the room is occupied by using presense and threshold duration is set to 0', () => {
         const living = room.add('living', { thresholdDuration: 0 })
         living.updatePresence(true)
         expect(room.constraints().room('living').isOccupied()()).toBe(true)
@@ -266,4 +266,35 @@ describe('Room constraints', () => {
         expect(room.constraints().room('living').isOccupied()()).toBe(false)
     })
 
+    it.only('attributes work in constraints', () => {
+        office.attribute.set('occupied', true);
+        expect(room.constraints().room('office').attribute('occupied').is(true)()).toBe(true)
+        expect(room.constraints().room('office').attribute('occupied').is('foobar')()).toBe(false)
+    })
+
 })
+
+
+
+describe('Room attribute expects', () => {
+
+    let Scenario
+    let office
+    let device
+
+    beforeEach(() => {
+        device = new DeviceComponent(Fluent);
+        Scenario = ComponentHelper.ScenarioAndEvent(room)
+        office = room.add('office')
+    })
+
+    it('can use is expects', () => {
+        office.attribute.set('occupied', true)
+        expect(office.attribute.expect('occupied').is(true)).toBe(true)
+        expect(office.attribute.expect('occupied').is(false)).toBe(false)
+
+        expect(office.attribute.expect('occupied').isTruthy()).toBe(true)
+    })
+
+
+});

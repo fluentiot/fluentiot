@@ -1,6 +1,7 @@
 const Component = require('./../component')
 const Room = require('./room')
 const logger = require('./../../utils/logger')
+const Expect = require('./../../utils/expect')
 const { isValidName } = require('./../../utils')
 
 /**
@@ -112,7 +113,10 @@ class RoomComponent extends Component {
                         return () => {
                             return room.isVacant();
                         }
-                    }
+                    },
+                    attribute: (attributeName) => {
+                        return new Expect(() => room.attribute.get(attributeName))
+                    },
                 }
             },
         }
