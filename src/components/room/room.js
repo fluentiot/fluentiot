@@ -43,7 +43,7 @@ class Room {
             this.updatePresence(true);
         }
 
-        // Set up the one-minute timer for checkOccupied
+        // Set up the one-minute timer for _checkIfVacant
         this.checkOccupiedTimer = setInterval(() => this._checkIfVacant(), 60 * 1000); // Every 1 minute
     }
 
@@ -68,12 +68,12 @@ class Room {
 
         // If no threshold duration for vacany then need to trigger occupied=false quickly
         // rather than waiting for the 1 minute timer
-        if (this.attribute.get('thresholdDuration') <= 0) {
+        if (!sensorValue && this.attribute.get('thresholdDuration') <= 0) {
             this._checkIfVacant();
         }
     }
 
-    /**wwwsasd
+    /**
      * Add presence sensor
      * 
      * @param {Device} device - Device object

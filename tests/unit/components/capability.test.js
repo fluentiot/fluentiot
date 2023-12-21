@@ -32,6 +32,24 @@ describe('Capabilities', () => {
         expect(callback).toHaveBeenCalledTimes(1)
     })
 
+    it('capability can run being returned with a fake device', () => {
+        const callback = jest.fn()
+        const fn = capability.add('turnOn', callback)
+        const fakeDevice = { name: 'fakeDevice' }
+        fn(fakeDevice)
+        expect(callback).toHaveBeenCalledTimes(1)
+        expect(callback).toHaveBeenCalledWith(fakeDevice)
+    })
+
+    it('capability run and multiple args are passed', () => {
+        const callback = jest.fn()
+        const fn = capability.add('turnOn', callback)
+        const fakeDevice = { name: 'fakeDevice' }
+        fn(fakeDevice, '1', '2', 3, true)
+        expect(callback).toHaveBeenCalledTimes(1)
+        expect(callback).toHaveBeenCalledWith(fakeDevice, '1', '2', 3, true)
+    })
+
     it('throws an error if the capability already exists with the same name', () => {
         capability.add('turnOn', () => {})
         expect(() => capability.add('turnOn', () => {})).toThrow()

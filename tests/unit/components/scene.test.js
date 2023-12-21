@@ -32,8 +32,16 @@ describe('Scene', () => {
         expect(() => scene.add('my name', () => {})).toThrow()
     })
 
+    it('throws if no call back method defined', () => {
+        expect(() => scene.add('myName')).toThrow()
+    })
+
     it('returns false if the scene does not exist', () => {
         expect(scene.get('foobar')).toBeNull()
+    })
+
+    it('returns false if running a scene that does not exist', () => {
+        expect(scene.run('foobar')).toBe(false)
     })
 
     it('will run the mock when called though get()', () => {
