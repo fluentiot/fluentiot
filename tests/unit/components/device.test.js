@@ -369,3 +369,39 @@ describe('Device triggers with state', () => {
     })
 
 });
+
+
+describe('Device using find DSL', () => {
+
+    it('can find devices by a single attribute', () => {
+        const device1 = device.add('pirOffice', { id: '123' })
+        const foundDevice1 = device.find('attributes', { 'id': '123' })
+        expect(foundDevice1).toStrictEqual([device1])
+    })
+
+    it('can find devices by a single attribute', () => {
+        const device1 = device.add('pirOffice', { id: '123' })
+        const device2 = device.add('pirLiving', { id: '321' })
+
+        const foundDevice1 = device.find('attributes', { 'id': '123' })
+        const foundDevice2 = device.find('attributes', { 'id': '321' })
+
+        expect(foundDevice1).toStrictEqual([device1])
+        expect(foundDevice2).toStrictEqual([device2])
+    })
+
+    it('can find devices by a multiple attributes', () => {
+        const device1 = device.add('pirOffice', { id: '123', group: 'office' })
+        const foundDevice1 = device.find('attributes', { id: '123', group: 'office' })
+
+        expect(foundDevice1).toStrictEqual([device1])
+    })
+
+    it('can find devices by name', () => {
+        const device1 = device.add('pirOffice')
+        const foundDevice1 = device.find({ name: 'pirOffice' })
+
+        expect(foundDevice1).toStrictEqual([device1])
+    })
+
+})

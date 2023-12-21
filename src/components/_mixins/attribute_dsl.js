@@ -31,22 +31,18 @@ const AttributeDslMixin = (parent, name) => {
                 return parent.attributes[attributeName].value
             },
             set: (attributeName, attributeValue) => {
-                parent.attributes[attributeName] = {
-                    value: attributeValue,
-                    changed: true
-                }
+                parent.attributes[attributeName] = attributeValue
                 return true
             },
             update: (attributeName, attributeValue) => {
                 // Has the value changed?
                 let changed = true
-                if (parent.attributes[attributeName]?.value === attributeValue) {
+                if (parent.attributes[attributeName] === attributeValue) {
                     changed = false
                 }
 
                 // Set it
-                parent.attributes[attributeName] ??= {}
-                parent.attributes[attributeName].value = attributeValue
+                parent.attributes[attributeName] = attributeValue
 
                 logger.info(`Attribute, "${parent.name}" updated "${attributeName}" to "${attributeValue}"`, name)
                 parent.parent.emit(`${name}.${parent.name}.attribute`, {

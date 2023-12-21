@@ -2,6 +2,7 @@ const Device = require('./device')
 const Component = require('./../component')
 const logger = require('./../../utils/logger')
 const { isValidName } = require('./../../utils')
+const { FindDslMixin } = require('./../_mixins/find_dsl')
 
 /**
  * Device component
@@ -18,6 +19,9 @@ class DeviceComponent extends Component {
     constructor(Fluent) {
         super(Fluent)
         this.devices = {}
+
+        // Mixins
+        Object.assign(this, FindDslMixin(this, this.devices))
     }
 
     /**
