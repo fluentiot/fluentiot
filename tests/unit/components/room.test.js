@@ -267,3 +267,38 @@ describe('Room constraints', () => {
     })
 
 })
+
+describe('Room find using find DSL', () => {
+
+    it('can find rooms by a single attribute', () => {
+        const room1 = room.add('office', { id: '123' })
+        const foundRoom = room.find('attributes', { 'id': '123' })
+        expect(foundRoom).toStrictEqual([room1])
+    })
+
+    it('can find rooms by a single attribute', () => {
+        const room1 = room.add('office', { id: '123' })
+        const room2 = room.add('living', { id: '321' })
+
+        const foundRoom1 = room.find('attributes', { 'id': '123' })
+        const foundRoom2 = room.find('attributes', { 'id': '321' })
+
+        expect(foundRoom1).toStrictEqual([room1])
+        expect(foundRoom2).toStrictEqual([room2])
+    })
+
+    it('can find rooms by a multiple attributes', () => {
+        const room1 = room.add('office', { id: '123', group: 'office' })
+        const foundRoom1 = room.find('attributes', { id: '123', group: 'office' })
+
+        expect(foundRoom1).toStrictEqual([room1])
+    })
+
+    it('can find rooms by name', () => {
+        const room1 = room.add('office')
+        const foundRoom1 = room.find({ name: 'office' })
+
+        expect(foundRoom1).toStrictEqual([room1])
+    })
+
+})

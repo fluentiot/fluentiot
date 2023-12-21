@@ -28,7 +28,7 @@ const AttributeDslMixin = (parent, name) => {
                 if (typeof parent.attributes[attributeName] === 'undefined') {
                     return null
                 }
-                return parent.attributes[attributeName].value
+                return parent.attributes[attributeName]
             },
             set: (attributeName, attributeValue) => {
                 parent.attributes[attributeName] = attributeValue

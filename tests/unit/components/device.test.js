@@ -37,44 +37,6 @@ describe('Device attributes', () => {
         expect(newDevice.attribute.get('foo')).toBe('bar')
     })
 
-    it('find single device by a certain attribute', () => {
-        const newDevice1 = device.add('pirOffice', { id: '123' })
-        const newDevice2 = device.add('pirLiving', { id: '321' })
-
-        //Single found
-        const device1 = device.findOneByAttribute('id', '123')
-        expect(device1).toBe(newDevice1)
-
-        //Single found
-        const device2 = device.findOneByAttribute('id', '321')
-        expect(device2).toBe(newDevice2)
-
-        //Single not found
-        const device3 = device.findOneByAttribute('id', 'xxx')
-        expect(device3).toBe(null)
-
-        //All
-        const devices = device.findAllByAttribute('id', '123')
-        expect(devices).toHaveLength(1)
-        expect(devices).toContain(newDevice1)
-        expect(devices).not.toContain(newDevice2)
-    })
-
-    it('find multiple devices by a certain attribute', () => {
-        const newDevice1 = device.add('pirOffice', { foo: 'bar' })
-        const newDevice2 = device.add('pirLiving', { foo: 'bar' })
-
-        const devices = device.findAllByAttribute('foo', 'bar')
-        expect(devices).toHaveLength(2)
-        expect(devices).toContain(newDevice1)
-        expect(devices).toContain(newDevice2)
-    })
-
-    it('no devices found by attribute', () => {
-        const devices = device.findOneByAttribute('foo', 'bar')
-        expect(devices).toBe(null)
-    })
-
     it('handles being passed as null/empty/false', () => {
         const newDevice1 = device.add('pir1')
         expect(newDevice1.attribute.get('foo')).toBe(null)
@@ -371,7 +333,7 @@ describe('Device triggers with state', () => {
 });
 
 
-describe('Device using find DSL', () => {
+describe('Device find using find DSL', () => {
 
     it('can find devices by a single attribute', () => {
         const device1 = device.add('pirOffice', { id: '123' })
