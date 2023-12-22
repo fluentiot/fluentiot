@@ -333,6 +333,29 @@ describe('Device triggers with state', () => {
 });
 
 
+
+
+describe('Device constraints', () => {
+    let Scenario
+    let device
+    let playroomPir
+
+    beforeEach(() => {
+        device = new DeviceComponent(Fluent)
+        Scenario = ComponentHelper.ScenarioAndEvent(device)
+        
+        playroomPir = device.add('pir')
+    })
+
+    it('passes if the device is online', () => {
+        playroomPir.attribute.set('online', true);
+        expect(device.constraints().device('pir').attribute('online').is(true)()).toBe(true)
+        expect(device.constraints().device('pir').attribute('online').is('foobar')()).toBe(false)
+    })
+
+})
+
+
 describe('Device find using find DSL', () => {
 
     it('can find devices by a single attribute', () => {

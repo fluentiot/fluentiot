@@ -1,6 +1,7 @@
 const Component = require('./../component')
 const Room = require('./room')
 const logger = require('./../../utils/logger')
+const Expect = require('./../../utils/expect')
 const { isValidName } = require('./../../utils')
 const { FindDslMixin } = require('./../_mixins/find_dsl')
 
@@ -96,7 +97,7 @@ class RoomComponent extends Component {
     /**
      * Defines constraints related to room.
      *
-     * @returns {object} - An object with constraint methods for datetime.
+     * @returns {object} - An object with constraint methods
      */
     constraints() {
         return {
@@ -116,7 +117,10 @@ class RoomComponent extends Component {
                         return () => {
                             return room.isVacant();
                         }
-                    }
+                    },
+                    attribute: (attributeName) => {
+                        return new Expect(() => room.attribute.get(attributeName))
+                    },
                 }
             },
         }

@@ -29,7 +29,7 @@ class Room {
             occupiedStartTime: null,
             thresholdDuration: 15,      // Default threshold duration in minutes
         };
-        this.attribute.setup(this, defaultAttributes, attributes);
+        this.attribute.setup(defaultAttributes, attributes);
 
         // Last sensor time
         // For example each time a PIR sensor detects someone this variable will get updated
@@ -124,6 +124,15 @@ class Room {
         this._sensorLastTime = false;
         logger.info(`Room "${this.name}" is now vacant.`, 'room');
         this.attribute.update('occupied', false);
+    }
+
+    /**
+     * Set to occupied or vacant
+     * 
+     * @param {Boolean} occupied - if occupied or not
+     */
+    occupied(value) {
+        this.attribute.set('occupied', value);
     }
 
     /**

@@ -28,7 +28,7 @@ class Device {
         const defaultAttributes = {
             stateful: true
         };
-        this.attribute.setup(this, defaultAttributes, attributes)
+        this.attribute.setup(defaultAttributes, attributes)
 
         // Abstracting capability method so to reflect similar DSL in system
         // Instead of device.capability().add() => device.capability.add()

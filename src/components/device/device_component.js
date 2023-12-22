@@ -1,5 +1,6 @@
 const Device = require('./device')
 const Component = require('./../component')
+const Expect = require('./../../utils/expect')
 const logger = require('./../../utils/logger')
 const { isValidName } = require('./../../utils')
 const { FindDslMixin } = require('./../_mixins/find_dsl')
@@ -121,6 +122,28 @@ class DeviceComponent extends Component {
                             },
                         }
                     },
+                }
+            },
+        }
+    }
+
+    /**
+     * Defines constraints related to device.
+     *
+     * @returns {object} - An object with constraint methods
+     */
+    constraints() {
+        return {
+            device: (name) => {
+                const device = this.get(name)
+                if (!device) {
+                    throw new Error(`Device "${name}" does not exist`, 'device')
+                }
+                
+                return {
+                    attribute: (attributeName) => {
+                        return new Expect(() => device.attribute.get(attributeName))
+                    }
                 }
             },
         }

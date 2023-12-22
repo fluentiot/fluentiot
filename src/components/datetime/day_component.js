@@ -35,25 +35,46 @@ class DayComponent extends Component {
             day: {
                 is: (targetDay) => {
                     return () => {
-                        const parsedDays = this._parseDay(targetDay)
-                        const today = dayjs().format('dddd')
-                        return parsedDays.some((parsedDay) => parsedDay.toLowerCase() === today.toLowerCase())
+                        return this.is(targetDay)
                     }
                 },
                 between: (targetStart, targetEnd) => {
                     return () => {
-                        try {
-                            return this.isCurrentDateInRange(targetStart, targetEnd)
-                        } catch (e) {
-                            logger.error(
-                                `Date format for between constraint not correct, "${targetStart}" / "${targetEnd}"`,
-                                'datetime'
-                            )
-                            return false
-                        }
+                        return this.between(targetStart, targetEnd)
                     }
                 },
             },
+        }
+    }
+
+    /**
+     * Is day
+     * 
+     * @param {string} targetDay 
+     * @returns {boolean}
+     */
+    is(targetDay) {
+        const parsedDays = this._parseDay(targetDay)
+        const today = dayjs().format('dddd')
+        return parsedDays.some((parsedDay) => parsedDay.toLowerCase() === today.toLowerCase())
+    }
+
+    /**
+     * Between
+     * 
+     * @param {string} targetStart 
+     * @param {string} targetEnd 
+     * @returns {boolean}
+     */
+    between(targetStart, targetEnd) {
+        try {
+            return this.isCurrentDateInRange(targetStart, targetEnd)
+        } catch (e) {
+            logger.error(
+                `Date format for between constraint not correct, "${targetStart}" / "${targetEnd}"`,
+                'datetime'
+            )
+            return false
         }
     }
 
