@@ -73,7 +73,7 @@ class Room {
         }
     }
 
-    /**wwwsasd
+    /**
      * Add presence sensor
      * 
      * @param {Device} device - Device object
@@ -124,6 +124,15 @@ class Room {
         this._sensorLastTime = false;
         logger.info(`Room "${this.name}" is now vacant.`, 'room');
         this.attribute.update('occupied', false);
+    }
+
+    /**
+     * Set to occupied or vacant
+     * 
+     * @param {Boolean} occupied - if occupied or not
+     */
+    occupied(value) {
+        this.attribute.set('occupied', value);
     }
 
     /**

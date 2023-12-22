@@ -7,6 +7,9 @@ jest.mock('./../../../src/utils/logger');
 const DeviceComponent = require('./../../../src/components/device/device_component');
 const EventEmitter = require('events');
 
+const mockdate = require('mockdate')
+const dayjs = require('dayjs')
+
 let room;
 
 beforeEach(() => {
@@ -65,6 +68,11 @@ describe('Room attributes DSL', () => {
 })
 
 describe('Room occupancy', () => {
+    
+    afterEach(() => {
+        mockdate.reset()
+    })
+
     it('default attributes are setup', () => {
         room.add('officeRoom')
         expect(room.get('officeRoom').attribute.get('occupied')).toBe(false)
@@ -81,6 +89,17 @@ describe('Room occupancy', () => {
         expect(room.get('officeRoom').attribute.get('occupied')).toBe(true)
         expect(room.get('officeRoom').attribute.get('foobar')).toBe(true)
         expect(room.get('officeRoom').attribute.get('thresholdDuration')).toBe(20)
+    })
+
+    it('can set to occupied and vacant directly', () => {
+        room.add('officeRoom')
+        expect(room.get('officeRoom').occupied(true))
+        expect(room.get('officeRoom').isOccupied()).toBe(true)
+        expect(room.get('officeRoom').isVacant()).toBe(false)
+
+        expect(room.get('officeRoom').occupied(false))
+        expect(room.get('officeRoom').isOccupied()).toBe(false)
+        expect(room.get('officeRoom').isVacant()).toBe(true)
     })
 
     it('handles get and set attributes', () => {
@@ -127,6 +146,63 @@ describe('Room occupancy', () => {
         expect(room.get('officeRoom').attribute.get('occupied')).toBe(false)
         expect(room.emit).toHaveBeenCalledTimes(2)
     })
+
+    it('is still occupied when threshold not met', () => {
+        const office = room.add('officeRoom', { thresholdDuration: 2 })
+        jest.spyOn(room, 'emit')
+
+        office.updatePresence(true)
+        office.updatePresence(false)
+
+        mockdate.set(dayjs().add(1, 'minutes'));
+        office._checkIfVacant()
+
+        expect(room.get('officeRoom').isOccupied()).toBe(true)
+    })
+
+    it('is vacant after theshold is met', () => {
+        const office = room.add('officeRoom', { thresholdDuration: 1 })
+        jest.spyOn(room, 'emit')
+
+        office.updatePresence(true)
+        office.updatePresence(false)
+
+        mockdate.set(dayjs().add(1, 'minutes'));
+        office._checkIfVacant()
+
+        expect(room.get('officeRoom').isOccupied()).toBe(false)
+        expect(room.get('officeRoom').isVacant()).toBe(true)
+        expect(room.emit).toHaveBeenCalled()
+    })
+
+    it('is still occupied when presence updated', () => {
+        const office = room.add('officeRoom', { thresholdDuration: 10 })
+        jest.spyOn(room, 'emit')
+
+        // NOW: Walks into room
+        office.updatePresence(true)
+        office._checkIfVacant()
+        expect(room.get('officeRoom').isOccupied()).toBe(true)
+
+        // +9 minutes: Walks out of the room -> will be occupied until 19 minutes
+        mockdate.set(dayjs().add(9, 'minutes').toDate());
+        office.updatePresence(true) //Make sure last sensor time is updated to compare with
+        office.updatePresence(false)
+        office._checkIfVacant()
+        expect(room.get('officeRoom').isOccupied()).toBe(true)
+
+        // +8 minutes: Should remain occupied
+        mockdate.set(dayjs().add(9, 'minutes').toDate())
+        office._checkIfVacant()
+        expect(room.get('officeRoom').isOccupied()).toBe(true)
+
+        // +2 minutes: Now vacant
+        mockdate.set(dayjs().add(1, 'minutes').toDate())
+        office._checkIfVacant()
+        expect(room.get('officeRoom').isOccupied()).toBe(false)
+        
+    })
+
 })
 
 
@@ -266,7 +342,7 @@ describe('Room constraints', () => {
         expect(room.constraints().room('living').isOccupied()()).toBe(false)
     })
 
-    it.only('attributes work in constraints', () => {
+    it('attributes work in constraints', () => {
         office.attribute.set('occupied', true);
         expect(room.constraints().room('office').attribute('occupied').is(true)()).toBe(true)
         expect(room.constraints().room('office').attribute('occupied').is('foobar')()).toBe(false)
