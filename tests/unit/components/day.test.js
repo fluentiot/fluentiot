@@ -99,6 +99,76 @@ describe('Day parsing and between methods', () => {
     })
 })
 
+describe('Day is', () => {
+    let day
+    beforeEach(() => {
+        day = new DayComponent(Fluent)
+    })
+
+
+    it('day is today', () => {
+        const fullDayName = moment().format('dddd')
+        const abbreviatedDayName = moment().format('ddd')
+
+        expect(day.is(fullDayName)).toBe(true)
+        expect(day.is(abbreviatedDayName)).toBe(true)
+    })
+
+    it('is supports multiple days', () => {
+        const fullDayName = moment().format('dddd')
+        const tomorrowDayName = moment().add(1, 'days').format('dddd')
+        const result = day.is([fullDayName, tomorrowDayName])
+        expect(result).toBe(true)
+    })
+
+    it('supports weekend and weekdays', () => {
+        expect(day.is(['weekday', 'weekend'])).toBe(true)
+    })
+
+    it('is negative if not today', () => {
+        const tomorrowDayName = moment().add(1, 'days').format('dddd')
+        const result = day.is(tomorrowDayName)
+        expect(result).toBe(false)
+    })
+
+    it('fails if the passed date is unknown', () => {
+        const result = day.is('zzz')
+        expect(result).toBe(false)
+    })
+
+    it('fails if the passed date is a number', () => {
+        const result = day.constraints().day.is(111)()
+        expect(result).toBe(false)
+    })
+});
+
+
+describe('Day is between', () => {
+    let day
+    beforeEach(() => {
+        day = new DayComponent(Fluent)
+    })
+
+    it('is between today', () => {
+        const start = moment().format('MMMM D')
+        const end = moment().add(1, 'days').format('MMMM D')
+        expect(day.between(start, end)).toBe(true)
+    })
+
+    it('is not between today', () => {
+        const start = moment().add(1, 'days').format('MMMM D')
+        const end = moment().add(2, 'days').format('MMMM D')
+        expect(day.between(start, end)).toBe(false)
+    })
+
+    it('returns false if the input is a bad format', () => {
+        const start = 'xxx'
+        const end = moment().add(2, 'days').format('MMMM D')
+        expect(day.between(start, end)).toBe(false)
+    })
+})
+
+
 describe('Day constraints for "between"', () => {
     let day
     beforeEach(() => {
