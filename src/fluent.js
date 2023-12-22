@@ -22,7 +22,10 @@ class Fluent {
         Fluent.scenarios = [] //Scenarios defined
         Fluent.inTestMode = false //If in test mode
 
-        Fluent.splash()
+        // If running in jest, don't show splash screen
+        if (process.env.JEST_WORKER_ID === undefined) {
+            Fluent.splash()
+        }
 
         // Load components defined in the config
         let components = config.get('components') || []

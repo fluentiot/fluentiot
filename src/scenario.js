@@ -26,7 +26,7 @@ class Scenario {
         this.Fluent = Fluent //Singleton object for core
         this.description = description //Verbose description of the scenario
 
-        this.lastAssetTime = null //When the scenario last asserted, used for cooldown
+        this.lastAssertTime = null //When the scenario last asserted, used for cooldown
         this.testMode = false //In test mode
         this.runnable = true //Can scenario be run? Can be switched when .test() mode is used
         this.triggers = {} //Triggers from components loaded in
@@ -212,18 +212,18 @@ class Scenario {
      * @returns {Boolean}
      */
     assert(...args) {
-        //Scenario might not be runnable, runnable is set to false when .test() is used in another scenario
+        // Scenario might not be runnable, runnable is set to false when .test() is used in another scenario
         if (!this.runnable) {
             return false
         }
 
         // Cooldown checks
         const currentTime = Date.now();
-        if (this.properties.cooldown > 0 && currentTime - this.lastAssetTime < this.properties.cooldown) {
+        if (this.properties.cooldown > 0 && currentTime - this.lastAssertTime < this.properties.cooldown) {
             logger.warn(`Scenario "${this.description}" did not trigger because in cooldown period`, 'scenario');
             return false;
         }
-        this.lastAssetTime = currentTime;
+        this.lastAssertTime = currentTime;
 
 
         // Total executions with constraints
