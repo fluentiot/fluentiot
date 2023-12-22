@@ -3,7 +3,7 @@ const Room = require('./room')
 const logger = require('./../../utils/logger')
 const Expect = require('./../../utils/expect')
 const { isValidName } = require('./../../utils')
-const { FindDslMixin } = require('./../_mixins/find_dsl')
+const { QueryDslMixin } = require('./../_mixins/query_dsl')
 
 /**
  * Room component
@@ -23,7 +23,7 @@ class RoomComponent extends Component {
         this.rooms = {}
 
         // Mixins
-        Object.assign(this, FindDslMixin(this, this.rooms))
+        Object.assign(this, QueryDslMixin(this, this.rooms))
     }
 
     /**

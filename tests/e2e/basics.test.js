@@ -142,4 +142,18 @@ describe('Scenario creation basics', () => {
         expect(action3).toHaveBeenCalledTimes(1)
     })
 
+    it('will not throw an error if', () => {
+        const action = jest.fn()
+
+        const test = scenario('test', { cooldown:0 })
+            .when()
+                .empty()
+            .then(() => action())
+        test.assert()
+        test.assert()
+        test.assert()
+
+        expect(action).toHaveBeenCalledTimes(3)
+    })
+
 })

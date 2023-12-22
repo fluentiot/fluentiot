@@ -2,9 +2,9 @@ const logger = require('./../../utils/logger')
 const Expect = require('./../../utils/expect')
 
 const setupAttributes = (parent, defaultAttributes, definedAttributes) => {
-  if (!parent.attributes) {
-    parent.attributes = {};
-  }
+    if (!parent.attributes) {
+        parent.attributes = {};
+    }
 
   const merged =
     definedAttributes !== null && typeof definedAttributes === 'object'
@@ -12,10 +12,7 @@ const setupAttributes = (parent, defaultAttributes, definedAttributes) => {
       : { ...defaultAttributes };
 
   for (const key in merged) {
-    parent.attributes[key] = {
-      value: merged[key],
-      changed: true,
-    };
+    parent.attributes[key] = merged[key]
   }
 };
 
@@ -26,27 +23,23 @@ const getAttribute = (parent, attributeName) => {
     return null;
   }
 
-  return attribute.value;
+  return attribute;
 };
 
 const setAttribute = (parent, attributeName, attributeValue) => {
-  parent.attributes[attributeName] = {
-    value: attributeValue,
-    changed: true,
-  };
+  parent.attributes[attributeName] = attributeValue
   return true;
 };
 
 const updateAttribute = (parent, attributeName, attributeValue, name) => {
   // Has the value changed?
   let changed = true;
-  if (parent.attributes[attributeName]?.value === attributeValue) {
+  if (parent.attributes[attributeName] === attributeValue) {
     changed = false;
   }
 
   // Set it
-  parent.attributes[attributeName] ??= {};
-  parent.attributes[attributeName].value = attributeValue;
+  parent.attributes[attributeName] = attributeValue;
 
   logger.info(`Attribute, "${parent.name}" updated "${attributeName}" to "${attributeValue}"`, name);
   parent.parent.emit(`${name}.${parent.name}.attribute`, {

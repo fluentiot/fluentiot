@@ -3,7 +3,7 @@ const Component = require('./../component')
 const Expect = require('./../../utils/expect')
 const logger = require('./../../utils/logger')
 const { isValidName } = require('./../../utils')
-const { FindDslMixin } = require('./../_mixins/find_dsl')
+const { QueryDslMixin } = require('./../_mixins/query_dsl')
 
 /**
  * Device component
@@ -22,7 +22,7 @@ class DeviceComponent extends Component {
         this.devices = {}
 
         // Mixins
-        Object.assign(this, FindDslMixin(this, this.devices))
+        Object.assign(this, QueryDslMixin(this, this.devices))
     }
 
     /**
@@ -55,32 +55,6 @@ class DeviceComponent extends Component {
             return null
         }
         return this.devices[name]
-    }
-
-    /**
-     * Finds individual device by attribute
-     *
-     * @param {string} attribute - The attribute to search for.
-     * @param {*} value - The value to match for the specified attribute.
-     * @returns {object<Device>|null} - An array of devices matching the attribute and value,
-     *   or null if no matching devices are found.
-     */
-    findOneByAttribute(attribute, value) {
-        const results = this.findAllByAttribute(attribute, value)
-        return results ? results[0] : null
-    }
-
-    /**
-     * Finds devices with a specified attribute and value.
-     *
-     * @param {string} attribute - The attribute to search for.
-     * @param {*} value - The value to match for the specified attribute.
-     * @returns {Array<Device>|null} - An array of devices matching the attribute and value,
-     *   or null if no matching devices are found.
-     */
-    findAllByAttribute(attribute, value) {
-        const results = Object.values(this.devices).filter((device) => device.attribute.get(attribute) === value)
-        return results.length ? results : null
     }
 
     /**

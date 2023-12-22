@@ -40,7 +40,7 @@ const findElements = (dataSource, collectionOrQuery, query) => {
  * @param {object} dataSource - The data source to search for devices.
  * @returns {array|null|object} - An array of devices matching the attribute and value,
  */
-const FindDslMixin = (parent, dataSource) => {
+const QueryDslMixin = (parent, dataSource) => {
 
     return {
         find: (collectionOrQuery, query) => {
@@ -55,5 +55,5 @@ const FindDslMixin = (parent, dataSource) => {
 };
 
 module.exports = {
-    FindDslMixin,
+    QueryDslMixin,
 };
