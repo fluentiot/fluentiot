@@ -385,8 +385,35 @@ describe('Device find using find DSL', () => {
     it('can find devices by name', () => {
         const device1 = device.add('pirOffice')
         const foundDevice1 = device.find({ name: 'pirOffice' })
-
         expect(foundDevice1).toStrictEqual([device1])
+    })
+
+    it('can find devices by id and get the name', () => {
+        device.add('pirOffice', { id:'ebc2851e7a72d7f29eehww' })
+        const foundDevice = device.findOne('attributes', { id: 'ebc2851e7a72d7f29eehww' })
+        expect(foundDevice.name).toBe('pirOffice')
+    })
+
+    it('can count the devices', () => {
+        expect(device.count()).toBe(0)
+
+        device.add('dev1')
+        device.add('dev2')
+        device.add('dev3')
+        expect(device.count()).toBe(3)
+
+        device.add('dev4')
+        expect(device.count()).toBe(4)
+    })
+
+    it('can list all devices', () => {
+        expect(device.list()).toBe(null)
+
+        const dev1 = device.add('dev1')
+        expect(device.list()).toStrictEqual({ dev1 })
+
+        const dev2 = device.add('dev2')
+        expect(device.list()).toStrictEqual({ dev1, dev2 })
     })
 
 })

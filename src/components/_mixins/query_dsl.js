@@ -51,6 +51,15 @@ const QueryDslMixin = (parent, dataSource) => {
             const results = findElements(dataSource, collectionOrQuery, query);
             return results.length ? results[0] : null;
         },
+        count: () => {
+            return Object.keys(dataSource).length
+        },
+        list: () => {
+            if (Object.keys(dataSource).length === 0) {
+                return null;
+            }
+            return dataSource
+        }
     };
 };
 
