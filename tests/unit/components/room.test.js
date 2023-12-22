@@ -196,7 +196,7 @@ describe('Room occupancy', () => {
         office._checkIfVacant()
         expect(room.get('officeRoom').isOccupied()).toBe(true)
 
-        // +2 minutes: Now vacant
+        // +1 minutes: Now vacant
         mockdate.set(dayjs().add(1, 'minutes').toDate())
         office._checkIfVacant()
         expect(room.get('officeRoom').isOccupied()).toBe(false)
