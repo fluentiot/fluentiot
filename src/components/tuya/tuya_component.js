@@ -26,14 +26,15 @@ class TuyaComponent extends Component {
 
         this.connected = false;
         this.openApi = null;
+        this.tuyaMqtt = null
     }
 
     /**
      * After Fluent is loaded setup connections
      */
     afterLoad() {
-        this.Event = this.Fluent.component().get('event');
-        this.Device = this.Fluent.component().get('device');
+        this.Event = this.getComponent('event');
+        this.Device = this.getComponent('device');
 
         this.setup();
 
@@ -63,20 +64,19 @@ class TuyaComponent extends Component {
         this.openApi.onConnect = () => {
             this.connected = true;
             this.event().emit('tuya.connected');
-
-            //Send anything in the queue
-            this._send();
+            this._send(); //Send anything in the queue
         }
 
-        let tuya = new TuyaMqtt(settings, this.openApi);
-        tuya.start();
+        this.tuyaMqtt = new TuyaMqtt(settings, this.openApi);
+        this.tuyaMqtt.start();
 
-        tuya.add_message_listener((received) => {
+        this.tuyaMqtt.add_message_listener((received) => {
             const data = JSON.parse(received.data);
-            if(!data.status) { return; }
+            if(!data.status) { return false; }
             const id = data.devId;
             const payload = data.status[0];
             this.event().emit('tuya.data', { id, payload })
+            return true
         });
     }
 
@@ -91,12 +91,13 @@ class TuyaComponent extends Component {
         
         logger.debug(`Device "${deviceName}" (${data.id}) sent a payload: ${JSON.stringify(data.payload)}`,'tuya');
 
-        if(device) {
-            let value = data.payload.value;
-            if(value === "true") { value = true; }
-            else if(value === "false") { value = false; }
-            device.attribute.update(data.payload.code, value);
-        }
+        if(!device) { return false }
+
+        let value = data.payload.value;
+        if(value === "true") { value = true; }
+        else if(value === "false") { value = false; }
+        device.attribute.update(data.payload.code, value);
+        return true
     }
 
     /**
@@ -107,11 +108,12 @@ class TuyaComponent extends Component {
      * @param {object} options - Options for controlling version and URL
      */
     send(deviceId, command, options = {}) {
-        options.version = options.version || `v1.0`;
-        options.url = options.url || `/${options.version}/devices/${deviceId}/commands`;
+        options.version = options.version || `v1.0`
+        options.url = options.url || `/${options.version}/devices/${deviceId}/commands`
         
-        this.queue.push({ id: deviceId, options, command });
+        this.queue.push({ id: deviceId, options, command })
     
+        // If not processing then send
         if (!this.isProcessing) {
             this._send();
         }
@@ -122,35 +124,57 @@ class TuyaComponent extends Component {
      */
     async _send() {
         if(!this.connected) {
-            return;
+            return false;
         }
 
         this.isProcessing = true;
+
         while (this.queue.length > 0) {
             let { id, options, command } = this.queue.shift();
+
+            // Format command
+            let postData = this._formatCommands(options.version, command);
+
+            // Send command
             try {
-                //Url
-                const url = options.url;
-
-                //Command can be an array of multiple commands, if it's not then make it an array
-                let postData;
-                if(options.version === 'v1.0') {
-                    if(!Array.isArray(command)) { command = [ command ]; }
-                    postData = { commands: command };
-                }
-                else {
-                    postData = { properties: command };
-                }
-
-                this.openApi.post(url, postData);
-
+                this.openApi.post(options.url, postData);
                 logger.debug(`Command sent to device ${id}: ${command}`,'tuya');
             } catch (error) {
-                logger.error(`Error sending command to device ${id}: ${error.message}`,'tuya');
+                logger.error(`Error sending command to device "${id}": ${error.message}`,'tuya');
             }
         }
+
         this.isProcessing = false;
+        return true
     }
+
+    /**
+     * Format commands for Tuya
+     * 
+     * @private
+     * @param {string} version - Tuya version
+     * @param {object} commands - Command to send to device
+     * @returns 
+     */
+    _formatCommands(version, commands) {
+        // Convert from key value to code, value object if needed
+        if(!Array.isArray(commands) && !commands.code) {
+            commands = Object.keys(commands).map((code) => {
+                return { code, value: commands[code] };
+            });
+        }
+
+        // Version 1
+        if (version === 'v1.0') {
+            if(!Array.isArray(commands)) { commands = [ commands ]; }
+            return { commands };
+        }
+
+        // Version 2
+        return { properties: commands };
+    }
+
+
 }
 
 module.exports = TuyaComponent;
