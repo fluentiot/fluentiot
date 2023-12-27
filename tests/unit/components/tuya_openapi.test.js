@@ -124,7 +124,7 @@ describe('TuyaOpenAPI connection', () => {
 
         const result = await tuyaOpenAPI.connect();
 
-        expect(result).toStrictEqual(fakeReturn)
+        expect(result).toStrictEqual(true)
         expect(spy).toHaveBeenCalledWith('/v1.0/iot-01/associated-users/actions/authorized-login', {
             username: 'username',
             password: '5f4dcc3b5aa765d61d8327deb882cf99',
@@ -248,6 +248,15 @@ describe('TuyaOpenAPI connection', () => {
         await tuyaOpenAPI.__refresh_access_token()
 
         expect(tuyaOpenAPI.token_info.expire_time).toBe(expectedExpiredTime)
+    })
+
+    it('will use connect if the token could not be found', async () => {
+        tuyaOpenAPI.connect = jest.fn().mockImplementation(() => { return true })
+
+        tuyaOpenAPI.token_info = null
+        await tuyaOpenAPI.__refresh_access_token()
+
+        expect(tuyaOpenAPI.connect).toHaveBeenCalled()
     })
 
 
@@ -422,7 +431,7 @@ describe('TuyaOpenAPI integration test', () => {
         const getResponse = await tuyaOpenAPI.get('/v1.0/devices', { page: 1, limit: 10 });
 
         expect(tuyaOpenAPI.isConnected()).toBe(true)
-        expect(connectResponse).toStrictEqual(fakeConnectReturn)
+        expect(connectResponse).toBe(true)
         expect(getResponse).toStrictEqual(fakeGetReturn.data)
         expect(tuyaOpenAPI.__refresh_access_token).not.toHaveBeenCalled()
     })
@@ -472,7 +481,7 @@ describe('TuyaOpenAPI integration test', () => {
         const getResponse = await tuyaOpenAPI.get('/v1.0/devices', { page: 1, limit: 10 });
 
         expect(tuyaOpenAPI.isConnected()).toBe(true)
-        expect(connectResponse).toStrictEqual(fakeConnectReturn)
+        expect(connectResponse).toBe(true)
         expect(getResponse).toStrictEqual(fakeGetReturn.data)
         expect(tuyaOpenAPI.__refresh_access_token).toHaveBeenCalled()
     })

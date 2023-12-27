@@ -133,6 +133,14 @@ class TuyaOpenAPI {
      */
     async __refresh_access_token() {
         logger.debug('Refreshing Tuya access token', 'tuya');
+
+        // Invalid refresh token
+        if (!this.token_info?.refresh_token) {
+            logger.warn(`Refresh token is missing, attempting full reconnection`, 'tuya')
+            return await this.connect();
+        }
+
+        // Get refresh token
         const refreshToken = this.token_info.refresh_token
         this.token_info = null;
 
@@ -177,7 +185,7 @@ class TuyaOpenAPI {
             this.onConnect();
         }
 
-        return response;
+        return true;
     }
 
     /**
