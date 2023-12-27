@@ -5,9 +5,6 @@ const logger = require('./../../utils/logger')
 
 const TUYA_ERROR_CODE_TOKEN_INVALID = 1010;
 
-const TO_C_SMART_HOME_TOKEN_API = '/v1.0/iot-01/associated-users/actions/authorized-login';
-const TO_C_SMART_HOME_MQTT_CONFIG_API = '/v1.0/open-hub/access/config';
-
 /**
  * Tuya Token Interface
  * 
@@ -34,24 +31,25 @@ class TuyaOpenAPI {
     /**
      * Constructor
      * 
-     * @param {*} endpoint 
-     * @param {*} access_id 
-     * @param {*} access_secret 
-     * @param {*} username 
-     * @param {*} password 
+     * @param {string} endpoint - 
+     * @param {string} access_id - 
+     * @param {string} access_secret - 
+     * @param {string} username - 
+     * @param {string} password - 
      */
     constructor(endpoint, access_id, access_secret, username, password) {
-        //General config
+        // General config
+        this.__token_path = '/v1.0/iot-01/associated-users/actions/authorized-login'
         this.__login_path = '/v1.0/iot-01/associated-users/actions/authorized-login'
-        this.__refresh_path = '/v1.0/iot-03/users/token/'
+        this.__refresh_path = '/v1.0/token/'
         this.__smart_token_api = '/v1.0/iot-01/associated-users/actions/authorized-login'
+        this.__mmqt_config_path = '/v1.0/open-hub/access/config'
 
         this.__country_code = '1';
         this.__schema = 'tuyaSmart';
-        this.auth_type = 'SMART_HOME';
-        this.lang = 'en';
+        this.__lang = 'en';
 
-        //Settings
+        // Settings
         this.endpoint = endpoint;
         this.access_id = access_id;
         this.access_secret = access_secret;
@@ -59,18 +57,20 @@ class TuyaOpenAPI {
         this.__username = username;
         this.__password = password;
 
-        //State
+        // State
         this.token_info = null;
         this.onConnect = null;
     }
 
     /**
+     * Calculate sign
      * 
-     * @param {*} method 
-     * @param {*} path 
-     * @param {*} params 
-     * @param {*} body 
-     * @returns 
+     * @private
+     * @param {string} method - HTTP method
+     * @param {string} path - URL path
+     * @param {string} params - HTTP query
+     * @param {string} body - HTTP body
+     * @returns array - [sign, t]
      */
     _calculate_sign(method, path, params = null, body = null) {
         let str_to_sign = method + '\n';
@@ -97,70 +97,82 @@ class TuyaOpenAPI {
     }
 
     /**
+     * Refresh access token if needed
      * 
-     * @param {*} path 
-     * @returns 
+     * @param {string} path - URL path being called before checking if a refresh token is needed
      */
     async __refresh_access_token_if_need(path) {
-        if (path.startsWith(this.__login_path) || path.startsWith(TO_C_SMART_HOME_MQTT_CONFIG_API)) {
-            return;
+        // If trying to login or get config then don't try and refresh token
+        if (path.startsWith(this.__login_path) || path.startsWith(this.__refresh_path) || path.startsWith(this.__mmqt_config_path)) {
+            return false
         }
 
-        //Invalid token
-        if(!this.token_info || !this.token_info.refresh_token) {
-            return;
+        // Invalid refresh token
+        if (!this.token_info?.refresh_token) {
+            return false
         }
 
-        //Check if the token has expired
-        const now = Date.now();
-        if (this.token_info && this.token_info.expire_time && this.token_info.expire_time - 60000 > now) { // 1min
-            return;
+        // Check if the token has expired or is about to expire
+        // Expire time is the time the token expires, when requesting a token the response is similar to...
+        // { success:true, t:<Date.now()>, result:{ expire:7200 } }
+        // This will take the <t> which is the server current time then add +7200 to the expire time
+        const now = Date.now()
+        if (!this.token_info?.expire_time || this.token_info.expire_time >= now) {
+            return false;
         }
 
-        logger.debug('Refreshing Tuya token', 'tuya');
-        const refresh_token = this.token_info.refresh_token;
-        this.token_info = null;
+        logger.debug('Tuya OpenAPI token expired, renewing', 'tuya');
 
-        const response = await this.get(this.__login_path + refresh_token);
-
-        this.token_info = new TuyaTokenInfo(response);
+        return await this.__refresh_access_token()
     }
 
     /**
+     * Refresh access token
      * 
-     * @param {*} username 
-     * @param {*} password 
-     * @param {*} country_code 
-     * @param {*} schema 
-     * @returns 
+     * @returns boolean - True if token was refreshed
      */
-    async connect(username = '', password = '', country_code = '', schema = '') {
-        this.__username = username;
-        this.__password = password;
-        this.__country_code = country_code;
-        this.__schema = schema;
+    async __refresh_access_token() {
+        logger.debug('Refreshing Tuya access token', 'tuya');
+        const refreshToken = this.token_info.refresh_token
+        this.token_info = null;
 
-        let response;
-        if (this.auth_type === 'CUSTOM') {
-            response = await this.post(this.__refresh_path, {
-                username: username,
-                password: crypto.createHash('sha256').update(password, 'utf8').digest('hex').toLowerCase()
-            });
-        } else {
-            response = await this.post(TO_C_SMART_HOME_TOKEN_API, {
-                username: username,
-                password: crypto.createHash('md5').update(password, 'utf8').digest('hex'),
-                country_code: country_code,
-                schema: schema
-            });
+        const response = await this.get(this.__refresh_path + refreshToken);
+
+        // Failed to refresh token
+        if (response === false || !response.success) {
+            logger.error(`Failed to refresh Tuya OpenAPI token`, 'tuya')
+            return false
         }
 
+        // Update token info
+        this.token_info = new TuyaTokenInfo(response);
+        return true
+    }
+
+    /**
+     * Connect to Tuya Open API
+     * 
+     * @returns object - HTTP response
+     */
+    async connect() {
+        // Get token data
+        this.token_info = null
+        let response = await this.post(this.__token_path, {
+            username: this.__username,
+            password: crypto.createHash('md5').update(this.__password, 'utf8').digest('hex'),
+            country_code: this.__country_code,
+            schema: this.__schema
+        });
+
+        // Handle failed responses
         if (!response.success) {
+            logger.error(`Failed to connect to Tuya Open API`, 'tuya');
             return response;
         }
 
         this.token_info = new TuyaTokenInfo(response);
 
+        // Call back for onConnect
         if(this.onConnect) {
             this.onConnect();
         }
@@ -169,20 +181,25 @@ class TuyaOpenAPI {
     }
 
     /**
+     * Is connected
      * 
-     * @returns 
+     * @returns boolean - True if connected
      */
-    is_connected() {
-        return !(!this.token_info || this.token_info.access_token.length > 0);
+    isConnected() {
+        if (!this.token_info || !this.token_info.access_token) {
+            return false;
+        }
+        return true;
     }
-
+    
     /**
+     * Make HTTP request
      * 
-     * @param {*} method 
-     * @param {*} path 
-     * @param {*} params 
-     * @param {*} body 
-     * @returns 
+     * @param {string} method - HTTP method 
+     * @param {string} path - URL path
+     * @param {object} params - HTTP query
+     * @param {object} body - HTTP body
+     * @returns object - HTTP response
      */
     async __request(method, path, params = null, body = null) {
         await this.__refresh_access_token_if_need(path);
@@ -195,7 +212,7 @@ class TuyaOpenAPI {
             'sign_method': 'HMAC-SHA256',
             'access_token': access_token,
             't': t.toString(),
-            'lang': this.lang
+            'lang': this.__lang
         };
 
         if (path === this.__login_path || path.startsWith(this.__login_path)) {
@@ -214,17 +231,52 @@ class TuyaOpenAPI {
 
         logger.debug(`Request: method = ${method}, url = ${options.url}, params = ${params}, body = ${JSON.stringify(body)}, t = ${Date.now()}`,'tuya');
 
-        let result = await axios.post(this.endpoint + path, body, {
-            headers
-        });
+        // Send request
+        let result;
+        try {
+            if(method === 'GET') {
+                result = await axios.get(this.endpoint + path, { headers, params });
+            } else if(method === 'POST') {
+                result = await axios.post(this.endpoint + path, body, { headers });
+            } else if(method === 'PUT') {
+                result = await axios.put(this.endpoint + path, body, { headers, params });
+            } else if(method === 'DELETE') {
+                result = await axios.delete(this.endpoint + path, body, { headers, params });
+            }
+        }
+        catch (error) {
+            logger.error(`Failed to send request to Tuya Open API`, 'tuya');
+            logger.error(error, 'tuya');
+            return false;
+        }
 
-        //Token expired, renew
-        if(result.data.code === TUYA_ERROR_CODE_TOKEN_INVALID) {
-            this.token_info = null;
-            await this.connect(this.__username, this.__password, this.__country_code, this.__schema);
+        // No result
+        if (!result) {
+            logger.error(`No result from Tuya Open API`, 'tuya');
+            return false;
+        }
 
-            let result2 = await this.__request(method, path, params, body);
-            return result2;
+        // Token expired, renew and try again
+        if (result.data && result.data.code === TUYA_ERROR_CODE_TOKEN_INVALID) {
+            if (await this.__refresh_access_token()) {
+                return await this.__request(method, path, params, body);
+            }
+            logger.error(`Tuya API token expired but failed to refresh it`, 'tuya')
+            return false;
+        }
+
+        // Check if not successful
+        if (result.success === false) {
+            logger.error(`Did not receive success from tuya`, 'tuya')
+            logger.error(result, 'tuya')
+            return false;
+        }
+
+        // Data was not returned
+        if (!result.data) {
+            logger.error(`Tuya returned success but no data received`, 'tuya')
+            logger.error(result, 'tuya')
+            return false;
         }
 
         logger.debug(result.data,'tuya');

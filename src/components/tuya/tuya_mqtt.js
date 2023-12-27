@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { v1: uuidv1 } = require('uuid');
 
 const logger = require('./../../utils/logger')
+const { isJSONString } = require('./../../utils/index');
 
 class TuyaOpenMQ extends EventEmitter {
 
@@ -21,67 +22,10 @@ class TuyaOpenMQ extends EventEmitter {
         this.client = null;
         this.mq_config = null;
         this.message_listeners = new Set();
+
         this._connected = false;
         this._connecting = false;
-    }
-
-    /**
-     * MQTT config
-     * 
-     * @returns {object} - Response from Tuya API
-     */
-    async _get_mqtt_config() {
-        const data = {
-            uid: this.settings.token_info.uid,
-            link_id: `tuya-iot-app-sdk-node.${uuidv1()}`,
-            link_type: 'mqtt',
-            topics: 'device',
-            msg_encrypted_version: '1.0',
-        };
-
-        logger.debug(`Fetching auth details from Tuya Open API for MQTT connection`,'tuya');
-        let response = await this.api.post('/v1.0/open-hub/access/config', data);
-        return response.result;
-    }
-
-    /**
-     * Decode the MQTT message
-     * 
-     * @param {string} b64msg - Encoded string from Tuya
-     * @param {*} password - User password used to decode
-     * @param {*} t - ??
-     * @returns 
-     */
-    _decode_mq_message(b64msg, password, t) {
-        const key = password.slice(8, 24);
-        const decipher = crypto.createDecipheriv('aes-128-ecb', key, '');
-        let msg = decipher.update(Buffer.from(b64msg, 'base64'));
-        msg = Buffer.concat([msg, decipher.final()]);
-        msg = msg.toString('utf8');
-        return msg;
-    }
-
-    /**
-     * Message received from MQTT
-     * 
-     * @param {object} user_data - User data that was used for the connection, used for decoding
-     * @param {string} payload - Raw encoded device data from Tuya
-     */
-    _on_message(user_data, payload) {
-        const msg_dict = JSON.parse(payload.toString('utf8'));
-        const t = msg_dict.t || '';
-        const decrypted_data = this._decode_mq_message(msg_dict.data, user_data.password, t);
-
-        if (decrypted_data === null) {
-            logger.error(`Failed to decode data from Tuya`, 'tuya');
-            return;
-        }
-
-        // Send data to listeners
-        msg_dict.data = decrypted_data;
-        for (const listener of this.message_listeners) {
-            listener(msg_dict);
-        }
+        this._reconnect_interval = 600000 // 10 minutes
     }
 
     /**
@@ -90,18 +34,18 @@ class TuyaOpenMQ extends EventEmitter {
     start() {
         this.__run_mqtt();
 
-        //Reconnect
+        // Reconnect MQTT every x minutes
         setInterval(() => {
             this.reconnect(true);
-        }, 600000); //10 minutes
+        }, this._reconnect_interval);
     }
 
     /**
      * Stop client and connection
      */
     stop() {
-        this.client.end();
         this._connected = false;
+        this.client.end();
     }
 
     /**
@@ -119,7 +63,80 @@ class TuyaOpenMQ extends EventEmitter {
         this.mq_config = mq_config;
 
         logger.debug(`Connecting to "${mq_config.url}"`,'tuya');
-        this.client = this._mmqtConnect(mq_config);
+        this.client = this._connect(mq_config);
+    }
+
+    /**
+     * MQTT config
+     * 
+     * @returns {object} - Response from Tuya API
+     */
+    async _get_mqtt_config() {
+        const body = {
+            uid: this.settings.token_info.uid,
+            link_id: `tuya-iot-app-sdk-node.${uuidv1()}`,
+            link_type: 'mqtt',
+            topics: 'device',
+            msg_encrypted_version: '1.0',
+        };
+
+        logger.debug(`Fetching auth details from Tuya Open API for MQTT connection`,'tuya');
+        let response = await this.api.post('/v1.0/open-hub/access/config', body);
+
+        if (!response || response.success === false) {
+            logger.error(`Failed to get MQTT config from Tuya`, 'tuya');
+            return null;
+        }
+
+        return response.result;
+    }
+
+    /**
+     * Decode the MQTT message
+     * 
+     * @param {string} b64msg - Encoded string from Tuya
+     * @param {string} password - User password used to decode
+     * @param {string} t - Timestamp
+     * @returns string - Decoded message
+     */
+    _decode_mq_message(b64msg, password, t) {
+        const key = password.slice(8, 24);
+        const decipher = crypto.createDecipheriv('aes-128-ecb', key, '');
+        let msg = decipher.update(Buffer.from(b64msg, 'base64'));
+        msg = Buffer.concat([msg, decipher.final()]);
+        msg = msg.toString('utf8');
+        return msg;
+    }
+
+    /**
+     * Message received from MQTT
+     * 
+     * @param {object} user_data - User data that was used for the connection, used for decoding
+     * @param {string} payload - Raw encoded device data from Tuya
+     */
+    _on_message(user_data, payload) {
+        // Check if the payload is a valid JSON string
+        const payload_str = payload.toString('utf8')
+        if (!isJSONString(payload_str)) {
+            logger.error(`Invalid JSON received from Tuya`, 'tuya');
+            return;
+        }
+        
+        // Decode the payload
+        const msg_dict = JSON.parse(payload.toString('utf8'));
+        const t = msg_dict.t || '';
+        const decrypted_data = this._decode_mq_message(msg_dict.data, user_data.password, t);
+
+        if (decrypted_data === null) {
+            logger.error(`Failed to decode data from Tuya`, 'tuya');
+            return;
+        }
+
+        // Send data to listeners
+        msg_dict.data = decrypted_data;
+        for (const listener of this.message_listeners) {
+            listener(msg_dict);
+        }
     }
 
     /**
@@ -130,13 +147,13 @@ class TuyaOpenMQ extends EventEmitter {
     async reconnect(force = false) {
         if(this._connected && force !== true) {
             logger.debug('Cancelling reconnect, already connected','tuya');
-            return;
+            return false;
         }
 
         // If already attemping to connect
         if(this._connecting === true) {
             logger.debug('Cancelling reconnect, already connecting','tuya');
-            return;
+            return false;
         }
 
         logger.debug('Restarting connection','tuya');
@@ -146,7 +163,7 @@ class TuyaOpenMQ extends EventEmitter {
         const mq_config = await this._get_mqtt_config();
         if (mq_config === null) {
             logger.error('Error while getting MQTT config','tuya');
-            return;
+            return false;
         }
 
         this.mq_config = mq_config;
@@ -155,15 +172,18 @@ class TuyaOpenMQ extends EventEmitter {
         this.client.options.username = mq_config.username;
         this.client.options.password = mq_config.password;
         this.client.reconnect();
+
+        return true
     }
 
     /**
      * Connect to MMQT server
      * 
+     * @private
      * @param {object} mq_config - Auth for connection
      * @returns {object} - Client for MMQT
      */
-    _mmqtConnect(mq_config) {
+    _connect(mq_config) {
         this._connecting = true;
         const client = mqtt.connect(mq_config.url, {
             clientId: mq_config.client_id,
@@ -171,7 +191,7 @@ class TuyaOpenMQ extends EventEmitter {
             password: mq_config.password,
         });
 
-        client.on('connect',  (a, b, c) => {
+        client.on('connect',  () => {
             logger.info('Tuya MQTT Connected','tuya');
             this._connecting = false;
             this._connected = true;

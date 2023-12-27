@@ -54,7 +54,8 @@ describe('TuyaComponent', () => {
         TuyaOpenApi.mockImplementation(() => {
             return {
                 post: jest.fn(),
-                onConnect: jest.fn()
+                onConnect: jest.fn(),
+                connect: jest.fn()
             }
         });
     });
@@ -74,8 +75,8 @@ describe('TuyaComponent', () => {
         expect(tuyaComponent.setup).toHaveBeenCalled()
     })
 
-    it('setup sets up the open api', () => {
-        tuyaComponent.setup();
+    it('setup sets up the open api', async () => {
+        await tuyaComponent.setup();
 
         // Open API should have been created
         expect(TuyaOpenApi).toHaveBeenCalledWith(
@@ -114,7 +115,7 @@ describe('TuyaComponent', () => {
         expect(tuyaComponent.tuyaMqtt.start).toHaveBeenCalled();
     })
 
-    it('receives data from mqtt event is emitted', () => {
+    it('receives data from mqtt event is emitted', async () => {
         let messageListenerCallback;
         TuyaMqtt.mockImplementation(() => {
             return {
@@ -136,7 +137,7 @@ describe('TuyaComponent', () => {
                 }
             ]
         };
-        tuyaComponent.setup();
+        await tuyaComponent.setup();
 
         // call this.tuyaMqtt.add_message_listener
         const success = messageListenerCallback({ data: JSON.stringify(data) });

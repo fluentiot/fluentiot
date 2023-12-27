@@ -4,5 +4,6 @@ module.exports = {
     delay: require('./delay'),
     dot: require('./dot'),
     logger: require('./logger'),
-    expect: require('./expect')
+    expect: require('./expect'),
+    isJSONString: require('./is_json')
 }

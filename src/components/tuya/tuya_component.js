@@ -46,7 +46,7 @@ class TuyaComponent extends Component {
     /**
      * Setup auth and MQTT connections to Tuya
      */
-    setup() {
+    async setup() {
         const settings = {
             auth_type: 'smart',
             hostname: config.get('tuya.base_url'),
@@ -67,6 +67,10 @@ class TuyaComponent extends Component {
             this._send(); //Send anything in the queue
         }
 
+        // Connect to Tuya
+        await this.openApi.connect()
+
+        // Setup MQTT
         this.tuyaMqtt = new TuyaMqtt(settings, this.openApi);
         this.tuyaMqtt.start();
 
