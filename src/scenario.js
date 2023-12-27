@@ -206,12 +206,23 @@ class Scenario {
     }
 
     /**
+     * Assert wrapper
+     * 
+     * @param  {...any} args - Arguments to be passed to the callback
+     * @returns 
+     */
+    assert(...args) {
+        this._assert(...args)
+        return this
+    }
+
+    /**
      * Assert scenario
      *
      * @param {*} ...args - To be passed to the callback
      * @returns {Boolean}
      */
-    assert(...args) {
+    _assert(...args) {
         // Scenario might not be runnable, runnable is set to false when .test() is used in another scenario
         if (!this.runnable) {
             return false
@@ -219,7 +230,11 @@ class Scenario {
 
         // Cooldown checks
         const currentTime = Date.now();
-        if (this.properties.cooldown > 0 && currentTime - this.lastAssertTime < this.properties.cooldown) {
+        if (
+            this.properties.cooldown > 0 &&
+            this.lastAssertTime !== null &&
+            currentTime - this.lastAssertTime < this.properties.cooldown
+        ) {
             logger.warn(`Scenario "${this.description}" did not trigger because in cooldown period`, 'scenario');
             return false;
         }

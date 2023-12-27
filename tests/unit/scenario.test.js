@@ -83,7 +83,7 @@ describe('Creating basic scenarios', () => {
         const when = scenario.when()
         const empty = when.empty()
         const then = empty.then(mockCallback)
-        const result = then.assert()
+        const result = then._assert()
 
         //Scenario was asserted
         expect(result).toBe(true)
@@ -99,13 +99,23 @@ describe('Creating basic scenarios', () => {
         expect(empty.then).toBeDefined()
     })
 
+    it('can handle direct calls or none-direct calls to assert', () => {
+        const mockCallback = jest.fn()
+        const scenario = new Scenario(Fluent, 'Foobar', { cooldown:0 }).when().empty().then(mockCallback).assert()
+        const result = scenario._assert()
+
+        expect(scenario).toBeInstanceOf(Scenario)
+        expect(result).toBe(true)
+        expect(mockCallback.mock.calls).toHaveLength(2)
+    })
+
     it('fails to run if the scenario is not runnable', () => {
         const mockCallback = jest.fn()
 
         const scenario = new Scenario(Fluent, 'Foobar').when().empty().then(mockCallback)
 
         scenario.runnable = false
-        const result = scenario.assert()
+        const result = scenario._assert()
 
         expect(mockCallback.mock.calls).toHaveLength(0)
         expect(result).toBe(false)
@@ -127,7 +137,7 @@ describe('Creating basic scenarios', () => {
 
     it('fails to run if there are no triggers', () => {
         const scenario = new Scenario(Fluent, 'Foobar')
-        const result = scenario.assert()
+        const result = scenario._assert()
         expect(result).toBe(false)
     })
 
@@ -157,7 +167,7 @@ describe('Constraints', () => {
             .isTrue(true)
             .then(mockCallback)
 
-        const result = scenario.assert()
+        const result = scenario._assert()
 
         expect(mockCallback.mock.calls).toHaveLength(1)
         expect(result).toBe(true)
@@ -184,7 +194,7 @@ describe('Constraints', () => {
             .isTrue(true)
             .then(mockCallback)
 
-        const result = scenario.assert()
+        const result = scenario._assert()
 
         expect(mockCallback.mock.calls).toHaveLength(1)
         expect(result).toBe(true)
@@ -200,7 +210,7 @@ describe('Constraints', () => {
             .noneFunction.isTrue(true)
             .then(mockCallback)
 
-        const result = scenario.assert()
+        const result = scenario._assert()
 
         expect(mockCallback.mock.calls).toHaveLength(1)
         expect(result).toBe(true)
@@ -217,7 +227,7 @@ describe('Constraints', () => {
             .isTrue(false)
             .then(mockCallback)
 
-        const result = scenario.assert()
+        const result = scenario._assert()
 
         expect(mockCallback.mock.calls).toHaveLength(0)
         expect(result).toBe(false)
@@ -244,7 +254,7 @@ describe('Constraints', () => {
             .isTrue(true)
             .then(mockCallback3)
 
-        const result = scenario.assert()
+        const result = scenario._assert()
 
         expect(mockCallback1.mock.calls).toHaveLength(0)
         expect(mockCallback2.mock.calls).toHaveLength(0)
@@ -274,7 +284,7 @@ describe('Constraints', () => {
             .isTrue(true)
             .then(mockCallback3)
 
-        const result = scenario.assert()
+        const result = scenario._assert()
 
         expect(mockCallback1.mock.calls).toHaveLength(0)
         expect(mockCallback2.mock.calls).toHaveLength(1)
@@ -302,7 +312,7 @@ describe('Constraints', () => {
             .else()
             .then(mockCallback3)
 
-        const result = scenario.assert()
+        const result = scenario._assert()
 
         expect(mockCallback1.mock.calls).toHaveLength(0)
         expect(mockCallback2.mock.calls).toHaveLength(0)
@@ -318,25 +328,21 @@ describe('Constraints', () => {
 
         const scenario = new Scenario(Fluent, 'Foobar')
             .when()
-            .empty()
+                .empty()
             .constraint()
-            .foobar()
-            .isTrue(false)
-            .then(mockCallback1)
+                .foobar().isTrue(false)
+                .then(mockCallback1)
             .constraint()
-            .foobar()
-            .isTrue(true)
-            .then(mockCallback2)
+                .foobar().isTrue(true)
+                .then(mockCallback2)
             .else()
-            .then(mockCallback3)
+                .then(mockCallback3)
 
-        const result = scenario.assert()
+        scenario.assert()
 
         expect(mockCallback1.mock.calls).toHaveLength(0)
         expect(mockCallback2.mock.calls).toHaveLength(1)
         expect(mockCallback3.mock.calls).toHaveLength(0)
-
-        expect(result).toBe(true)
     })
 })
 
@@ -453,7 +459,7 @@ describe('Scenario prevent crashing', () => {
                 device.noSuchMethod()
             })
 
-        const result = scenario.assert()
+        const result = scenario._assert()
 
         expect(result).toBe(false)
         expect(spyError).toHaveBeenCalled()

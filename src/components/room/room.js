@@ -132,7 +132,7 @@ class Room {
      * @param {Boolean} occupied - if occupied or not
      */
     occupied(value) {
-        this.attribute.set('occupied', value);
+        this.attribute.update('occupied', value);
     }
 
     /**

@@ -19,6 +19,7 @@ describe('Scenario creation basics', () => {
         const result6 = scenario('test6').when().empty().then().constraint().then()
         const result7 = scenario('test7').when().empty().then().constraint().then().else()
         const result8 = scenario('test8').when().empty().then().constraint().then().else().then()
+        const result9 = scenario('test9').when().empty().then().constraint().then().else().then().assert()
 
         const result20 = scenario.only('test20')
 
@@ -30,6 +31,7 @@ describe('Scenario creation basics', () => {
         expect(typeof result6).toBe('object')
         expect(typeof result7).toBe('object')
         expect(typeof result8).toBe('object')
+        expect(typeof result9).toBe('object')
 
         expect(typeof result20).toBe('object')
     })
