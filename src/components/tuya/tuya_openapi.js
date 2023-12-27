@@ -273,17 +273,17 @@ class TuyaOpenAPI {
             return false;
         }
 
-        // Check if not successful
-        if (result.success === false) {
-            logger.error(`Did not receive success from tuya`, 'tuya')
-            logger.error(result, 'tuya')
-            return false;
-        }
-
         // Data was not returned
         if (!result.data) {
             logger.error(`Tuya returned success but no data received`, 'tuya')
             logger.error(result, 'tuya')
+            return false;
+        }
+
+        // Check if not successful
+        if (result.data.success == false) {
+            logger.error(`Did not receive success from tuya`, 'tuya')
+            logger.error(result.data, 'tuya')
             return false;
         }
 

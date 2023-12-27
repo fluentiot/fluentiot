@@ -114,6 +114,9 @@ class TuyaComponent extends Component {
     send(deviceId, command, options = {}) {
         options.version = options.version || `v1.0`
         options.url = options.url || `/${options.version}/devices/${deviceId}/commands`
+
+        //options.version = 'v2.0'
+        //options.url = `/${options.version}/cloud/thing/${deviceId}/shadow/properties/issue`
         
         this.queue.push({ id: deviceId, options, command })
     
@@ -161,6 +164,11 @@ class TuyaComponent extends Component {
      * @returns 
      */
     _formatCommands(version, commands) {
+        // Version 2
+        if(version === 'v2.0') {
+            return { properties: commands }
+        }
+
         // Convert from key value to code, value object if needed
         if(!Array.isArray(commands) && !commands.code) {
             commands = Object.keys(commands).map((code) => {
@@ -169,13 +177,8 @@ class TuyaComponent extends Component {
         }
 
         // Version 1
-        if (version === 'v1.0') {
-            if(!Array.isArray(commands)) { commands = [ commands ]; }
-            return { commands };
-        }
-
-        // Version 2
-        return { properties: commands };
+        if(!Array.isArray(commands)) { commands = [ commands ]; }
+        return { commands }
     }
 
 

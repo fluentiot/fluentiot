@@ -170,14 +170,14 @@ class Logger {
         let jsonDepth = 0
     
         // Escape sequences for colors
-        const reset = '\x1b[97m';
+        const reset = '\x1b[0m';
+        const white = '\x1b[97m';
         const jsonColor = '\x1b[38;5;208m'; // Magenta
         const quoteColor = '\x1b[92m'; // Cyan
     
         // Iterate over each character
         for (let i = 0; i < message.length; i++) {
             const char = message[i];
-    
             if (char === '{' && !insideQuotes) {
                 insideJson = true;
                 jsonDepth++;
@@ -190,11 +190,11 @@ class Logger {
                 insideQuotes = !insideQuotes;
                 formattedMessage += quoteColor + char;
             } else {
-                formattedMessage += insideJson || insideQuotes ? char : reset + char;
+                formattedMessage += insideJson || insideQuotes ? char : white + char;
             }
         }
     
-        return reset + formattedMessage;
+        return formattedMessage + reset;
     }
     
 
