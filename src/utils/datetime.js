@@ -1,0 +1,77 @@
+// datetime.js
+const dayjs = require('dayjs');
+
+const DURATION_REGEX = /^(\d+)?\s*(?:(second|minute|hour|sec|min|hr|ms|millisecond)s?)?$/i;
+const INVALID_FORMAT_ERROR = 'Invalid duration format';
+const INVALID_UNIT_ERROR = 'Invalid duration unit';
+
+function addDurationToNow(duration) {
+    const match = duration.match(DURATION_REGEX);
+    if (!match) {
+        throw new Error(INVALID_FORMAT_ERROR);
+    }
+
+    const value = match[1] ? parseInt(match[1]) : 1;
+    const unit = match[2] ? match[2].toLowerCase() : 'ms'; // Default to milliseconds if no unit is specified
+
+    switch (unit) {
+        case 'sec':
+        case 'second':
+        case 'seconds':
+            return dayjs().add(value, 'second');
+        case 'min':
+        case 'minute':
+        case 'minutes':
+            return dayjs().add(value, 'minute');
+        case 'hr':
+        case 'hour':
+        case 'hours':
+            return dayjs().add(value, 'hour');
+        case 'ms':
+        case 'millisecond':
+        case 'milliseconds':
+            return dayjs().add(value, 'millisecond');
+        default:
+            throw new Error(INVALID_UNIT_ERROR);
+    }
+}
+
+function getDurationInMilliseconds(duration) {
+    if (typeof duration === 'number') {
+        return duration;
+    }
+
+    const match = duration.match(DURATION_REGEX);
+    if (!match) {
+        throw new Error(INVALID_FORMAT_ERROR);
+    }
+
+    const value = match[1] ? parseInt(match[1]) : 1;
+    const unit = match[2] ? match[2].toLowerCase() : 'ms'; // Default to milliseconds if no unit is specified
+
+    switch (unit) {
+        case 'sec':
+        case 'second':
+        case 'seconds':
+            return value * 1000;
+        case 'min':
+        case 'minute':
+        case 'minutes':
+            return value * 60 * 1000;
+        case 'hr':
+        case 'hour':
+        case 'hours':
+            return value * 60 * 60 * 1000;
+        case 'ms':
+        case 'millisecond':
+        case 'milliseconds':
+            return value;
+        default:
+            throw new Error(INVALID_UNIT_ERROR);
+    }
+}
+
+module.exports = {
+    addDurationToNow,
+    getDurationInMilliseconds,
+};

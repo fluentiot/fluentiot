@@ -1,4 +1,4 @@
-const logger = require('./utils/logger')
+const { logger, getDurationInMilliseconds } = require('./utils')
 
 /**
  * Scenario
@@ -14,7 +14,7 @@ class Scenario {
      * @param {String} description - Description of the scenario
      * @param {object} properties - Properties for scenario
      */
-    constructor(Fluent, description, properties) {
+    constructor(Fluent, description, properties = {}) {
         //Validate
         if (!Fluent) {
             throw new Error(`Fluent core not passed, you should not call scenario directly`)
@@ -26,19 +26,29 @@ class Scenario {
         this.Fluent = Fluent //Singleton object for core
         this.description = description //Verbose description of the scenario
 
-        this.lastAssertTime = null //When the scenario last asserted, used for cooldown
+        this.lastAssertTime = null //When the scenario last asserted, used for suppressFor
         this.testMode = false //In test mode
         this.runnable = true //Can scenario be run? Can be switched when .test() mode is used
         this.triggers = {} //Triggers from components loaded in
         this.callbacks = [] //Stores a group of constraints and callbacks for that group
         this.trace = [] //Debug stack trace
+        this.properties = {} //Scenario properties
 
-        //Scenario rules
+        // Scenario rules
         const defaultProperties = {
-            cooldown: 1000,
-            only: false
+            only: false,
+            suppressFor: 1000
         }
         this.properties = { ...defaultProperties, ...properties }
+
+        // Suppress for duration between triggering scenarios
+        if (
+            properties.suppressFor !== 0 &&
+            properties.suppressFor !== undefined && 
+            properties.suppressFor !== defaultProperties.suppressFor) {
+            // Parse suppressFor to milliseconds
+            this.suppressFor(properties.suppressFor)
+        }
 
         // Test mode?
         if (this.properties.only === true) {
@@ -53,6 +63,21 @@ class Scenario {
         this._buildTriggersDsl()
 
         logger.info(`Scenario "${description}" loaded`, 'scenario')
+    }
+
+    /**
+     * Suppress scenario for a duration
+     * 
+     * @param {string} duration 
+     * @returns
+     */
+    suppressFor(duration) {
+        const parsed = getDurationInMilliseconds(duration)
+        if (!parsed) {
+            throw new Error(`Invalid duration "${duration}" passed to suppressFor`)
+        }
+        this.properties.suppressFor = parsed
+        return this
     }
 
     /**
@@ -228,14 +253,14 @@ class Scenario {
             return false
         }
 
-        // Cooldown checks
+        // suppressFor checks
         const currentTime = Date.now();
         if (
-            this.properties.cooldown > 0 &&
+            this.properties.suppressFor > 0 &&
             this.lastAssertTime !== null &&
-            currentTime - this.lastAssertTime < this.properties.cooldown
+            currentTime - this.lastAssertTime < this.properties.suppressFor
         ) {
-            logger.warn(`Scenario "${this.description}" did not trigger because in cooldown period`, 'scenario');
+            logger.warn(`Scenario "${this.description}" did not trigger because in suppressFor period`, 'scenario');
             return false;
         }
         this.lastAssertTime = currentTime;

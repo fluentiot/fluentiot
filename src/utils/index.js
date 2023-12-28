@@ -5,5 +5,7 @@ module.exports = {
     dot: require('./dot'),
     logger: require('./logger'),
     expect: require('./expect'),
-    isJSONString: require('./is_json')
+    isJSONString: require('./is_json'),
+    addDurationToNow: require('./datetime').addDurationToNow,
+    getDurationInMilliseconds: require('./datetime').getDurationInMilliseconds,
 }

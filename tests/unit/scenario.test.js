@@ -2,6 +2,9 @@
 jest.mock('./../../src/utils/logger')
 const logger = require('./../../src/utils/logger')
 
+const mockdate = require('mockdate')
+const dayjs = require('dayjs')
+
 const EventEmitter = require('events')
 class MyEmitter extends EventEmitter {}
 const event = new MyEmitter()
@@ -101,7 +104,7 @@ describe('Creating basic scenarios', () => {
 
     it('can handle direct calls or none-direct calls to assert', () => {
         const mockCallback = jest.fn()
-        const scenario = new Scenario(Fluent, 'Foobar', { cooldown:0 }).when().empty().then(mockCallback).assert()
+        const scenario = new Scenario(Fluent, 'Foobar', { suppressFor:0 }).when().empty().then(mockCallback).assert()
         const result = scenario._assert()
 
         expect(scenario).toBeInstanceOf(Scenario)
@@ -385,7 +388,7 @@ describe('Triggers', () => {
     it('will handle two triggers for two different events acting as an OR', () => {
         const mockCallback = jest.fn()
 
-        new Scenario(Fluent, 'Foobar', { cooldown:0 })
+        new Scenario(Fluent, 'Foobar', { suppressFor:0 })
             .when()
                 .foobar().onEvent('foo')
                 .foobar().onEvent('bar')
@@ -411,7 +414,54 @@ describe('Triggers', () => {
 })
 
 
-describe('Scenario cooldown', () => {
+describe('Scenario supressFor', () => {
+
+    afterEach(() => {
+        mockdate.reset()
+    })
+
+    it('will use the default supressFor to 1000', () => {
+        const scenario1 = new Scenario(Fluent, 'Foobar')
+        expect(scenario1.properties.suppressFor).toBe(1000)
+    })
+
+    it('will set the supressFor when creating a scenario', () => {
+        const scenario1 = new Scenario(Fluent, 'Foobar', { suppressFor:500 })
+        expect(scenario1.properties.suppressFor).toBe(500)
+
+        const scenario2 = new Scenario(Fluent, 'Foobar', { suppressFor:'1 minute' })
+        expect(scenario2.properties.suppressFor).toBe(60000)
+
+        const scenario3 = new Scenario(Fluent, 'Foobar', { suppressFor:0 })
+        expect(scenario3.properties.suppressFor).toBe(0)
+    })
+
+    it('will update suppressFor with valid syntax', () => {
+        const scenario = new Scenario(Fluent, 'Foobar')
+
+        scenario.suppressFor('500')
+        expect(scenario.properties.suppressFor).toBe(500)
+
+        scenario.suppressFor('500 ms')
+        expect(scenario.properties.suppressFor).toBe(500)
+
+        scenario.suppressFor('1 minute')
+        expect(scenario.properties.suppressFor).toBe(60000)
+
+        scenario.suppressFor('1 min')
+        expect(scenario.properties.suppressFor).toBe(60000)
+
+        scenario.suppressFor('1 second')
+        expect(scenario.properties.suppressFor).toBe(1000)
+
+        scenario.suppressFor('20hours')
+        expect(scenario.properties.suppressFor).toBe(72000000)
+    })
+
+    it('will throw error if suppressFor is invalid', () => {
+        const scenario = new Scenario(Fluent, 'Foobar')
+        expect(() => scenario.suppressFor('foobar')).toThrow(Error)
+    })
 
     it('will not double trigger if two triggers are close to each other', () => {
         const mockCallback = jest.fn()
@@ -427,16 +477,40 @@ describe('Scenario cooldown', () => {
         expect(mockCallback.mock.calls).toHaveLength(1)
     })
 
-    it('can trigger multiple times if cooldown is set to 0', () => {
+    it('can trigger multiple times if supressFor is set to 0', () => {
         const mockCallback = jest.fn()
 
-        new Scenario(Fluent, 'Foobar', { cooldown:0 })
+        new Scenario(Fluent, 'Foobar', { suppressFor:0 })
             .when()
                 .foobar().onEvent('hey')
                 .foobar().onEvent('hey')
             .then(mockCallback)
 
         event.emit('hey')
+
+        expect(mockCallback.mock.calls).toHaveLength(2)
+    })
+
+    it('will trigger when met period', () => {
+        const mockCallback = jest.fn()
+
+        new Scenario(Fluent, 'Foobar', { suppressFor:60000 })
+            .when()
+                .foobar().onEvent('hey')
+            .then(mockCallback)
+
+        // Try to trigger twice, only one should trigger
+        event.emit('hey') // Trigger
+        event.emit('hey') // Do not trigger
+
+        // Move time forward and trigger again
+        mockdate.set(dayjs().add(59, 'seconds'));
+        event.emit('hey') // Do not trigger
+
+        // Move time forward and trigger again
+        mockdate.set(dayjs().add(1, 'seconds'));
+        event.emit('hey') // Trigger
+        event.emit('hey') // Do not trigger
 
         expect(mockCallback.mock.calls).toHaveLength(2)
     })
