@@ -1,5 +1,6 @@
 const dayjs = require('dayjs')
 const logger = require('./../../utils/logger');
+const { getDurationInMinutes } = require('./../../utils')
 const { AttributeDslMixin } = require('./../_mixins/attribute_dsl');
 
 /**
@@ -20,16 +21,23 @@ class Room {
         this.parent = parent;
         this.name = name;
 
-        //Mixins
+        // Mixins
         Object.assign(this, AttributeDslMixin(this, 'room'));
+
+        // Handle vacancyDelay
 
         // Default attributes
         const defaultAttributes = {
             occupied: false,
             occupiedStartTime: null,
-            thresholdDuration: 15,      // Default threshold duration in minutes
+            vacancyDelay: 15,      // Default threshold duration in minutes
         };
         this.attribute.setup(defaultAttributes, attributes);
+
+        // Vacancy delay
+        if (typeof this.attribute.get('vacancyDelay') !== 'number') {
+            this.vacancyDelay(this.attribute.get('vacancyDelay'))
+        }
 
         // Last sensor time
         // For example each time a PIR sensor detects someone this variable will get updated
@@ -45,6 +53,22 @@ class Room {
 
         // Set up the one-minute timer for _checkIfVacant
         this.checkOccupiedTimer = setInterval(() => this._checkIfVacant(), 60 * 1000); // Every 1 minute
+    }
+
+
+    /**
+     * Vacancy delay
+     * 
+     * @param {string} duration 
+     * @returns {boolean}
+     */
+    vacancyDelay(duration) {
+        const parsed = getDurationInMinutes(duration)
+        if (parsed === false) {
+            throw new Error(`Invalid duration "${duration}" passed to vacancyDelay`)
+        }
+        this.attribute.set('vacancyDelay', parsed)
+        return true
     }
 
     /**
@@ -68,7 +92,7 @@ class Room {
 
         // If no threshold duration for vacany then need to trigger occupied=false quickly
         // rather than waiting for the 1 minute timer
-        if (!sensorValue && this.attribute.get('thresholdDuration') <= 0) {
+        if (!sensorValue && this.attribute.get('vacancyDelay') <= 0) {
             this._checkIfVacant();
         }
     }
@@ -116,7 +140,7 @@ class Room {
 
         // Room sensor is false and under the threshold to set the room to vacant
         const now = dayjs();
-        if (now.diff(this._sensorLastTime, 'minutes') < this.attribute.get('thresholdDuration')) {
+        if (now.diff(this._sensorLastTime, 'minutes') < this.attribute.get('vacancyDelay')) {
             return;
         }
 

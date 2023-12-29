@@ -24,13 +24,15 @@ class TimeComponent extends Component {
      */
     constructor(Fluent) {
         super(Fluent)
-        this.schedules()
+        this._schedules()
     }
 
     /**
      * Regular schedules for emitting events
+     * 
+     * @private
      */
-    schedules() {
+    _schedules() {
         // Schedule an event every minute
         schedule.scheduleJob('*/1 * * * *', () => {
             this.emit('time.minute')
@@ -121,9 +123,9 @@ class TimeComponent extends Component {
             return false
         }
 
-        const currentTime = dayjs();
-        const startTime = dayjs(start, 'HH:mm');
-        return currentTime.isBefore(startTime) || currentTime.isSame(startTime, 'minute');
+        const currentTime = dayjs()
+        const startTime = dayjs(start, 'HH:mm')
+        return currentTime.isBefore(startTime) || currentTime.isSame(startTime, 'minute')
     }
 
     /**
@@ -138,9 +140,9 @@ class TimeComponent extends Component {
             return false
         }
 
-        const currentTime = dayjs();
-        const startTime = dayjs(start, 'HH:mm');
-        return currentTime.isAfter(startTime) || currentTime.isSame(startTime, 'minute');
+        const currentTime = dayjs()
+        const startTime = dayjs(start, 'HH:mm')
+        return currentTime.isAfter(startTime) || currentTime.isSame(startTime, 'minute')
     }
 
     /**
@@ -160,16 +162,16 @@ class TimeComponent extends Component {
             return false
         }
 
-        const currentTime = dayjs();
-        const startTime = dayjs(start, 'HH:mm');
-        const endTime = dayjs(end, 'HH:mm');
+        const currentTime = dayjs()
+        const startTime = dayjs(start, 'HH:mm')
+        const endTime = dayjs(end, 'HH:mm')
     
         // If the end time is before or the same as the start time, it means the range crosses midnight
         if (endTime.isBefore(startTime) || endTime.isSame(startTime, 'minute')) {
-            return currentTime.isAfter(startTime) || currentTime.isBefore(endTime);
+            return currentTime.isAfter(startTime) || currentTime.isBefore(endTime)
         }
     
-        return currentTime.isAfter(startTime) && currentTime.isBefore(endTime);    
+        return currentTime.isAfter(startTime) && currentTime.isBefore(endTime)
     }
 
     /**

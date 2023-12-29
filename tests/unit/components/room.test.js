@@ -67,6 +67,67 @@ describe('Room attributes DSL', () => {
     })
 })
 
+
+describe('Room vacancyDelay', () => {
+
+    it('can update vacancyDelay with command', () => {
+        const office = room.add('officeRoom')
+        office.vacancyDelay(20)
+        expect(office.attribute.get('vacancyDelay')).toBe(20)
+
+        office.vacancyDelay(15)
+        expect(office.attribute.get('vacancyDelay')).toBe(15)
+
+        office.vacancyDelay(0)
+        expect(office.attribute.get('vacancyDelay')).toBe(0)
+    })
+
+    it('can update vacancyDelay using different formats', () => {
+        const office = room.add('officeRoom')
+
+        office.vacancyDelay('1 minute')
+        expect(office.attribute.get('vacancyDelay')).toBe(1)
+
+        office.vacancyDelay('5 mins')
+        expect(office.attribute.get('vacancyDelay')).toBe(5)
+
+        office.vacancyDelay('1 hour')
+        expect(office.attribute.get('vacancyDelay')).toBe(60)
+    })
+
+    it('can create a room with different formats', () => {
+        const office = room.add('officeRoom1', { vacancyDelay: '1 minute' })
+        expect(office.attribute.get('vacancyDelay')).toBe(1)
+
+        const office2 = room.add('officeRoom2', { vacancyDelay: '5 mins' })
+        expect(office2.attribute.get('vacancyDelay')).toBe(5)
+
+        const office3 = room.add('officeRoom3', { vacancyDelay: '1 hour' })
+        expect(office3.attribute.get('vacancyDelay')).toBe(60)
+    })
+
+    it('uses the default vacancyDelay', () => {
+        const office = room.add('officeRoom')
+        expect(office.attribute.get('vacancyDelay')).toBe(15)
+    })
+
+    it('can set vacancyDelay on creation', () => {
+        const office = room.add('officeRoom', { vacancyDelay: 20 })
+        expect(office.attribute.get('vacancyDelay')).toBe(20)
+    })
+
+    it('can set vacancyDelay to 0 on creation', () => {
+        const office = room.add('officeRoom', { vacancyDelay: 0 })
+        expect(office.attribute.get('vacancyDelay')).toBe(0)
+    })
+
+    it('throws if vacancyDelay is not a number on creation', () => {
+        expect(() => room.add('officeRoom', { vacancyDelay: 'foobar' })).toThrow()
+    })
+
+})
+
+
 describe('Room occupancy', () => {
     
     afterEach(() => {
@@ -76,19 +137,19 @@ describe('Room occupancy', () => {
     it('default attributes are setup', () => {
         room.add('officeRoom')
         expect(room.get('officeRoom').attribute.get('occupied')).toBe(false)
-        expect(room.get('officeRoom').attribute.get('thresholdDuration')).toBe(15)
+        expect(room.get('officeRoom').attribute.get('vacancyDelay')).toBe(15)
         expect(room.get('officeRoom').isOccupied()).toBe(false)
     })
 
     it('is occupied if attribute is passed', () => {
         room.add('officeRoom', {
             occupied: true,
-            thresholdDuration: 20,
+            vacancyDelay: 20,
             foobar: true,
         })
         expect(room.get('officeRoom').attribute.get('occupied')).toBe(true)
         expect(room.get('officeRoom').attribute.get('foobar')).toBe(true)
-        expect(room.get('officeRoom').attribute.get('thresholdDuration')).toBe(20)
+        expect(room.get('officeRoom').attribute.get('vacancyDelay')).toBe(20)
     })
 
     it('can set to occupied and vacant directly', () => {
@@ -135,7 +196,7 @@ describe('Room occupancy', () => {
     })
 
     it('sets the room to vacant if threshold duration is 0 and receved a negative sensor value', () => {
-        const office = room.add('officeRoom', { thresholdDuration: 0 })
+        const office = room.add('officeRoom', { vacancyDelay: 0 })
         jest.spyOn(room, 'emit')
 
         office.updatePresence(true)
@@ -148,7 +209,7 @@ describe('Room occupancy', () => {
     })
 
     it('is still occupied when threshold not met', () => {
-        const office = room.add('officeRoom', { thresholdDuration: 2 })
+        const office = room.add('officeRoom', { vacancyDelay: 2 })
         jest.spyOn(room, 'emit')
 
         office.updatePresence(true)
@@ -161,7 +222,7 @@ describe('Room occupancy', () => {
     })
 
     it('is vacant after theshold is met', () => {
-        const office = room.add('officeRoom', { thresholdDuration: 1 })
+        const office = room.add('officeRoom', { vacancyDelay: 1 })
         jest.spyOn(room, 'emit')
 
         office.updatePresence(true)
@@ -176,7 +237,7 @@ describe('Room occupancy', () => {
     })
 
     it('is still occupied when presence updated', () => {
-        const office = room.add('officeRoom', { thresholdDuration: 10 })
+        const office = room.add('officeRoom', { vacancyDelay: 10 })
         jest.spyOn(room, 'emit')
 
         // NOW: Walks into room
@@ -229,7 +290,7 @@ describe('Room occupancy set with sensors', () => {
 
         kitchenPir1 = device.add('kitchenPir1');
         kitchenPir2 = device.add('kitchenPir2');
-        kitchen = room.add('kitchen', { thresholdDuration: 0 });
+        kitchen = room.add('kitchen', { vacancyDelay: 0 });
         kitchen.addPresenceSensor(kitchenPir1, 'pir', true);
         kitchen.addPresenceSensor(kitchenPir2, 'pirSensor', 'pir');
     });
@@ -291,7 +352,7 @@ describe('Room triggers', () => {
     })
 
     it('triggers when a room is vacant', () => {
-        const living = room.add('living', { thresholdDuration: 0 })
+        const living = room.add('living', { vacancyDelay: 0 })
 
         room.triggers(Scenario).room('living').isVacant()
 
@@ -334,7 +395,7 @@ describe('Room constraints', () => {
     })
 
     it('passes if the room is occupied by using presense and threshold duration is set to 0', () => {
-        const living = room.add('living', { thresholdDuration: 0 })
+        const living = room.add('living', { vacancyDelay: 0 })
         living.updatePresence(true)
         expect(room.constraints().room('living').isOccupied()()).toBe(true)
 

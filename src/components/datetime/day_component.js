@@ -111,7 +111,7 @@ class DayComponent extends Component {
             let parsedDay = []
             day = day.toLowerCase()
 
-            if (validDays.hasOwnProperty(day)) {
+            if (day in validDays) {
                 const dayValue = validDays[day]
                 if (Array.isArray(dayValue)) {
                     // If the day is an array, merge it into parsedDay

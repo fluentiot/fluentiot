@@ -74,7 +74,7 @@ class Scenario {
      */
     suppressFor(duration) {
         const parsed = getDurationInMilliseconds(duration)
-        if (!parsed) {
+        if (parsed === false) {
             throw new Error(`Invalid duration "${duration}" passed to suppressFor`)
         }
         this.properties.suppressFor = parsed

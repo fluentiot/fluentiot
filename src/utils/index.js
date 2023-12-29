@@ -7,4 +7,5 @@ module.exports = {
     isJSONString: require('./is_json'),
     addDurationToNow: require('./datetime').addDurationToNow,
     getDurationInMilliseconds: require('./datetime').getDurationInMilliseconds,
+    getDurationInMinutes: require('./datetime').getDurationInMinutes,
 }

@@ -36,18 +36,24 @@ function addDurationToNow(duration) {
     }
 }
 
-function getDurationInMilliseconds(duration) {
+/**
+ * Get duration in milliseconds
+ * 
+ * @param {string} duration 
+ * @returns 
+ */
+function getDurationInMilliseconds(duration, defaultUnit = 'ms') {
     if (typeof duration === 'number') {
-        return duration;
+        return duration
     }
 
-    const match = duration.match(DURATION_REGEX);
+    const match = duration.match(DURATION_REGEX)
     if (!match) {
-        throw new Error(INVALID_FORMAT_ERROR);
+        throw new Error(INVALID_FORMAT_ERROR)
     }
 
-    const value = match[1] ? parseInt(match[1]) : 1;
-    const unit = match[2] ? match[2].toLowerCase() : 'ms'; // Default to milliseconds if no unit is specified
+    const value = match[1] ? parseInt(match[1]) : 1
+    const unit = match[2] ? match[2].toLowerCase() : defaultUnit
 
     switch (unit) {
         case 'sec':
@@ -71,7 +77,23 @@ function getDurationInMilliseconds(duration) {
     }
 }
 
+/**
+ * Get duration in minutes
+ * 
+ * @param {string} duration - Duration in minutes
+ * @returns {number} - Duration in minutes
+ */
+function getDurationInMinutes(duration) {
+    if (typeof duration === 'number') {
+        return duration;
+    }
+
+    const milliseconds = getDurationInMilliseconds(duration, 'minute')
+    return milliseconds / 60000;
+}
+
 module.exports = {
     addDurationToNow,
     getDurationInMilliseconds,
+    getDurationInMinutes,
 };
