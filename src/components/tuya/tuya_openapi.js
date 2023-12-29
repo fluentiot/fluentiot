@@ -275,7 +275,7 @@ class TuyaOpenAPI {
 
         // Data was not returned
         if (!result.data) {
-            logger.error(`Tuya returned success but no data received`, 'tuya')
+            logger.error(`Tuya did not return any data`, 'tuya')
             logger.error(result, 'tuya')
             return false;
         }

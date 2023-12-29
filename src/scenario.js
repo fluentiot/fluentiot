@@ -1,4 +1,5 @@
-const { logger, getDurationInMilliseconds } = require('./utils')
+const { getDurationInMilliseconds } = require('./utils')
+const logger = require('./utils/logger')
 
 /**
  * Scenario

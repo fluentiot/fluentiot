@@ -73,25 +73,41 @@ class DeviceComponent extends Component {
 
                 return {
                     is: (attributeName) => {
-                        this._is(scope, device, attributeName, true)
+                        this._match('is', scope, device, attributeName, true)
                         return scope
                     },
                     isNot: (attributeName) => {
-                        this._is(scope, device, attributeName, false)
+                        this._match('isNot', scope, device, attributeName, true)
                         return scope
                     },
-                    attribute: (attributeName) => {
+                    expect: (attributeName) => {
                         return {
                             is: (attributeValue) => {
-                                this._is(scope, device, attributeName, attributeValue)
+                                this._match('is', scope, device, attributeName, attributeValue)
                                 return scope
                             },
                             isNot: (attributeValue) => {
-                                this._is(scope, device, attributeName, attributeValue, 'not')
+                                this._match('isNot', scope, device, attributeName, attributeValue)
+                                return scope
+                            },
+                            isGreaterThan: (attributeValue) => {
+                                this._match('isGreaterThan', scope, device, attributeName, attributeValue)
+                                return scope
+                            },
+                            isGreaterThanOrEqual: (attributeValue) => {
+                                this._match('isGreaterThanOrEqual', scope, device, attributeName, attributeValue)
+                                return scope
+                            },
+                            isLessThan: (attributeValue) => {
+                                this._match('isLessThan', scope, device, attributeName, attributeValue)
+                                return scope
+                            },
+                            isLessThanOrEqual: (attributeValue) => {
+                                this._match('isLessThanOrEqual', scope, device, attributeName, attributeValue)
                                 return scope
                             },
                             changes: () => {
-                                this._is(scope, device, attributeName, null, 'any')
+                                this._match('any', scope, device, attributeName)
                                 return scope
                             },
                         }
@@ -136,7 +152,7 @@ class DeviceComponent extends Component {
      *   - 'not': The attribute value must not be equal to the specified value.
      *   - 'any': Trigger the scenario assertion for any attribute change.
      */
-    _is(Scenario, device, attributeName, attributeValue, operator = 'is') {
+    _match(operator, Scenario, device, attributeName, attributeValue) {
         const handler = (changedData) => {
             if (changedData.name !== attributeName) {
                 return
@@ -149,11 +165,35 @@ class DeviceComponent extends Component {
                 return
             }
 
-            if (
-                (operator === 'is' && changedData.value === attributeValue) ||
-                (operator === 'not' && changedData.value !== attributeValue) ||
-                operator === 'any'
-            ) {
+            // Call Expect methods
+            let assert = false
+            const expect = new Expect(changedData.value)
+
+            switch(operator) {
+                case 'any':
+                    assert = true
+                    break
+                case 'is':
+                    assert = expect.is(attributeValue)
+                    break
+                case 'isNot':
+                    assert = expect.not.is(attributeValue)
+                    break
+                case 'isGreaterThan':
+                    assert = expect.isGreaterThan(attributeValue)
+                    break
+                case 'isGreaterThanOrEqual':
+                    assert = expect.isGreaterThanOrEqual(attributeValue)
+                    break
+                case 'isLessThan':
+                    assert = expect.isLessThan(attributeValue)
+                    break
+                case 'isLessThanOrEqual':
+                    assert = expect.isLessThanOrEqual(attributeValue)
+                    break
+            }
+
+            if (assert) {
                 Scenario.assert(device)
             }
         }

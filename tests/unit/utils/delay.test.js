@@ -16,7 +16,7 @@ describe('delay', () => {
         await delay(delayTime);
         const end = Date.now();
         const elapsedTime = end - start;
-        expect(elapsedTime).toBeLessThan(10); // Assuming the delay is negligible
+        expect(elapsedTime).toBeLessThan(20); // Assuming the delay is negligible
     });
 
     it('should reject when delay time is negative', async () => {

@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const logger = require('./utils/logger');
-const { dot } = require('./utils');
+const { dot } = require('./utils')
 
 /**
  * Config

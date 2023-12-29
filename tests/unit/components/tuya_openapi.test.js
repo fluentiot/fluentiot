@@ -311,7 +311,7 @@ describe('TuyaOpenAPI request', () => {
     })
 
     it('logs and error if call to tuya was not successful', async () => {
-        axios.post.mockResolvedValue({ success: false });
+        axios.post.mockResolvedValue({ data: { success: false } });
         const result = await tuyaOpenAPI.__request('POST', '/v1.0/devices', null, null)
         expect(result).toBe(false)
         expect(loggerSpy).toHaveBeenCalledWith('Did not receive success from tuya', 'tuya')
@@ -321,7 +321,7 @@ describe('TuyaOpenAPI request', () => {
         axios.post.mockResolvedValue({ success: true });
         const result = await tuyaOpenAPI.__request('POST', '/v1.0/devices', null, null)
         expect(result).toBe(false)
-        expect(loggerSpy).toHaveBeenCalledWith('Tuya returned success but no data received', 'tuya')
+        expect(loggerSpy).toHaveBeenCalledWith('Tuya did not return any data', 'tuya')
     })
 
     it('will attempt to refresh the access token', async () => {

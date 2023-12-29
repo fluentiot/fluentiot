@@ -86,10 +86,10 @@ describe('Scenario creation basics', () => {
         expect(action2).toHaveBeenCalledTimes(0)
     });
 
-    it('prevents double running with cooldown', () => {
+    it('prevents double running with suppressFor', () => {
         const action = jest.fn()
 
-        const test = scenario('test', { cooldown:1000 })
+        const test = scenario('test', { suppressFor:1000 })
             .when()
                 .empty()
             .then(() => action())
@@ -99,10 +99,10 @@ describe('Scenario creation basics', () => {
         expect(action).toHaveBeenCalledTimes(1)
     })
 
-    it('can run multiple times when cooldown is set to 0', () => {
+    it('can run multiple times when suppressFor is set to 0', () => {
         const action = jest.fn()
 
-        const test = scenario('test', { cooldown:0 })
+        const test = scenario('test', { suppressFor:0 })
             .when()
                 .empty()
             .then(() => action())
@@ -118,7 +118,7 @@ describe('Scenario creation basics', () => {
         const action2 = jest.fn()
         const action3 = jest.fn()
 
-        const test = scenario('test', { cooldown:0 })
+        const test = scenario('test', { suppressFor:0 })
             .when()
                 .empty()
             .constraint()
@@ -147,7 +147,7 @@ describe('Scenario creation basics', () => {
     it('will not throw an error if', () => {
         const action = jest.fn()
 
-        const test = scenario('test', { cooldown:0 })
+        const test = scenario('test', { suppressFor:0 })
             .when()
                 .empty()
             .then(() => action())
