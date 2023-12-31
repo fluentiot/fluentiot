@@ -264,39 +264,52 @@ class Scenario {
             logger.warn(`Scenario "${this.description}" did not trigger because in suppressFor period`, 'scenario');
             return false;
         }
-        this.lastAssertTime = currentTime;
 
 
         // Total executions with constraints
-        let ranCallback = false
-        let executionsWithConstraints = 0
+        let callbacks = []  // Matched constraints for callbacks
+        let executionsWithConstraints = 0 // Total executions with constraints
 
         this.callbacks.forEach((callbackItem) => {
             const constraints = callbackItem.constraints || []
+
+            // Run all constraints
             const constraintsMet = constraints.length === 0 || constraints.every((constraint) => constraint())
 
             // If a callback has run with constraints already and this callback
             // has no constraints then do not run. This is probably an else()
             if (executionsWithConstraints > 0 && constraints.length === 0) {
-                return ranCallback
+                return
             }
 
             // Run constraint group callback
             if (constraintsMet) {
-                logger.info(`Scenario "${this.description}" triggered`, 'scenario')
-
-                try {
-                    callbackItem.callback(this, ...args)
-                    ranCallback = true
-                } catch(e) {
-                    logger.error(`Scenario "${this.description}" has an error with the actions`, 'scenario')
-                    logger.error(e, 'scenario')
-                    return false
-                }
+                callbacks.push(callbackItem)
 
                 if (constraints.length > 0) {
                     executionsWithConstraints++
                 }
+            }
+        })
+
+        // No callbacks to run
+        if (callbacks.length === 0) {
+            return false
+        }
+    
+        // Run callbacks
+        this.lastAssertTime = currentTime
+        let ranCallback = true
+        logger.info(`Scenario "${this.description}" triggered`, 'scenario')
+
+        callbacks.forEach((callbackItem) => {
+            try {
+                callbackItem.callback(this, ...args)
+                ranCallback = true
+            } catch(e) {
+                logger.error(`Scenario "${this.description}" has an error with the actions`, 'scenario')
+                logger.error(e, 'scenario')
+                ranCallback = false
             }
         })
 

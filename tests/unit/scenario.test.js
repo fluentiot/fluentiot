@@ -515,6 +515,66 @@ describe('Scenario supressFor', () => {
         expect(mockCallback.mock.calls).toHaveLength(2)
     })
 
+})
+
+
+describe('Scenario lastAssertTime', () => {
+
+    it('lastAssertTime will not update if no constraints were met', () => {
+        const mockCallback = jest.fn()
+        const scenario = new Scenario(Fluent, 'Foobar')
+            .when()
+                .empty()
+            .constraint()
+                .foobar().isTrue(false)
+                .then(mockCallback)
+
+        expect(scenario._assert()).toBe(false)
+        expect(scenario.lastAssertTime).toBe(null)
+        expect(mockCallback).not.toHaveBeenCalled()
+    })
+
+    it('lastAssertTime updates if constraints were met', () => {
+        const mockCallback = jest.fn()
+        const scenario = new Scenario(Fluent, 'Foobar')
+            .when()
+                .empty()
+            .constraint()
+                .foobar().isTrue(true)
+                .then(mockCallback)
+
+        expect(scenario._assert()).toBe(true)
+        expect(scenario.lastAssertTime).not.toBe(null)
+        expect(mockCallback).toHaveBeenCalled()
+    })
+
+    it('lastAssertTime updates if no constraints defined', () => {
+        const mockCallback = jest.fn()
+        const scenario = new Scenario(Fluent, 'Foobar')
+            .when()
+                .empty()
+            .then(mockCallback)
+
+        expect(scenario._assert()).toBe(true)
+        expect(scenario.lastAssertTime).not.toBe(null)
+        expect(mockCallback).toHaveBeenCalled()
+    })
+
+    it('lastAssertTime updates if else constraint is called', () => {
+        const mockCallback = jest.fn()
+        const scenario = new Scenario(Fluent, 'Foobar')
+            .when()
+                .empty()
+            .constraint()
+                .foobar().isTrue(false)
+                .then(() => {})
+            .else()
+                .then(mockCallback)
+
+        expect(scenario._assert()).toBe(true)
+        expect(scenario.lastAssertTime).not.toBe(null)
+        expect(mockCallback).toHaveBeenCalled()
+    })
 
 })
 
