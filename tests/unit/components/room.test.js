@@ -13,6 +13,7 @@ const dayjs = require('dayjs')
 let room;
 
 beforeEach(() => {
+    jest.useFakeTimers();
     room = new RoomComponent(Fluent)
     //jest.spyOn(variable, 'emit')
 })
