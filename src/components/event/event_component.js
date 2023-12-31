@@ -15,6 +15,7 @@ class FluentEmitter extends EventEmitter {}
  * @class
  */
 class EventComponent extends Component {
+    
     /**
      * Constructor
      *
@@ -22,11 +23,17 @@ class EventComponent extends Component {
      */
     constructor(Fluent) {
         super(Fluent)
-        this.emitter = new FluentEmitter()
+
         this.queueRunning = false
         this.queue = []
 
-        //Setup wrapper for 'on'
+        // Setup emitter
+        this.emitter = new FluentEmitter()
+
+        // Typically not advised but framework is event based, may need to revisit this
+        this.emitter.setMaxListeners(100)
+
+        // Abstract on method
         this.on = this.emitter.on.bind(this.emitter)
     }
 
