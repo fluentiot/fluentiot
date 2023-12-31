@@ -164,11 +164,13 @@ class DayComponent extends Component {
         startDate = this.parseDate(targetStart)
         endDate = this.parseDate(targetEnd)
 
+        // If the end date is before the startDate, it means that the end date is in the next year
+        if (endDate.isBefore(startDate)) {
+            endDate = endDate.add(1, 'year')
+        }
+
         if (!startDate || !endDate) {
             throw new Error(`Date formats are invalid`)
-        }
-        if (endDate.isBefore(startDate)) {
-            throw new Error(`End date cannot be before the start date`)
         }
 
         return dayjs().isBetween(startDate, endDate, 'day', '[]') // '[]' includes both start and end dates

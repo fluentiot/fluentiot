@@ -60,10 +60,6 @@ describe('Day parsing and between methods', () => {
         expect(() => day.isCurrentDateInRange('', '')).toThrow()
     })
 
-    it('throws error if end date is before start date', () => {
-        expect(() => day.isCurrentDateInRange('2023-01-12', '2023-01-10')).toThrow()
-    })
-
     it('is between today and tomorrow', () => {
         const start = moment().format('MMMM D')
         const end = moment().add(1, 'days').format('MMMM D')
