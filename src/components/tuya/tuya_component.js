@@ -112,11 +112,15 @@ class TuyaComponent extends Component {
      * @param {object} options - Options for controlling version and URL
      */
     send(deviceId, command, options = {}) {
+        // Version for Tuya API
         options.version = options.version || `v1.0`
-        options.url = options.url || `/${options.version}/devices/${deviceId}/commands`
 
-        //options.version = 'v2.0'
-        //options.url = `/${options.version}/cloud/thing/${deviceId}/shadow/properties/issue`
+        // URL
+        if (options.version === 'v2.0' && !options.url) {
+            options.url = `/${options.version}/cloud/thing/${deviceId}/shadow/properties/issue`
+        } else if (options.version === 'v1.0' && !options.url) {
+            options.url = `/${options.version}/devices/${deviceId}/commands`
+        }
         
         this.queue.push({ id: deviceId, options, command })
     

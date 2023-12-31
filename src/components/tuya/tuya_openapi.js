@@ -237,23 +237,24 @@ class TuyaOpenAPI {
             json: true
         };
 
-        logger.debug(`Request: method = ${method}, url = ${options.url}, params = ${params}, body = ${JSON.stringify(body)}, t = ${Date.now()}`,'tuya');
+        logger.debug(`Request: method = "${method}", url = "${options.url}", params = ${params}, body = ${JSON.stringify(body)}, t = ${Date.now()}`,'tuya');
 
         // Send request
-        let result;
+        let result
         try {
             if(method === 'GET') {
-                result = await axios.get(this.endpoint + path, { headers, params });
+                result = await axios.get(options.url, { headers, params });
             } else if(method === 'POST') {
-                result = await axios.post(this.endpoint + path, body, { headers });
+                result = await axios.post(options.url, body, { headers });
             } else if(method === 'PUT') {
-                result = await axios.put(this.endpoint + path, body, { headers, params });
+                result = await axios.put(options.url, body, { headers, params });
             } else if(method === 'DELETE') {
-                result = await axios.delete(this.endpoint + path, body, { headers, params });
+                result = await axios.delete(options.url, body, { headers, params });
             }
         }
         catch (error) {
             logger.error(`Failed to send request to Tuya Open API`, 'tuya');
+            logger.error(`URL: ${options.url}`, 'tuya');
             logger.error(error, 'tuya');
             return false;
         }
@@ -261,6 +262,7 @@ class TuyaOpenAPI {
         // No result
         if (!result) {
             logger.error(`No result from Tuya Open API`, 'tuya');
+            logger.error(`URL: ${options.url}`, 'tuya');
             return false;
         }
 
@@ -276,6 +278,7 @@ class TuyaOpenAPI {
         // Data was not returned
         if (!result.data) {
             logger.error(`Tuya did not return any data`, 'tuya')
+            logger.error(`URL: ${options.url}`, 'tuya')
             logger.error(result, 'tuya')
             return false;
         }
@@ -283,6 +286,7 @@ class TuyaOpenAPI {
         // Check if not successful
         if (result.data.success == false) {
             logger.error(`Did not receive success from tuya`, 'tuya')
+            logger.error(`URL: ${options.url}`, 'tuya')
             logger.error(result.data, 'tuya')
             return false;
         }
