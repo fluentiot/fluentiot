@@ -11,9 +11,9 @@
     "author": "Darren Moore",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/darrenmoore/fluent-iot/issues"
+        "url": "https://github.com/fluentiot/fluentiot/issues"
     },
-    "homepage": "https://github.com/darrenmoore/fluent-iot",
+    "homepage": "https://github.com/fluentiot/fluentiot",
     "dependencies": {
         "app-root-path": "^3.1.0",
         "blessed": "^0.1.81",
