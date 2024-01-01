@@ -7,7 +7,7 @@ const { Fluent, event, scenario, variable } = require('./../../index')
 describe('Scenario creation basics', () => {
 
     beforeEach(() => {
-        Fluent.scenarios = []
+        Fluent.scenarios = {}
         Fluent.inTestMode = false
     })
 
@@ -61,6 +61,26 @@ describe('Scenario creation basics', () => {
 
         expect(action).toHaveBeenCalledTimes(1)
     })
+
+    // it.only('scenario can call another scenario', () => {
+    //     const action = jest.fn()
+
+    //     scenario('first call')
+    //         .when()
+    //             .event('test').on(true)
+    //         .then(() => {
+    //             Fluent
+    //         })
+
+    //     scenario('will get triggered by first call scenario')
+    //         .when()
+    //             .event('test').on(true)
+    //         .then(() => { action() })
+
+    //     event.emit('test', true)
+
+    //     expect(action).toHaveBeenCalledTimes(1)
+    // })
 
     it('prevents scenarios with the same description been created', () => {
         scenario('same description twice')

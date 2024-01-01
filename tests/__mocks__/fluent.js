@@ -1,7 +1,7 @@
 
 class Fluent {
 
-    static component() {
+    static _component() {
         return {
             get: (name) => {
                 if(name === 'event') {
@@ -15,6 +15,8 @@ class Fluent {
     }
 
 }
+
+Fluent.component = Fluent._component()
 
 module.exports = Fluent;
 

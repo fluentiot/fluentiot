@@ -23,6 +23,13 @@ const doesElementMatchQuery = (element, query) => {
 const findElements = (dataSource, collectionOrQuery, query) => {
     const collection = typeof collectionOrQuery === 'string' ? collectionOrQuery : null;
 
+    if (typeof collection === 'string' && !query) {
+        if (dataSource[collection]) {
+            return [ dataSource[collection] ]
+        }
+        return []
+    }
+
     return Object.values(dataSource)
         .filter(element => {
             if (collection) {
@@ -42,23 +49,34 @@ const findElements = (dataSource, collectionOrQuery, query) => {
  */
 const QueryDslMixin = (parent, dataSource) => {
 
+    const getDataSource = () => {
+        if (typeof dataSource === 'function') {
+            return dataSource();
+        }
+        return dataSource;
+    }
+
     return {
         find: (collectionOrQuery, query) => {
-            const results = findElements(dataSource, collectionOrQuery, query);
+            const results = findElements(getDataSource(), collectionOrQuery, query);
             return results.length ? results : null;
         },
+        get: (collectionOrQuery, query) => {
+            const results = findElements(getDataSource(), collectionOrQuery, query);
+            return results.length ? results[0] : null;
+        },
         findOne: (collectionOrQuery, query) => {
-            const results = findElements(dataSource, collectionOrQuery, query);
+            const results = findElements(getDataSource(), collectionOrQuery, query);
             return results.length ? results[0] : null;
         },
         count: () => {
-            return Object.keys(dataSource).length
+            return Object.keys(getDataSource()).length
         },
         list: () => {
-            if (Object.keys(dataSource).length === 0) {
+            if (Object.keys(getDataSource()).length === 0) {
                 return null;
             }
-            return dataSource
+            return getDataSource()
         }
     };
 };

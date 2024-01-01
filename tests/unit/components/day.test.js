@@ -67,8 +67,8 @@ describe('Day parsing and between methods', () => {
     })
 
     it('is between yesterday and tomorrow', () => {
-        const start = moment().subtract(1, 'days').format('MMMM D')
-        const end = moment().add(1, 'days').format('MMMM D')
+        const start = moment().subtract(1, 'days').format('MMMM D YYYY')
+        const end = moment().add(1, 'days').format('MMMM D YYYY')
         expect(day.isCurrentDateInRange(start, end)).toBe(true)
     })
 

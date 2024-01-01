@@ -6,6 +6,8 @@ const Scenario = require('./scenario')
 const logger = require('./utils/logger')
 const config = require('./config')
 
+const { QueryDslMixin } = require('./components/_mixins/query_dsl')
+
 /**
  * Fluent IoT Framework
  *
@@ -19,7 +21,7 @@ class Fluent {
     static setup() {
         Fluent.config = {} //Config data
         Fluent.components = {} //Components loaded in
-        Fluent.scenarios = [] //Scenarios defined
+        Fluent.scenarios = {} //Scenarios defined
         Fluent.inTestMode = false //If in test mode
 
         // If running in jest, don't show splash screen
@@ -37,6 +39,10 @@ class Fluent {
                 Fluent.components[key].afterLoad()
             }
         }
+
+        // DSL shortcuts
+        Fluent.scenario = Fluent._scenario()
+        Fluent.component = Fluent._component()
 
         logger.info(`Fluent IoT Ready`, 'fluent');
     }
@@ -76,7 +82,7 @@ class Fluent {
             files.forEach((file) => {
                 if (file.endsWith('_component.js')) {
                     const name = path.basename(file, '_component.js')
-                    Fluent.component().add(componentPath, name)
+                    Fluent._component().add(componentPath, name)
                 }
             })
         })
@@ -87,7 +93,7 @@ class Fluent {
      *
      * @returns {Object} - Component or components
      */
-    static component() {
+    static _component() {
         const load = (componentPath, name) => {
             const file = componentPath + `/${name}_component.js`
 
@@ -104,20 +110,17 @@ class Fluent {
             return componentInstance
         }
 
-        return {
+        // DSL for Components
+        let dsl = {
             add: (componentPath, name) => {
                 return load(componentPath, name)
-            },
-            get: (name) => {
-                if (!Fluent.components[name]) {
-                    throw new Error(`Component "${name}" not found`)
-                }
-                return Fluent.components[name]
-            },
-            all: () => {
-                return Fluent.components
-            },
+            }
         }
+
+        // Mixins
+        dsl = Object.assign(dsl, QueryDslMixin(Fluent, () => { return Fluent.components }))
+
+        return dsl
     }
 
     /**
@@ -125,22 +128,22 @@ class Fluent {
      *
      * @returns {object|array} - Scenario instance or instances
      */
-    static scenario() {
-        const create = (description, ...args) => {
+    static _scenario() {
+        const add = (description, ...args) => {
             // Description is always needed
             if (!description) {
                 throw new Error(`Scenario description must be defined`)
             }
 
             // Check if the description has already been used
-            for (const scenario of Fluent.scenarios) {
-                if (scenario.description === description) {
+            for (const key in Fluent.scenarios) {
+                if (key === description) {
                     throw new Error(`Scenario with description '${description}' already exists`)
                 }
             }
 
             const scenario = new Scenario(this, description, ...args)
-            Fluent.scenarios.push(scenario)
+            Fluent.scenarios[description] = scenario
 
             // Make sure all future creations of scenario are updated if test mode is on
             Fluent.updateTestMode()
@@ -148,14 +151,17 @@ class Fluent {
             return scenario
         }
 
-        return {
-            create: (description, ...args) => {
-                return create(description, ...args)
-            },
-            all: () => {
-                return Fluent.scenarios
-            },
+        // DSL for Scenarios
+        let dsl = {
+            add: (description, ...args) => {
+                return add(description, ...args)
+            }
         }
+
+        // Mixins
+        dsl = Object.assign(dsl, QueryDslMixin(Fluent, () => { return Fluent.scenarios }))
+
+        return dsl
     }
 
     /**
@@ -167,17 +173,22 @@ class Fluent {
     static updateTestMode(scenario) {
         if (scenario) {
             Fluent.inTestMode = true
-            logger.debug(`Test mode on for ${scenario.description}`, 'fluent')
+            logger.debug(`Test mode "on" for "${scenario.description}"`, 'fluent')
         }
 
         if (!scenario && !Fluent.inTestMode) {
             return
         }
 
-        Fluent.scenarios.forEach((scenario) => {
-            scenario.runnable = scenario.testMode ? true : false
-        })
+        for (const key in Fluent.scenarios) {
+            if (Fluent.scenarios[key].testMode) {
+                Fluent.scenarios[key].runnable = true
+            } else {
+                Fluent.scenarios[key].runnable = false
+            }
+        }
     }
+
 }
 
 Fluent.setup()

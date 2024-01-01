@@ -221,7 +221,7 @@ describe('TuyaComponent', () => {
 
         tuyaComponent.send(deviceId, command, options);
 
-        const expectedOptions = { version: 'v2.0', url: '/v2.0/devices/123/commands' }
+        const expectedOptions = { version: 'v2.0', url: '/v2.0/cloud/thing/123/shadow/properties/issue' }
 
         expect(tuyaComponent.queue).toHaveLength(1);
         expect(tuyaComponent.queue[0]).toEqual({ id: deviceId, options: expectedOptions, command });
@@ -277,7 +277,7 @@ describe('TuyaComponent', () => {
     it('should handle v2 api', async () => {
         const deviceId = '123';
         const command = { code: 'power', value: 'true' };
-        const options = { version: 'v2.0', url: '/v2.0/devices/123/commands' };
+        const options = { version: 'v2.0', url: '/v2.0/cloud/thing/123/shadow/properties/issue' };
         tuyaComponent.queue = [{ id: deviceId, options, command }];
 
         tuyaComponent.connected = true

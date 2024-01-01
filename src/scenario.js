@@ -58,7 +58,7 @@ class Scenario {
         }
 
         //Fetch all required components from the Fluent / config file
-        this.components = this.Fluent.component().all()
+        this.components = this.Fluent.component.list()
 
         //Setup available triggers based on components loaded
         this._buildTriggersDsl()

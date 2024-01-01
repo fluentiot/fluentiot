@@ -58,10 +58,8 @@ beforeEach(() => {
     const mockFluent = jest.fn()
     Fluent = new mockFluent()
     Fluent.updateTestMode = jest.fn()
-    Fluent.component = () => {
-        return {
-            all: () => components,
-        }
+    Fluent.component = {
+        list: () => components,
     }
 })
 

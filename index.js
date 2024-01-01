@@ -3,11 +3,11 @@
  */
 const Fluent = require('./src/fluent')
 const logger = require('./src/utils/logger')
-const components = Fluent.component().all()
+const components = Fluent.component.list()
 
 // Scenario
 function scenario(description, properties = {}) {
-    return Fluent.scenario().create(description, properties);
+    return Fluent.scenario.add(description, properties);
 }
   
 // Define "only" version of describe
