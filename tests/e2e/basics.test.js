@@ -62,25 +62,26 @@ describe('Scenario creation basics', () => {
         expect(action).toHaveBeenCalledTimes(1)
     })
 
-    // it.only('scenario can call another scenario', () => {
-    //     const action = jest.fn()
+    it('scenario can call another scenario', () => {
+        const action = jest.fn()
 
-    //     scenario('first call')
-    //         .when()
-    //             .event('test').on(true)
-    //         .then(() => {
-    //             Fluent
-    //         })
+        scenario('first call')
+            .when()
+                .event('test').on(true)
+            .then(() => {
+                Fluent.scenario.get('second call').assert()
+            })
 
-    //     scenario('will get triggered by first call scenario')
-    //         .when()
-    //             .event('test').on(true)
-    //         .then(() => { action() })
+        scenario('second call')
+            .when()
+                .empty()
+            .then(() => { action() })
 
-    //     event.emit('test', true)
+        // Trigger first scenario
+        event.emit('test', true)
 
-    //     expect(action).toHaveBeenCalledTimes(1)
-    // })
+        expect(action).toHaveBeenCalledTimes(1)
+    })
 
     it('prevents scenarios with the same description been created', () => {
         scenario('same description twice')

@@ -27,7 +27,7 @@ class Component {
      * @returns {Object} The requested component.
      */
     getComponent(name) {
-        return this.Fluent.component.get(name)
+        return this.Fluent._component().get(name)
     }
 
     /**
