@@ -5,8 +5,10 @@
  * @class
  */
 class Component {
+
     /**
      * Creates a new Component instance. This constructor should not be called directly.
+     * 
      * @constructor
      * @param {Fluent} Fluent - The Fluent instance to be used by the component.
      * @throws {Error} If instantiated directly.
@@ -18,6 +20,13 @@ class Component {
 
         this.Fluent = Fluent
         this._event = null // The cached event component instance.
+    }
+
+    /**
+     * Tears down the component.
+     */
+    teardown() {
+        this._event = null
     }
 
     /**
@@ -50,6 +59,7 @@ class Component {
     emit(...args) {
         this.event().emit(...args)
     }
+
 }
 
 module.exports = Component
