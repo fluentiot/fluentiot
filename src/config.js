@@ -53,6 +53,7 @@ class Config {
         }
 
         // If not, use the default fluent.config.js from the same directory
+        console.warn(`\x1b[33mIt is advised to copy the "fluent.config.js" from the module directory to your local app directory\x1b[0m`)
         return path.join(__dirname, '..', 'fluent.config.js');
     }
 
