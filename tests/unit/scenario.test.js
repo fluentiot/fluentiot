@@ -513,6 +513,57 @@ describe('Scenario supressFor', () => {
         expect(mockCallback.mock.calls).toHaveLength(2)
     })
 
+    it('will suppress for 12 hours using verbose time', () => {
+        const mockCallback = jest.fn()
+
+        new Scenario(Fluent, 'Foobar', { supressFor: '12 hour' })
+            .when()
+                .foobar().onEvent('hey')
+            .then(mockCallback)
+
+        // Try to trigger twice, only one should trigger
+        event.emit('hey') // Trigger
+        event.emit('hey') // Do not trigger
+
+        // Move time forward before 12 hours and trigger again
+        mockdate.set(dayjs().add(11, 'hours'));
+        event.emit('hey') // Do not trigger
+
+        // Move time forward and trigger again
+        mockdate.set(dayjs().add(1, 'hours'));
+        event.emit('hey') // Trigger
+        event.emit('hey') // Do not trigger
+
+        expect(mockCallback.mock.calls).toHaveLength(3)
+    })
+
+    it('will suppress even when one scenario calling another', () => {
+        const mockCallback = jest.fn()
+
+        const scenario = new Scenario(Fluent, 'Foobar')
+            .when()
+                .empty()
+            .then(mockCallback)
+
+        new Scenario(Fluent, 'Foobar', { supressFor: '10 minutes' })
+            .when()
+                .foobar().onEvent('hey')
+            .then(() => {
+                scenario.assert()
+            })
+
+        // Try to trigger twice, only one should trigger
+        event.emit('hey') // Trigger
+        event.emit('hey') // Do not trigger
+
+        // Move time forward and trigger again
+        mockdate.set(dayjs().add(10, 'minutes'));
+        event.emit('hey') // Trigger
+        event.emit('hey') // Do not trigger
+
+        expect(mockCallback.mock.calls).toHaveLength(2)
+    })
+
 })
 
 

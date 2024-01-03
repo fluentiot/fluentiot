@@ -1,7 +1,8 @@
 const schedule = require('node-schedule')
 schedule.scheduleJob = jest.fn()
 
-const moment = require('dayjs')
+const mockdate = require('mockdate')
+const dayjs = require('dayjs')
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'))
 jest.mock('./../../../src/utils/logger')
 
@@ -61,36 +62,36 @@ describe('Day parsing and between methods', () => {
     })
 
     it('is between today and tomorrow', () => {
-        const start = moment().format('MMMM D')
-        const end = moment().add(1, 'days').format('MMMM D')
+        const start = dayjs().format('MMMM D')
+        const end = dayjs().add(1, 'days').format('MMMM D')
         expect(day.isCurrentDateInRange(start, end)).toBe(true)
     })
 
     it('is between yesterday and tomorrow', () => {
-        const start = moment().subtract(1, 'days').format('MMMM D YYYY')
-        const end = moment().add(1, 'days').format('MMMM D YYYY')
+        const start = dayjs().subtract(1, 'days').format('MMMM D YYYY')
+        const end = dayjs().add(1, 'days').format('MMMM D YYYY')
         expect(day.isCurrentDateInRange(start, end)).toBe(true)
     })
 
     it('is NOT tomorrow', () => {
-        const start = moment().add(1, 'days').format('MMMM D')
-        const end = moment().add(2, 'days').format('MMMM D')
+        const start = dayjs().add(1, 'days').format('MMMM D')
+        const end = dayjs().add(2, 'days').format('MMMM D')
         expect(day.isCurrentDateInRange(start, end)).toBe(false)
     })
 
     it('is NOT before', () => {
-        const start = moment().subtract(2, 'days').format('MMMM D')
-        const end = moment().subtract(1, 'days').format('MMMM D')
+        const start = dayjs().subtract(2, 'days').format('MMMM D')
+        const end = dayjs().subtract(1, 'days').format('MMMM D')
         expect(day.isCurrentDateInRange(start, end)).toBe(false)
     })
 
     it('is handling exact dates', () => {
-        const start1 = moment().format('YYYY-MM-DD')
-        const end1 = moment().add(1, 'days').format('YYYY-MM-DD')
+        const start1 = dayjs().format('YYYY-MM-DD')
+        const end1 = dayjs().add(1, 'days').format('YYYY-MM-DD')
         expect(day.isCurrentDateInRange(start1, end1)).toBe(true)
 
-        const start2 = moment().add(1, 'days').format('YYYY-MM-DD')
-        const end2 = moment().add(2, 'days').format('YYYY-MM-DD')
+        const start2 = dayjs().add(1, 'days').format('YYYY-MM-DD')
+        const end2 = dayjs().add(2, 'days').format('YYYY-MM-DD')
         expect(day.isCurrentDateInRange(start2, end2)).toBe(false)
     })
 })
@@ -103,16 +104,16 @@ describe('Day is', () => {
 
 
     it('day is today', () => {
-        const fullDayName = moment().format('dddd')
-        const abbreviatedDayName = moment().format('ddd')
+        const fullDayName = dayjs().format('dddd')
+        const abbreviatedDayName = dayjs().format('ddd')
 
         expect(day.is(fullDayName)).toBe(true)
         expect(day.is(abbreviatedDayName)).toBe(true)
     })
 
     it('is supports multiple days', () => {
-        const fullDayName = moment().format('dddd')
-        const tomorrowDayName = moment().add(1, 'days').format('dddd')
+        const fullDayName = dayjs().format('dddd')
+        const tomorrowDayName = dayjs().add(1, 'days').format('dddd')
         const result = day.is([fullDayName, tomorrowDayName])
         expect(result).toBe(true)
     })
@@ -122,7 +123,7 @@ describe('Day is', () => {
     })
 
     it('is negative if not today', () => {
-        const tomorrowDayName = moment().add(1, 'days').format('dddd')
+        const tomorrowDayName = dayjs().add(1, 'days').format('dddd')
         const result = day.is(tomorrowDayName)
         expect(result).toBe(false)
     })
@@ -146,20 +147,20 @@ describe('Day is between', () => {
     })
 
     it('is between today', () => {
-        const start = moment().format('MMMM D')
-        const end = moment().add(1, 'days').format('MMMM D')
+        const start = dayjs().format('MMMM D')
+        const end = dayjs().add(1, 'days').format('MMMM D')
         expect(day.between(start, end)).toBe(true)
     })
 
     it('is not between today', () => {
-        const start = moment().add(1, 'days').format('MMMM D')
-        const end = moment().add(2, 'days').format('MMMM D')
+        const start = dayjs().add(1, 'days').format('MMMM D')
+        const end = dayjs().add(2, 'days').format('MMMM D')
         expect(day.between(start, end)).toBe(false)
     })
 
     it('returns false if the input is a bad format', () => {
         const start = 'xxx'
-        const end = moment().add(2, 'days').format('MMMM D')
+        const end = dayjs().add(2, 'days').format('MMMM D')
         expect(day.between(start, end)).toBe(false)
     })
 })
@@ -169,24 +170,39 @@ describe('Day constraints for "between"', () => {
     let day
     beforeEach(() => {
         day = new DayComponent(Fluent)
+        mockdate.reset()
     })
 
     it('is between today', () => {
-        const start = moment().format('MMMM D')
-        const end = moment().add(1, 'days').format('MMMM D')
+        const start = dayjs().format('MMMM D')
+        const end = dayjs().add(1, 'days').format('MMMM D')
         expect(day.constraints().day.between(start, end)()).toBe(true)
     })
 
     it('is not between today', () => {
-        const start = moment().add(1, 'days').format('MMMM D')
-        const end = moment().add(2, 'days').format('MMMM D')
+        const start = dayjs().add(1, 'days').format('MMMM D')
+        const end = dayjs().add(2, 'days').format('MMMM D')
         expect(day.constraints().day.between(start, end)()).toBe(false)
     })
 
     it('returns false if the input is a bad format', () => {
         const start = 'xxx'
-        const end = moment().add(2, 'days').format('MMMM D')
+        const end = dayjs().add(2, 'days').format('MMMM D')
         expect(day.constraints().day.between(start, end)()).toBe(false)
+    })
+
+    it('is between dates in December', () => {
+        mockdate.set('2023-11-30 12:30:00');
+        const result1 = day.constraints().day.between('December 1st', 'December 31st')()
+        expect(result1).toBe(false)
+
+        mockdate.set('2023-12-30 12:30:00');
+        const result2 = day.constraints().day.between('December 1st', 'December 31st')()
+        expect(result2).toBe(true)
+
+        mockdate.set('2024-01-01 12:30:00');
+        const result3 = day.constraints().day.between('December 1st', 'December 31st')()
+        expect(result3).toBe(false)
     })
 })
 
@@ -198,16 +214,16 @@ describe('Day constraints for "day is"', () => {
     })
 
     it('day is today', () => {
-        const fullDayName = moment().format('dddd')
-        const abbreviatedDayName = moment().format('ddd')
+        const fullDayName = dayjs().format('dddd')
+        const abbreviatedDayName = dayjs().format('ddd')
 
         expect(day.constraints().day.is(fullDayName)()).toBe(true)
         expect(day.constraints().day.is(abbreviatedDayName)()).toBe(true)
     })
 
     it('is supports multiple days', () => {
-        const fullDayName = moment().format('dddd')
-        const tomorrowDayName = moment().add(1, 'days').format('dddd')
+        const fullDayName = dayjs().format('dddd')
+        const tomorrowDayName = dayjs().add(1, 'days').format('dddd')
         const result = day.constraints().day.is([fullDayName, tomorrowDayName])()
         expect(result).toBe(true)
     })
@@ -217,7 +233,7 @@ describe('Day constraints for "day is"', () => {
     })
 
     it('is negative if not today', () => {
-        const tomorrowDayName = moment().add(1, 'days').format('dddd')
+        const tomorrowDayName = dayjs().add(1, 'days').format('dddd')
         const result = day.constraints().day.is(tomorrowDayName)()
         expect(result).toBe(false)
     })
