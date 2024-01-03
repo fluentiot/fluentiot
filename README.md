@@ -9,7 +9,7 @@ scenario('At 6:00pm turn on the gate lights')
     .when()
         .time.is('18:00')
     .then(() => {
-        device.get('gate lights').turnOn()
+        device.get('gateLights').turnOn()
     })
 ```
 
@@ -113,34 +113,54 @@ This API includes working examples.
 
 ## Scenario API
 
-#### `scenario(description: string[, properties: object])`
+### `scenario(description: string[, properties: object])`
 Creating a new scenario with a unique description describing the purpose of the scenario.
 
-The `cooldown` property serves to prevent the occurrence of double-triggering in a scenario. For instance, when utilizing two PIR sensors in a living room, they may be triggered at slightly different times. The presence of a cooldown effectively inhibits the scenario from executing twice in quick succession.
 
 | Property      | Description                 | Default |
 | ------------- | --------------------------- | ---- |
-| `cooldown`    | Time interval in milliseconds, defining the period during which triggers are temporarily disabled to prevent the execution of actions. | 1000ms (1 sec) |
+| `suppressFor`    | Time interval defining the period during which triggers are temporarily disabled to prevent the execution of actions. | 10 seconds |
+
+
+#### Suppressing scenario
+The `suppressFor` property serves a dual role, offering enhanced control and mitigating the risk of double-triggering in scenarios.
+
+The first purpose is to have more control over your scenarios. An example would be to only run a scenario once a day.
+
+The second purpose is to prevent the occurrence of double-triggering. For instance, when utilizing two PIR sensors in a living room, they may be triggered at slightly different times. The presence of a suppressFor effectively inhibits the scenario from executing twice in quick succession.
+
+The value supports patterns for utility method `addDurationToNow`.
+
+```
+10 ms/millisecond/milliseconds
+10 sec/second/seconds
+10 min/minute/minutes
+10 hr/hour/hours
+```
 
 
 
-#### `when()`
+### `when()`
 
 Trigger or triggers for the scenario. If multiple triggers are used they act as an "or".
 
 ```javascript
-//Must create the device before trying to use it in a scenario
-device.add('pir');
+// Include device and room
+const { room, device } = require('fluentiot')
 
-//Multiple triggers in when() will act as an OR
+// Must create the device and room
+device.add('pir')
+room.add('office')
+
+// Multiple triggers in when() will act as an OR
 scenario('18:00, sensor is true or room is occupied')
     .when()
         .time.is('18:00')
-        .device('pir').attribute('sensor').isTruthy()
+        .device('pir').expect('sensor').is(true)
         .room('office').isOccupied()
     .then(() => {})
 
-//While testing using empty() and .assert()
+// While testing using empty() and .assert()
 scenario('using empty can be useful for debugging a scenario')
     .when()
         .empty()
@@ -150,7 +170,7 @@ scenario('using empty can be useful for debugging a scenario')
     .assert()
 ```
 
-#### `.constraint()`
+### `.constraint()`
 
 Constraints are optional. Each component has it's own set of constraints and in the examples below they are using the `datetime` component. Multiple constraints can be used, creating constraint groups. Each constraint must have a `then()`.
 
@@ -214,21 +234,24 @@ scenario('assert and triggers can return args to then()')
 ```
 
 
-### Testing scenarios
+### Testing & debugging scenarios
 
-If a scenario is failing, one of the first steps is to investigate if it fails when it's the only scenario running. To run only one scenario temporarily modify its command to scenario.only within the relevant code block.
+If a scenario is failing, one of the first steps is to investigate if it fails when it's the only scenario running. To run only one scenario temporarily modify its command to scenario only within the relevant code block.
 
 ```javascript
+const { event } = require('fluentiot')
+
 scenario.only('this is the only scenario that will run')
     .when()
         .time.is('18:00')
     .then(() => { console.log('it ran') })
+
 event.emit('time', '18:00')
 ```
 
 To skip the triggers entirely use an `assert`.
 ```javascript
-scenario.only('this is the only scenario that will run')
+scenario.only('skipping the triggers using assert')
     .when()
         .time.is('18:00')
     .then(() => { console.log('it ran') })
@@ -248,6 +271,7 @@ To handle asynchronous add `async` to the `then` method.
 An example using the `delay` utility and `async`.
 ```javascript
 const { delay } = require('../src/utils')
+
 scenario('Countdown')
     .when()
         .empty()
@@ -268,9 +292,29 @@ scenario('Countdown')
 
 ## Day API
 
+### Methods
+
+#### `day.is(targetDay: string | array)`
+
+Supports a single argument or multiple arguments for multiple days.
+
+Supported values: `weekend, weekday, monday, mon, tuesday, tue, wednesday, wed, thursday, thu, friday, fri, saturday, sat, sunday, sun`.
+
+```javascript
+const { day } = require('fluentiot')
+console.log(day.is('Monday') ? 'It is Monday' : 'It is not Monday')
+console.log(day.is(['Sat','Sun']) ? 'Weekend' : 'Weekday')
+```
+
+
+
+#### `day.between(targetStart: string, targetEnd: string)`
+
+
+
 ### Triggers
 
-Day currently has no triggers.
+Day currently has no triggers so it's perferable to use `time` API mixed with `day` constraint.
 
 ```javascript
 scenario('Only on Saturday at 7am')
