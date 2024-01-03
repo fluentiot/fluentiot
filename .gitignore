@@ -4,6 +4,7 @@ coverage/
 coverage/*
 temp/
 temp/*
+/app.js
 /package-lock.json
 npm-debug.log
 npm-debug.log
