@@ -2,7 +2,7 @@ const Device = require('./device')
 const Component = require('./../component')
 const Expect = require('./../../utils/expect')
 const logger = require('./../../utils/logger')
-const { isValidName } = require('./../../utils')
+const { validation } = require('./../../utils')
 const { QueryDslMixin } = require('./../_mixins/query_dsl')
 
 /**
@@ -36,7 +36,7 @@ class DeviceComponent extends Component {
         if (this.devices[name]) {
             throw new Error(`Device with the name "${name}" already exists`)
         }
-        if (!isValidName(name)) {
+        if (!validation.isValidName(name)) {
             throw new Error(`Device name "${name} is not valid`);
         }
         this.devices[name] = new Device(this, name, attributes, capabilities)

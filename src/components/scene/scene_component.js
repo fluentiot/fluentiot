@@ -1,7 +1,7 @@
 const Component = require('./../component')
 const Scene = require('./scene')
 const logger = require('./../../utils/logger')
-const { isValidName } = require('./../../utils')
+const { validation } = require('./../../utils')
 
 /**
  * Scene component
@@ -32,7 +32,7 @@ class SceneComponent extends Component {
         if (this.scenes[name]) {
             throw new Error(`Scene with the name "${name}" already exists`)
         }
-        if (!isValidName(name)) {
+        if (!validation.isValidName(name)) {
             throw new Error(`Scene name "${name} is not valid`);
         }
         if (!callback) {

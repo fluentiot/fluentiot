@@ -1,6 +1,6 @@
 const dayjs = require('dayjs')
 const logger = require('./../../utils/logger');
-const { getDurationInMinutes } = require('./../../utils')
+const { datetime } = require('./../../utils')
 const { AttributeDslMixin } = require('./../_mixins/attribute_dsl');
 
 /**
@@ -63,7 +63,7 @@ class Room {
      * @returns {boolean}
      */
     vacancyDelay(duration) {
-        const parsed = getDurationInMinutes(duration)
+        const parsed = datetime.getDurationInMinutes(duration)
         if (parsed === false) {
             throw new Error(`Invalid duration "${duration}" passed to vacancyDelay`)
         }

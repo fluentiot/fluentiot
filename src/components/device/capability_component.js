@@ -1,6 +1,6 @@
 const Component = require('./../component')
 const logger = require('./../../utils/logger')
-const { isValidName } = require('./../../utils')
+const { validation } = require('./../../utils')
 
 /**
  * Capability component
@@ -34,7 +34,7 @@ class CapabilityComponent extends Component {
         if (!callback) {
             throw new Error(`Capability "${name}" requires a callback method`)
         }
-        if (!isValidName(name)) {
+        if (!validation.isValidName(name)) {
             throw new Error(`Capability name "${name} is not valid`)
         }
 

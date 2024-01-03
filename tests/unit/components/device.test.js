@@ -215,6 +215,7 @@ describe('Device capabilities', () => {
         expect(officeSwitch.switchOn()).toBe(true)
         expect(officeSwitch.switchOff()).toBe(false)
     })
+    
 })
 
 describe('Device triggers', () => {

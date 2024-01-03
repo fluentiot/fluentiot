@@ -2,7 +2,7 @@ const Component = require('./../component')
 const Room = require('./room')
 const logger = require('./../../utils/logger')
 const Expect = require('./../../utils/expect')
-const { isValidName } = require('./../../utils')
+const { validation } = require('./../../utils')
 const { QueryDslMixin } = require('./../_mixins/query_dsl')
 
 /**
@@ -37,7 +37,7 @@ class RoomComponent extends Component {
         if (this.rooms[name]) {
             throw new Error(`Room with the name "${name}" already exists`)
         }
-        if (!isValidName(name)) {
+        if (!validation.isValidName(name)) {
             throw new Error(`Room name "${name} is not valid`);
         }
         this.rooms[name] = new Room(this, name, attributes)

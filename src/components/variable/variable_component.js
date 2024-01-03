@@ -2,7 +2,7 @@ const dayjs = require('dayjs')
 const logger = require('./../../utils/logger')
 const Component = require('./../component')
 const Expect = require('./../../utils/expect')
-const { isValidName } = require('./../../utils')
+const { validation } = require('./../../utils')
 
 /**
  * Variable component
@@ -31,7 +31,7 @@ class VariableComponent extends Component {
      * @returns {boolean} - Returns true if the variable is set successfully, false otherwise.
      */
     set(name, value, options = {}) {
-        if (!isValidName(name)) {
+        if (!validation.isValidName(name)) {
             throw new Error(`Variable name "${name} is not valid`);
         }
 

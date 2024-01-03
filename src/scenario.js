@@ -1,4 +1,4 @@
-const { getDurationInMilliseconds } = require('./utils')
+const { datetime } = require('./utils')
 const logger = require('./utils/logger')
 
 /**
@@ -73,7 +73,7 @@ class Scenario {
      * @returns
      */
     suppressFor(duration) {
-        const parsed = getDurationInMilliseconds(duration)
+        const parsed = datetime.getDurationInMilliseconds(duration)
         if (parsed === false) {
             throw new Error(`Invalid duration "${duration}" passed to suppressFor`)
         }
