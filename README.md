@@ -33,7 +33,7 @@ The codebase comes with a `tuya` component which can serve as an example on othe
 ## Installation
 
 ```bash
-npm install fluent-iot
+npm install fluentiot
 ```
 
 ## Scenario Usage
@@ -174,6 +174,8 @@ scenario('using empty can be useful for debugging a scenario')
 
 Constraints are optional. Each component has it's own set of constraints and in the examples below they are using the `datetime` component. Multiple constraints can be used, creating constraint groups. Each constraint must have a `then()`.
 
+To test these examples add `.assert()` to the last chain of `scenario` call.
+
 ```javascript
 scenario('constraint triggers at 19:00 and checks if weekend')
     .when()
@@ -223,38 +225,58 @@ scenario('it will output this scenario description')
     })
     .assert()
 
-scenario('assert and triggers can return args to then()')
+const s = scenario('assert and triggers can return args to then()')
     .when()
         .empty()
     .then((_Scenario, colour1, colour2) => {
         console.log(`Colour 1: "${colour1}"`) //red
         console.log(`Colour 2: "${colour2}"`) //green
     })
-    .assert('red', 'green')
+s.assert('red', 'green')
 ```
+
+
+### Fetching a scenario by description
+Using `Fluent` you can fetch the scenario by its description.
+`Fluent.scenario` includes a mixin of the `Query DSL`. Fetching and asserting other scenarios can be useful for more nuanced routines. 
+
+```javascript
+scenario('fetch and run this')
+    .when()
+        .empty()
+    .then(() => console.log('It ran!'))
+
+Fluent.scenario.get('fetch and run this').assert()
+```
+
+
 
 
 ### Testing & debugging scenarios
 
-If a scenario is failing, one of the first steps is to investigate if it fails when it's the only scenario running. To run only one scenario temporarily modify its command to scenario only within the relevant code block.
+There are multiple ways to build and test a scenario.
+
+1. Using the `scenario.only()` so only this scenario runs
+2. Emitting events manually to trigger scenarios
+3. Using the `.assert()` method in the chain to force run
 
 ```javascript
-const { event } = require('fluentiot')
+const { scenario, event } = require('fluentiot')
 
 scenario.only('this is the only scenario that will run')
     .when()
         .time.is('18:00')
-    .then(() => { console.log('it ran') })
+    .then(() => console.log('it ran'))
 
 event.emit('time', '18:00')
 ```
 
 To skip the triggers entirely use an `assert`.
 ```javascript
-scenario.only('skipping the triggers using assert')
+scenario('skipping the triggers using assert')
     .when()
         .time.is('18:00')
-    .then(() => { console.log('it ran') })
+    .then(() => console.log('it ran'))
     .assert()
 ```
 
@@ -270,18 +292,18 @@ To handle asynchronous add `async` to the `then` method.
 
 An example using the `delay` utility and `async`.
 ```javascript
-const { delay } = require('../src/utils')
+const { scenariom utils } = require('fluentiot')
 
 scenario('Countdown')
     .when()
         .empty()
     .then(async () => {
         console.log('3')
-        await delay(1000)
+        await utils.delay(1000)
         console.log('2')
-        await delay(1000)
+        await utils.delay(1000)
         console.log('1')
-        await delay(1000)
+        await utils.delay(1000)
         console.log('Go!')
     })
     .assert()
@@ -292,10 +314,11 @@ scenario('Countdown')
 
 ## Day API
 
+FluentIoT primarily uses [dayjs](https://github.com/iamkun/dayjs) for handling dates. For testing it's preferable to use [mockdate](https://github.com/boblauer/MockDate) to manipulate the date.
+
 ### Methods
 
 #### `day.is(targetDay: string | array)`
-
 Supports a single argument or multiple arguments for multiple days.
 
 Supported values: `weekend, weekday, monday, mon, tuesday, tue, wednesday, wed, thursday, thu, friday, fri, saturday, sat, sunday, sun`.
@@ -309,7 +332,28 @@ console.log(day.is(['Sat','Sun']) ? 'Weekend' : 'Weekday')
 
 
 #### `day.between(targetStart: string, targetEnd: string)`
+Returns `true` or `false` if the current date is between two other dates.
 
+```javascript
+day.between('1st May', '7th May')
+day.between('2024-05-01', '2024-05-31')
+
+// Will check over multiple years
+day.between('Dec 20', 'Jan 2')
+```
+
+| Date Format   | Description                                       |
+| ------------- | ------------------------------------------------- |
+| `1st May`      | Represents a specific day and month.              |
+| `5 May`        | Represents a specific day in May.                 |
+| `May 5th`      | Represents a specific day in May.                 |
+| `May 5`        | Represents a specific day and month.              |
+| `2023-12-31`   | Represents a specific date in the YYYY-MM-DD format. |
+| `January 15`   | Represents a specific day in January.             |
+| `15th January` | Represents a specific day in January.             |
+| `12/31/2023`   | Represents a specific date in MM/DD/YYYY format.  |
+| `31 Dec 2023`  | Represents a specific date in DD MMM YYYY format. |
+| `Dec 31 2023`  | Represents a specific date in MMM DD YYYY format. |
 
 
 ### Triggers
@@ -333,10 +377,6 @@ scenario('Only on Saturday at 7am')
 ### Constraints
 
 #### `.day.is(string | array)`
-
-Supports a single argument or multiple arguments for multiple days.
-
-Supported arguments: `weekend, weekday, monday, mon, tuesday, tue, wednesday, wed, thursday, thu, friday, fri, saturday, sat, sunday, sun`.
 
 ```javascript
 scenario('Only on a Saturday')
@@ -377,8 +417,6 @@ scenario('Weekends or weekdays')
 
 #### `.day.between(start: string, end: string)`
 
-Checking if the current date is between two dates.
-
 ```javascript
 scenario('First week of May')
     .when()
@@ -411,18 +449,7 @@ scenario('Only May 2024')
     .assert()
 ```
 
-| Date Format   | Description                                       |
-| ------------- | ------------------------------------------------- |
-| `1st May`      | Represents a specific day and month.              |
-| `5 May`        | Represents a specific day in May.                 |
-| `May 5th`      | Represents a specific day in May.                 |
-| `May 5`        | Represents a specific day and month.              |
-| `2023-12-31`   | Represents a specific date in the YYYY-MM-DD format. |
-| `January 15`   | Represents a specific day in January.             |
-| `15th January` | Represents a specific day in January.             |
-| `12/31/2023`   | Represents a specific date in MM/DD/YYYY format.  |
-| `31 Dec 2023`  | Represents a specific date in DD MMM YYYY format. |
-| `Dec 31 2023`  | Represents a specific date in MMM DD YYYY format. |
+
 
 
 ---
@@ -430,6 +457,19 @@ scenario('Only May 2024')
 ## Time API
 
 The Time component in Fluent IoT allows you to incorporate time-related functionalities into your IoT scenarios. It supports triggers such as the current time and repeating schedules.
+
+### Methods
+
+#### `time.between(start_time: string, end_time: string)`
+
+Checking if the scenario was triggered between two times. It can also support times crossing over midnight.
+
+```javascript
+time.between('05:00', '12:00')
+time.between('23:01', '04:59')
+```
+
+
 
 ### Triggers
 
@@ -456,10 +496,12 @@ event.emit('time', '07:00')
 #### `.time.every(expression: string)`
 
 Repeating the trigger at set intervals.
+
 Supports seconds (`sec, second, seconds`), minutes (`min, minute, minutes`) and hours (`hr, hour, hours`). If an invalid format is entered an error will be thrown.
 
 ```javascript
-scenario('Triggers every second')
+// suppressFor param set to 0 so the call is not throttled
+scenario('Triggers every second', { suppressFor:0 })
     .when()
         .time.every('1 second')
     .then((Scenario) => {
@@ -484,8 +526,6 @@ scenario('Triggers 12 hours')
 ### Constraints
 
 #### `.time.between(start_time: string, end_time: string)`
-
-Checking if the scenario was triggered between two times. It can also support times crossing over midnight.
 
 ```javascript
 scenario('Between times')
@@ -559,12 +599,12 @@ scenario('Runs every second')
 
 ## Device API
 
-### Management
+### Methods
 
 The `device` and typically `capability` components must be included for management.
 
 ```javascript
-const { device, capability } = require('fluent-iot')
+const { scenario, device, capability } = require('fluentiot')
 ```
 
 #### `device.add(name: string, attributes: object, capabilities: array)`
@@ -647,26 +687,27 @@ matchedDevice.switchOn()
 
 
 
-#### `device.findAllByAttribute(attributeName: string, attributeValue: any)`
+#### Finding devices
 
-Query devices based on a specific attribute and its corresponding value.
+Devices includes the `Query DSL` mixin to let you find, list and count the created devices. See the `Query DSL` for a more exhaustive list.
+
+An example of using the `Query DSL` to find devices based on a specific attribute and its corresponding value.
 
 ```javascript
-//Capability for the switch
-capability.add('switchOn', (device) => {
-    const deviceId = device.attribute.get('id')
-    console.log(`Make API call to Tuya to switch device ${deviceId} on`)
+device.add('officeLedMonitor', { id: '111', group: 'office' })
+device.add('officeLedDesk', { id: '222', group: 'office' })
+
+const devices = device.find('attributes', { 'group': 'office' })
+devices.forEach((dev) => {
+    console.log(dev.name)
 })
 
-//Grouped devices
-device.add('officeLedMonitor', { id: '111', group: 'office' }, ['@switchOn'])
-device.add('officeLedDesk', { id: '222', group: 'office' }, ['@switchOn'])
+//Find just one device
+const dev = device.findOne('attributes', { id: '111' })
+console.log(dev.name)
 
-//Switch on devices that match this attribute group value
-const devices = device.findAllByAttribute('group', 'office')
-devices.forEach((currentDevice) => {
-    currentDevice.switchOn()
-})
+//Count devices
+console.log(device.count())
 ```
 
 ### Triggers
@@ -682,13 +723,13 @@ device.add('officeSwitch', { state: false })
 
 scenario('Detect when a switch is turned on')
     .when()
-        .device('officeSwitch').attribute('state').isTruthy()
+        .device('officeSwitch').expect('state').is(true)
     .then(() => {
         console.log('Office switch is now on')
     })
 
 //Attribute updated by IoT gateway
-device.get('officeSwitch').attribute.set('state', true)
+device.get('officeSwitch').attribute.update('state', true)
 ```
 
 ### Events
@@ -699,6 +740,20 @@ device.get('officeSwitch').attribute.set('state', true)
 
 ---
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Capability API
 
 Capabilities are exclusive to devices within the Fluent IoT framework.
@@ -707,14 +762,14 @@ Consider an LED light that possesses various capabilities, such as turning on, t
 
 Capabilities can be shared across multiple devices making it a reusable component. It is also serves as a bridge from the framework to your IoT service device manager.
 
-### Management
+### Methods
 
 The `capability` component must be included for management.
 
 When referencing capabilities in devices prefix the capability with an `@` symbol.
 
 ```javascript
-const { capability } = require('fluent-iot')
+const { scenario, capability } = require('fluentiot')
 ```
 
 #### `capability.add(name: string, object: callback)`
@@ -746,18 +801,30 @@ device.get('officeLedMonitor').switchOn()
 device.get('officeLedDesk').switchOn()
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+
 ---
 
 ## Event API
 
-The `event` component is the central bus for all triggers. It uses the native [NodeJS event emitter](https://nodejs.org/api/events.html) and aliases `emit` and `on`.
+The `event` component is the central bus for most scenario triggers. It uses the native [NodeJS event emitter](https://nodejs.org/api/events.html) and aliases `emit` and `on`.
 
-### Management
+### Methods
 
 The `event` component must be included for management.
 
 ```javascript
-const { event } = require('fluent-iot')
+const { scenario, event } = require('fluentiot')
 ```
 
 #### `.event.emit(eventName: string[, ...args]);`
@@ -817,6 +884,17 @@ event.emit('colour', 'green')
 event.emit('colour', 'blue')
 ```
 
+
+
+
+
+
+
+
+
+
+
+
 ---
 
 ## Room API
@@ -825,12 +903,12 @@ Rooms serve as a component for managing room occupancy, especially when relying 
 
 It is important to read the `updatePresence` API to understand how to fully manage occupancy.
 
-### Management
+### Methods
 
 The `room` component must be included for management.
 
 ```javascript
-const { room } = require('fluent-iot')
+const { scenario, room } = require('fluentiot')
 ```
 
 #### `room.add(name: string, attributes: object)`
@@ -865,7 +943,11 @@ const living = room.add('living')
 console.log(living.name) //"living"
 ```
 
-#### `room.get(name: string).isOccupied()`
+
+### Methods for room objects
+
+
+#### `<room>.isOccupied()`
 
 Returns `true` if occupied or `false` if vacant.
 
@@ -880,7 +962,7 @@ console.log(office.isOccupied()) //false
 ```
 
 
-#### `room.get(name: string).addPresenceSensor(device: Device, expectedKey: string, expectedValue:string)`
+#### `<room>.addPresenceSensor(device: Device, expectedKey: string, expectedValue:string)`
 Adding an existing sensor to a room for presence detection. This is a preferred method than using the more manual `updatePresence`.
 
 ```javascript
@@ -1067,7 +1149,7 @@ scenario('Checking if vacant')
 The `scene` component must be included for management.
 
 ```javascript
-const { scene } = require('fluent-iot')
+const { scene } = require('fluentiot')
 ```
 
 #### `scene.add(name: string, callback: object)`
@@ -1120,7 +1202,7 @@ scene.run('cool') //"cool"
 The `variable` component must be included for management.
 
 ```javascript
-const { variable } = require('fluent-iot')
+const { variable } = require('fluentiot')
 ```
 
 #### `variable.set(name: string, value: any, options: Object)`

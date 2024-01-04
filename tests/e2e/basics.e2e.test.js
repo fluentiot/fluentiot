@@ -2,7 +2,7 @@
 jest.mock('./../../src/utils/logger')
 jest.useFakeTimers()
 
-const { Fluent, event, scenario, variable } = require('./../../index')
+const { Fluent, event, scenario, variable, device } = require('./../../index')
 
 describe('Scenario creation basics', () => {
 

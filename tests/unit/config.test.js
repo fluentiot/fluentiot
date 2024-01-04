@@ -1,6 +1,8 @@
 const fs = require('fs');
 jest.mock('fs');
 
+jest.spyOn(console, 'warn').mockImplementation(() => {})
+
 const { Config } = require('./../../src/config');
 
 jest.mock('./../../src/utils/logger', () => ({
@@ -15,6 +17,7 @@ let originalCwd;
 beforeAll(() => {
     originalCwd = process.cwd;
     process.cwd = jest.fn(() => '/path/to/project');
+
 });
 
 afterAll(() => {

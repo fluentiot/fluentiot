@@ -67,16 +67,14 @@ describe('TuyaComponent', () => {
     })
 
     it('afterLoad loads the devices', () => {
-        tuyaComponent.setup = jest.fn();
         tuyaComponent.afterLoad();
 
         expect(tuyaComponent.getComponent).toHaveBeenCalledWith('event');
         expect(tuyaComponent.getComponent).toHaveBeenCalledWith('device');
-        expect(tuyaComponent.setup).toHaveBeenCalled()
     })
 
     it('setup sets up the open api', async () => {
-        await tuyaComponent.setup();
+        await tuyaComponent.start();
 
         // Open API should have been created
         expect(TuyaOpenApi).toHaveBeenCalledWith(
@@ -137,7 +135,7 @@ describe('TuyaComponent', () => {
                 }
             ]
         };
-        await tuyaComponent.setup();
+        await tuyaComponent.start();
 
         // call this.tuyaMqtt.add_message_listener
         const success = messageListenerCallback({ data: JSON.stringify(data) });

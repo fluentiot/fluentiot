@@ -36,8 +36,6 @@ class TuyaComponent extends Component {
         this.Event = this.getComponent('event');
         this.Device = this.getComponent('device');
 
-        this.setup();
-
         this.Event.on('tuya.data', (passed) => {
             this.receivedData(passed);
         });
@@ -46,7 +44,7 @@ class TuyaComponent extends Component {
     /**
      * Setup auth and MQTT connections to Tuya
      */
-    async setup() {
+    async start() {
         const settings = {
             auth_type: 'smart',
             hostname: config.get('tuya.base_url'),
