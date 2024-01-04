@@ -597,11 +597,18 @@ scenario('Runs every second')
 
 ---
 
+
+
+
+
+
+
+
 ## Device API
 
 ### Methods
 
-The `device` and typically `capability` components must be included for management.
+The `device` and `capability` components must be included for management.
 
 ```javascript
 const { scenario, device, capability } = require('fluentiot')
@@ -689,9 +696,9 @@ matchedDevice.switchOn()
 
 #### Finding devices
 
-Devices includes the `Query DSL` mixin to let you find, list and count the created devices. See the `Query DSL` for a more exhaustive list.
+Devices includes the [Query DSL](#query-dsl) mixin to let you find, list and count the created devices. See the Query DSL for a more exhaustive list.
 
-An example of using the `Query DSL` to find devices based on a specific attribute and its corresponding value.
+An example of using the Query DSL to find devices based on a specific attribute and its corresponding value.
 
 ```javascript
 device.add('officeLedMonitor', { id: '111', group: 'office' })
@@ -926,7 +933,7 @@ room.add('living', { occupied: true })
 console.log(room.get('living').isOccupied()) //True
 
 //Updating the default duration to be occupied after receiving a 'false' occupancy sensor value
-const playroom = room.add('playroom', { thresholdDuration: 5 })
+const playroom = room.add('playroom', { vacancyDelay: 5 })
 ```
 
 #### `room.get(name: string)`
@@ -971,11 +978,11 @@ const living = room.add('living')
 living.addPresenceSensor(livingPir, 'pir', true)
 ```
 
-In the above example this will listen to the attribute `pir` for the `livingPir` device. If the attribute is updated to `true` the room presence will be updated. If the value is anything other than `true`, e.g. `false` then the presence is updated and the room `thresholdDuration` will update the occupancy.
+In the above example this will listen to the attribute `pir` for the `livingPir` device. If the attribute is updated to `true` the room presence will be updated. If the value is anything other than `true`, e.g. `false` then the presence is updated and the room `vacancyDelay` will update the occupancy.
 
 ```javascript
 const livingPir = device.add('livingPir')
-const living = room.add('living', { thresholdDuration: 0 })
+const living = room.add('living', { vacancyDelay: 0 })
 living.addPresenceSensor(livingPir, 'sensor', true)
 
 scenario('Living lights on when occupied')
@@ -1004,25 +1011,25 @@ livingPir.attribute.update('sensor', false)
 
 #### `room.get(name: string).updatePresence(sensorValue: boolean)`
 
-The presence should be called on a room sensor's value (e.g. PIR sensor). This will use the `thresholdDuration` option used in the `room.add()` API.
+The presence should be called on a room sensor's value (e.g. PIR sensor). This will use the `vacancyDelay` option used in the `room.add()` API.
 
 This method is a more manual method. It's recommended to use `addPresenceSensor` method if possible.
 
 ```javascript
-// The default thresholdDuration is 15 minutes
+// The default vacancyDelay is 15 minutes
 room.add('living')
 
 // After 5 minutes of the room not having a positive sensor value the room will become vacant
-room.add('office', { thresholdDuration: 5 })
+room.add('office', { vacancyDelay: 5 })
 
 // To ignore the threshold set it to 0
-room.add('pantry', { thresholdDuration: 0 })
+room.add('pantry', { vacancyDelay: 0 })
 ```
 
 Using this API with a scenario and simulating device updates.
 
 ```javascript
-room.add('office', { thresholdDuration: 5 })
+room.add('office', { vacancyDelay: 5 })
 device.add('officePir')
 
 //Listening to PIR updates

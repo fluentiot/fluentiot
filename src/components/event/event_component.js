@@ -80,11 +80,12 @@ class EventComponent extends Component {
             event: (eventName) => {
                 return {
                     on: (eventValue) => {
-                        this.on(eventName, (emittedValue) => {
-                            if (eventValue && eventValue !== emittedValue) {
+                        this.on(eventName, (...args) => {
+                            // If eventValue is defined, only trigger if it matches
+                            if (eventValue && eventValue !== args[0]) {
                                 return
                             }
-                            scope.assert(eventName)
+                            scope.assert(...args)
                         })
                         return scope
                     },

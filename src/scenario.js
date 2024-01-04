@@ -97,8 +97,8 @@ class Scenario {
         this.triggers.then = (callback) => {
             return this.then(callback)
         }
-        this.triggers.assert = () => {
-            this.assert()
+        this.triggers.assert = (...args) => {
+            this.assert(...args)
         }
 
         //Component triggers
