@@ -156,7 +156,7 @@ room.add('office')
 scenario('18:00, sensor is true or room is occupied')
     .when()
         .time.is('18:00')
-        .device('pir').expect('sensor').is(true)
+        .device('pir').attribute('sensor').is(true)
         .room('office').isOccupied()
     .then(() => {})
 
@@ -730,7 +730,7 @@ device.add('officeSwitch', { state: false })
 
 scenario('Detect when a switch is turned on')
     .when()
-        .device('officeSwitch').expect('state').is(true)
+        .device('officeSwitch').attribute('state').is(true)
     .then(() => {
         console.log('Office switch is now on')
     })
@@ -980,6 +980,8 @@ living.addPresenceSensor(livingPir, 'pir', true)
 
 In the above example this will listen to the attribute `pir` for the `livingPir` device. If the attribute is updated to `true` the room presence will be updated. If the value is anything other than `true`, e.g. `false` then the presence is updated and the room `vacancyDelay` will update the occupancy.
 
+In this example setting `vacancyDelay` to `0` will set the room immediately to vacant once the PIR sensor returns a `false` value. In most cases, unless it's a high quality human presence sensor you will want to set the `vacancyDelay` to about `15 minutes`.
+
 ```javascript
 const livingPir = device.add('livingPir')
 const living = room.add('living', { vacancyDelay: 0 })
@@ -1009,11 +1011,9 @@ livingPir.attribute.update('sensor', false)
 
 
 
-#### `room.get(name: string).updatePresence(sensorValue: boolean)`
+#### `<room>.updatePresence(sensorValue: boolean)`
 
-The presence should be called on a room sensor's value (e.g. PIR sensor). This will use the `vacancyDelay` option used in the `room.add()` API.
-
-This method is a more manual method. It's recommended to use `addPresenceSensor` method if possible.
+This method is a manual method for handling presence. It's recommended to use `addPresenceSensor`.
 
 ```javascript
 // The default vacancyDelay is 15 minutes
@@ -1022,13 +1022,15 @@ room.add('living')
 // After 5 minutes of the room not having a positive sensor value the room will become vacant
 room.add('office', { vacancyDelay: 5 })
 
-// To ignore the threshold set it to 0
+// To ignore the delay set it to 0
 room.add('pantry', { vacancyDelay: 0 })
 ```
 
 Using this API with a scenario and simulating device updates.
 
 ```javascript
+const { room, device, scenario } = require('fluentiot')
+
 room.add('office', { vacancyDelay: 5 })
 device.add('officePir')
 
@@ -1145,13 +1147,25 @@ scenario('Checking if vacant')
         })
     .assert()
 ```
-
-
 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Scene API
 
-### Management
+### Methods
 
 The `scene` component must be included for management.
 
@@ -1165,7 +1179,6 @@ Creating a scene that can be referenced and reused in scenarios.
 
 ```javascript
 scene.add('cool', () => {
-    //device.get('light').switchOn()
     console.log('Cool scene activated')
 })
 
@@ -1175,6 +1188,7 @@ scenario('Cool scene')
     .then(() => {
         scene.get('cool').run()
     })
+    .assert()
 ```
 
 #### `scene.get(name: string)`
@@ -1202,9 +1216,21 @@ scene.run('cool') //"cool"
 
 ---
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## Variable API
 
-### Management
+### Methods
 
 The `variable` component must be included for management.
 
@@ -1273,7 +1299,7 @@ variable.set('colour', 'blue');
 If a variable is updated to any value.
 
 ```javascript
-scenario('Variable was updated')
+scenario('Variable was updated', { suppressFor:0 })
     .when()
         .variable('security').updated()
     .then(() => {
@@ -1288,7 +1314,7 @@ variable.set('security', false)
 Variable constraints are an extension of the [Expect API](#expect-api).
 
 ```javascript
-scenario('Output the level based on variable value updates')
+scenario('Output the level based on variable value updates', { suppressFor: 0 })
     .when()
         .variable('level').updated()
     .constraint()
@@ -1316,9 +1342,18 @@ variable.set('level', 5)
 
 ---
 
+
+
+
+
+
+
+
+
+
 ## Expect API
 
-The expect `component` is based on [Jest's expect](https://jestjs.io/docs/expect) meaning it should be a fimilar syntax to most developers.
+The expect `component` is loosely based on [Jest's expect](https://jestjs.io/docs/expect) meaning it should be a fimilar syntax to most developers.
 
 Typically expect appends the matchers with `toBe<>`. The matchers can be used with this syntax but for a better context with this framework they start with `is<>`.
 
@@ -1465,11 +1500,17 @@ scenario('matches')
 
 
 
+
+
+
 ---
 
 ## Logging API
 
+Logging utility method will replaced with an existing logging package (possibly Winston).
+
 ```javascript
+const { logger } = require('fluentiot')
 logger.info(`Turning on living room lights`)
 ```
 
@@ -1529,7 +1570,7 @@ const config = {
 
 
 
-### Management
+### Methods
 
 #### `logger.<type>(message: string[, string component])`
 
@@ -1556,6 +1597,14 @@ logger.ignore('temperature');
 ---
 
 
+## Contributing
+
+Bug reports, bug fixes, improvements and new components.
+
+This project is still very beta so any help is welcomed!
+
+
+
 ## License
 
-Fluent IoT is licenses under a [MIT License](./LICENSE).
+Fluent IoT is licensed under [MIT License](./LICENSE).

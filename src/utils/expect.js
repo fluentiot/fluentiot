@@ -143,7 +143,19 @@ class Expect {
      * @returns {boolean} - True if the value contains the expected value; false otherwise.
      */
     _toContain(expected) {
-        const result = this.value.includes(expected)
+        let checkArr = null
+        let checkStr = null
+
+        if (Array.isArray(this.value)) {
+            checkArr = this.value
+            checkStr = expected
+        }
+        else {
+            checkArr = expected
+            checkStr = this.value
+        }
+
+        const result = checkArr.includes(checkStr)
         return this.negate ? !result : result
     }
 

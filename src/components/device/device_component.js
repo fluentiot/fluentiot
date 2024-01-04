@@ -80,7 +80,7 @@ class DeviceComponent extends Component {
                         this._match('isNot', scope, device, attributeName, true)
                         return scope
                     },
-                    expect: (attributeName) => {
+                    attribute: (attributeName) => {
                         return {
                             is: (attributeValue) => {
                                 this._match('is', scope, device, attributeName, attributeValue)
