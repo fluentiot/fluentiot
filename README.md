@@ -106,7 +106,8 @@ This API includes working examples.
 -   [Room API](#room-api)
 -   [Scene API](#scene-api)
 -   [Variable API](#variable-api)
--   [Attributes API](#attributes-api)
+-   [Attributes DSL API](#attributes-dsl-api)
+-   [Query DSL API](#query-dsl-api)
 -   [Logging API](#Logging-api)
 
 ---
@@ -238,7 +239,7 @@ s.assert('red', 'green')
 
 ### Fetching a scenario by description
 Using `Fluent` you can fetch the scenario by its description.
-`Fluent.scenario` includes a mixin of the `Query DSL`. Fetching and asserting other scenarios can be useful for more nuanced routines. 
+`Fluent.scenario` includes a mixin of the [Query DSL](#query-dsl-api). Fetching and asserting other scenarios can be useful for more nuanced routines. 
 
 ```javascript
 scenario('fetch and run this')
@@ -696,7 +697,7 @@ matchedDevice.switchOn()
 
 #### Finding devices
 
-Devices includes the [Query DSL](#query-dsl) mixin to let you find, list and count the created devices. See the Query DSL for a more exhaustive list.
+Devices includes the [Query DSL](#query-dsl-api) mixin to let you find, list and count the created devices. See the Query DSL for a more exhaustive list.
 
 An example of using the Query DSL to find devices based on a specific attribute and its corresponding value.
 
@@ -719,7 +720,7 @@ console.log(device.count())
 
 ### Triggers
 
-Device triggers are an extension of the [Attributes DSL](#attributes-api) and [Expect DSL](#expect-api).
+Device triggers are an extension of the [Attributes DSL](#attributes-dsl-api) and [Expect DSL](#expect-api).
 
 #### `.device(name: string).attribute(attributeName: string).is(value: any)`
 
@@ -1494,12 +1495,97 @@ scenario('matches')
 
 ---
 
-## Attributes API
+## Attributes DSL API
 
-### Management
+Attribute DSL module provides methods for managing attributes associated with an object.
+
+### Methods
+
+| Method           | Description                                                      | Returns   |
+|------------------|------------------------------------------------------------------|-----------|
+| `get`            | Get the value of a specific attribute.                           | Attribute value or null if not defined. |
+| `set`            | Set the value of a specific attribute.                           | `true` if successful. |
+| `update`         | Update the value of a specific attribute.                        | None      |
 
 
 
+### Examples
+
+```javascript
+const { device, event } = require('fluentiot')
+
+const pir = device.add('pir1')
+
+// Set will not trigger an event
+pir.attribute.set('name', 'Above TV')
+
+// Update triggers an event that can be used in scenarios
+event.on('device.pir1.attribute', (data) => { console.log(`${data.name} updated to ${data.value}`) })
+pir.attribute.update('name', 'Entrance')
+
+// Get an attribute
+console.log(pir.attribute.get('name'))
+```
+
+
+---
+
+
+
+
+
+
+
+
+
+
+
+## Query DSL API
+
+Query DSL module provides a set of methods for querying and manipulating data using a DSL (Domain-Specific Language) approach.
+
+It included for scenarios, components, devices, rooms
+
+### Methods
+
+| Method           | Description                                                     | Returns                                           |
+|------------------|-----------------------------------------------------------------|---------------------------------------------------|
+| `find`           | Find elements in the dataSource that match the query.          | Array of matching elements. Null if no matches.   |
+| `findOne`        | Get the first element in the dataSource that matches the query. | The first matching element. Null if no matches.    |
+| `get`            | Alias for `findOne` | The first matching element. Null if no matches.    |
+| `count`          | Get the total count of elements in the dataSource.              | Total count of elements.                           |
+| `list`           | Get the entire dataSource or null if it's empty.               | Entire dataSource or null if empty.               |
+
+
+### Examples
+
+```javascript
+const { device } = require('fluentiot')
+
+device.add('pir1', { id:111, group:'living', name:'Above TV' })
+device.add('pir2', { id:222, group:'living', name:'Entrance' })
+
+// There are 2 devices
+console.log(`There are ${device.count()} devices`)
+
+// There are 2 living room devices
+const livingRoomDeviceCount = device.find('attributes', { group:'living' }).length
+console.log(`There are ${livingRoomDeviceCount} living room devices`)
+
+// Entrance device id is 222
+const entranceDeviceId = device.findOne('attributes', { name:'Entrance' }).attribute.get('id')
+console.log(`Entrance device id is ${entranceDeviceId}`)
+
+// Pir1 name is "Above TV"
+const pir1Name = device.get('pir1').attribute.get('name')
+console.log(`Pir1 name is "${pir1Name}"`)
+
+// List of all devices
+const list = device.list()
+Object.keys(list).forEach(key => {
+    console.log(`Device ${key} is ${list[key].attribute.get('name')}`)
+})
+```
 
 
 

@@ -1,12 +1,13 @@
 {
-    "name": "fluent-iot",
+    "name": "fluentiot",
     "version": "0.1.0",
     "description": "Fluent IoT - The Programmer's IoT Framework",
     "main": "index.js",
     "keywords": [
         "fluent",
         "IoT",
-        "framework"
+        "framework",
+        "home automation"
     ],
     "author": "Darren Moore",
     "license": "MIT",
