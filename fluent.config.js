@@ -17,7 +17,7 @@ const config = {
         },
     },
     tuya: {
-        uid: '',
+        uid: "",
         base_url: 'https://openapi.tuyaus.com',
         access_key: '',
         secret_key: '',

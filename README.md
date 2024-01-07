@@ -2,7 +2,7 @@
 <h1 align="center">Fluent IoT</h1>
 <p align="center">The Programmers IoT Framework</p>
 
-> Fluent IoT is a NodeJS framework designed to streamline IoT development. Offering a fluent and intuitive domain-specific language (DSL), this framework enables developers to craft human-readable scenarios for precise control over IoT devices.
+> Fluent IoT is an experimental NodeJS framework designed to streamline IoT development. Offering a fluent and intuitive domain-specific language (DSL), this framework enables developers to craft human-readable scenarios for precise control over IoT devices.
 
 ```javascript
 scenario('At 6:00pm turn on the gate lights')
@@ -30,11 +30,115 @@ Fluent IoT is designed to work with your own IoT devices. Users are required to 
 The codebase comes with a `tuya` component which can serve as an example on other integrations. If you are already using tuya you can configure the access and start using it out of the box.
 
 
-## Installation
+## Getting Started
+
+### Installation
 
 ```bash
+# Install fluentiot module
 npm install fluentiot
+
+# Copy the config file
+cp ./node_modules/fluentiot/fluent.config.js .
+
+# Create entry file
+touch index.js
 ```
+
+
+### Setting up Tuya
+
+This only applies if you are already using Tuya devices. The setup is similar to [Home Assistant Tuya Integration](https://www.home-assistant.io/integrations/tuya/).
+
+Once you have created a Cloud project edit the `fluent.config.js` and enter the information under the `tuya` key.
+
+To test the connection run the following script.
+
+```bash
+node node_modules/fluentiot/tools/tuya_openapi_tester.js
+```
+
+Then to enable Tuya in your `fluent.config.js` uncomment the "tuya" component.
+It's typically a good idea to start testing with an IoT button.
+
+```javascript
+// index.js
+const { tuya } = require('fluentiot')
+tuya.start()
+```
+
+Run the app, it will make a connection to Tuya and if successful will start showing IoT device updates.
+Devices will be shown as "Unknown" unless they have been mapped with `device`.
+
+```bash
+Device "Unknown" (eb71d1838f9911d53a5jay) sent a payload: {"1":"single_click","code":"switch1_value","t":1704519397,"value":"single_click"}
+```
+
+Now we have the button device id (`eb71d1838f9911d53a5jay`) and the payload we can construct the first scenario.
+
+```javascript
+// index.js
+const { tuya, device, scenario } = require('fluentiot')
+
+// Create button with the ID and make sure it's stateless (a switch will be stateful)
+device.add('button', { id:'eb71d1838f9911d53a5jay', stateless: true })
+
+// Based on the payload we can now listen to the device update
+scenario('button pressed')
+    .when()
+        .device('button').attribute('switch1_value').is('single_click')
+    .then(() => {
+        console.log('button pressed')
+    })
+
+// Start tuya connection
+tuya.start()
+```
+
+Restarting the app and pressing the button should output "button pressed" if everything was entered correctly.
+Pay attention to the payload received as there are many inconsistencies between Tuya devices.
+
+
+
+### Recommended structure
+
+Example of `index.js`
+
+```javascript
+// index.js
+const { tuya } = require('fluentiot');
+
+// Setup
+require('./setup/rooms');
+require('./setup/capabilities');
+require('./setup/devices');
+
+// Scenarios
+require('./scenarios/living');
+require('./scenarios/office');
+require('./scenarios/pantry');
+
+// Start some services
+tuya.start()
+```
+
+Recommended directory structure.
+
+```bash
+./index.js
+./app/scenarios/
+        /living.js
+        /office.js
+        /pantry.js
+./app/setup/
+        /capabilities.js
+        /devices.js
+        /rooms.js
+```
+
+
+
+
 
 ## Scenario Usage
 
