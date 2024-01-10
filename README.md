@@ -2,7 +2,7 @@
 <h1 align="center">Fluent IoT</h1>
 <p align="center">The Programmers IoT Framework</p>
 
-> Fluent IoT is an experimental NodeJS framework designed to streamline IoT development. Offering a fluent and intuitive domain-specific language (DSL), this framework enables developers to craft human-readable scenarios for precise control over IoT devices.
+> Fluent IoT is an experimental NodeJS IoT framework designed to give you as much control with your IoT development whilst maintaining DRY principles. Offering a fluent and intuitive domain-specific language (DSL), this framework enables developers to craft human-readable scenarios for precise control over IoT devices.
 
 ```javascript
 scenario('At 6:00pm turn on the gate lights')
@@ -14,7 +14,7 @@ scenario('At 6:00pm turn on the gate lights')
 ```
 
 * 🤖 Familiar Jest API & BDD patterns
-* 🧩 Extensive Trigger & Constraint Library
+* 🧩 Trigger & Constraint Library
 * 🚀 Seamless Integration with Existing IoT Devices
 * 📝 Human-Readable Scenario Creation
 * 🛠️ Extensible and Customizable
@@ -27,7 +27,7 @@ scenario('At 6:00pm turn on the gate lights')
 
 Fluent IoT is designed to work with your own IoT devices. Users are required to connect their devices to the code using the provided `device` component interface.
 
-The codebase comes with a `tuya` component which can serve as an example on other integrations. If you are already using tuya you can configure the access and start using it out of the box.
+The codebase comes with a `tuya` component which can serve as an example on other integrations. If you are already using tuya you can configure the access and start using it out of the box. Guide on getting started with Tuya is documented below.
 
 
 ## Getting Started
@@ -52,13 +52,15 @@ This only applies if you are already using Tuya devices. The setup is similar to
 
 Once you have created a Cloud project edit the `fluent.config.js` and enter the information under the `tuya` key.
 
+#### Testing the connection
 To test the connection run the following script.
 
 ```bash
 node node_modules/fluentiot/tools/tuya_openapi_tester.js
 ```
 
-Then to enable Tuya in your `fluent.config.js` uncomment the "tuya" component.
+#### Monitoring for first IoT device update
+In `fluent.config.js` uncomment the "tuya" component.
 It's typically a good idea to start testing with an IoT button.
 
 ```javascript
@@ -74,6 +76,7 @@ Devices will be shown as "Unknown" unless they have been mapped with `device`.
 Device "Unknown" (eb71d1838f9911d53a5jay) sent a payload: {"1":"single_click","code":"switch1_value","t":1704519397,"value":"single_click"}
 ```
 
+#### Building first scenario
 Now we have the button device id (`eb71d1838f9911d53a5jay`) and the payload we can construct the first scenario.
 
 ```javascript
@@ -81,7 +84,7 @@ Now we have the button device id (`eb71d1838f9911d53a5jay`) and the payload we c
 const { tuya, device, scenario } = require('fluentiot')
 
 // Create button with the ID and make sure it's stateless (a switch will be stateful)
-device.add('button', { id:'eb71d1838f9911d53a5jay', stateless: true })
+device.add('button', { id:'eb71d1838f9911d53a5jay', stateful: false })
 
 // Based on the payload we can now listen to the device update
 scenario('button pressed')
@@ -97,6 +100,63 @@ tuya.start()
 
 Restarting the app and pressing the button should output "button pressed" if everything was entered correctly.
 Pay attention to the payload received as there are many inconsistencies between Tuya devices.
+
+
+#### Turning on and off a light with the button
+
+The next example will use the Tuya connection, the button and your IoT light.
+
+Components used are:
+
+| Component      | Description                 |
+| ------------- | --------------------------- |
+| `tuya`  | To connect to tuya cloud to send and receive commands to your IoT devices |
+| `device`  | Creation of devices referencing your Tuya id's |
+| `capability`  | Giving the ability for a device to send a command to Tuya |
+| `scenario`  | Create a test routine |
+| `variable`  | Using a true/false variable for testing |
+| `logger`  | To log the output in a standard format |
+
+```javascript
+const { tuya, device, capability, scenario, variable, logger } = require('fluentiot')
+
+// Create two capabilities for light on and off
+// These can be shared by other devices if they share the same tuya properties
+capability.add('lightOn', (device) => {
+    tuya.send(device.attribute.get('id'), { "switch_led": true }, { version:'v2.0' })
+});
+capability.add('lightOff', (device) => {
+    tuya.send(device.attribute.get('id'), { "switch_led": false }, { version:'v2.0' })
+});
+
+// Add the light device with the two capabilities
+device.add('light', { id:'eb69e23aedfb73b6f5wbt0' }, [ '@lightOn', '@lightOff' ])
+
+// Add the button device
+device.add('button', { id:'eb71d1838f9911d53a5jay', stateful: false })
+
+// Create the scenario and include suppressFor so that the scenario can be triggered again without delay
+scenario('button pressed', { suppressFor: 0 })
+    .when()
+        .device('button').attribute('switch1_value').is('single_click')
+    .constraint()
+        .variable('flipflop').is(false)
+        .then(() => {
+            logger.info('Setting light to on')
+            variable.set('flipflop', true)
+            device.get('light').lightOn()
+        })
+    .else()
+        .then(() => {
+            logger.info('Setting light to off')
+            variable.set('flipflop', false)
+            device.get('light').lightOff()
+        })
+
+tuya.start()
+```
+
+
 
 
 

@@ -159,12 +159,14 @@ class TuyaOpenMQ extends EventEmitter {
         logger.debug('Restarting connection','tuya');
         if(this._connected) { this.stop(); }
 
-        this._connecting = true;
+        // Try and get latest config
         const mq_config = await this._get_mqtt_config();
         if (mq_config === null) {
             logger.error('Error while getting MQTT config','tuya');
             return false;
         }
+
+        this._connecting = true;
 
         this.mq_config = mq_config;
 
@@ -211,6 +213,7 @@ class TuyaOpenMQ extends EventEmitter {
 
         client.on('close', () => {
             this._connected = false;
+            this._connecting = false;
             logger.warn('Connection to MQTT broker lost. Attempting to reconnect...','tuya');
             this.reconnect();
         });
