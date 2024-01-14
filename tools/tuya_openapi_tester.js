@@ -1,5 +1,6 @@
-const TuyaOpenAPI = require('../src/components/tuya/tuya_openapi');
-const config = require('../src/config');
+const TuyaOpenAPI = require('../src/components/tuya/tuya_openapi')
+const config = require('../src/config')
+const logger = require('../src/utils/logger')
 
 // Setup Tuya based on your config
 const tuyaConfig = config.get('tuya')
@@ -22,13 +23,51 @@ const connect = async () => {
 }
 
 // Function to get the list of devices
+// const getDeviceList = async () => {
+//     const response = await api.get('/v2.0/cloud/thing/device', { page_size:10 });
+//     console.log(`Listing up to 10 devices...`);
+//     response.result.forEach(device => {
+//         console.log(`Device: ${device.name}`);
+//     });
+// };
 const getDeviceList = async () => {
-    const response = await api.get('/v2.0/cloud/thing/device', { page_size:10 });
-    console.log(`Listing up to 10 devices...`);
-    response.result.forEach(device => {
-        console.log(`Device: ${device.name}`);
+    let lastId = null;
+    let devices = [];
+    let query = { page_size: 20 }
+    
+    do {
+        if (lastId) {
+            query.last_id = lastId;
+        }
+
+        const response = await api.get('/v2.0/cloud/thing/device', query);
+        
+        console.log(`Listing devices...`);
+        
+        if (response.result.length > 0) {
+            // Add devices to the list
+            devices = devices.concat(response.result);
+
+            // Update lastId for the next iteration
+            lastId = response.result[response.result.length - 1].id;
+        } else {
+            // No more data, exit the loop
+            console.log('No more devices to fetch.');
+            break;
+        }
+    } while (true);
+
+    // Print out devices
+    devices.forEach(device => {
+        let onlineText = ''
+        if (!device.isOnline) {
+            onlineText = ' - OFFLINE';
+        }
+        console.log(`Device "${device.id}": ${device.name}${onlineText} (${device.productName} / ${device.category})`);
     });
 };
+
+
 
 // Function to refresh the token
 const refreshToken = async () => {
@@ -46,12 +85,6 @@ const main = async () => {
     await connect();
 
     // Get the list of devices
-    await getDeviceList();
-
-    // Refresh the token
-    await refreshToken();
-
-    // Get the list of devices again
     await getDeviceList();
 };
 

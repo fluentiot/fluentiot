@@ -158,6 +158,11 @@ tuya.start()
 
 
 
+### Conclusion
+
+Once you know how to get the device updates and interact with the devices typically the rest is to meat out the scenarios using Fluent IoT framework to your preferences.
+
+
 
 
 ### Recommended structure
@@ -169,14 +174,14 @@ Example of `index.js`
 const { tuya } = require('fluentiot');
 
 // Setup
-require('./setup/rooms');
-require('./setup/capabilities');
-require('./setup/devices');
+require('./app/setup/rooms');
+require('./app/setup/capabilities');
+require('./app/setup/devices');
 
 // Scenarios
-require('./scenarios/living');
-require('./scenarios/office');
-require('./scenarios/pantry');
+require('./app/scenarios/living');
+require('./app/scenarios/office');
+require('./app/scenarios/pantry');
 
 // Start some services
 tuya.start()
@@ -200,7 +205,7 @@ Recommended directory structure.
 
 
 
-## Scenario Usage
+## Scenario
 
 A scenario is made up of these elements:
 
@@ -457,7 +462,7 @@ To handle asynchronous add `async` to the `then` method.
 
 An example using the `delay` utility and `async`.
 ```javascript
-const { scenariom utils } = require('fluentiot')
+const { scenario, utils } = require('fluentiot')
 
 scenario('Countdown')
     .when()
