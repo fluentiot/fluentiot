@@ -1,5 +1,5 @@
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'))
-jest.mock('./../../../src/utils/logger')
+jest.mock('./../../../src/commons/logger')
 
 const DeviceComponent = require('./../../../src/components/device/device_component')
 const Fluent = require('./../../../src/fluent')
@@ -232,58 +232,58 @@ describe('Device triggers', () => {
     })
 
     it('triggers if a number goes above', () => {
-        device.triggers(Scenario).device('lightSensor').expect('value').isGreaterThan(10)
+        device.triggers(Scenario).device('lightSensor').attribute('value').isGreaterThan(10)
         lightSensor.attribute.update('value', 11)
         expect(Scenario.assert).toHaveBeenCalledTimes(1)
     })
 
     it('triggers if a number goes below', () => {
-        device.triggers(Scenario).device('lightSensor').expect('value').isLessThan(10)
+        device.triggers(Scenario).device('lightSensor').attribute('value').isLessThan(10)
         lightSensor.attribute.update('value', 9)
         expect(Scenario.assert).toHaveBeenCalledTimes(1)
     })
 
     it('triggers based on number values', () => {
-        device.triggers(Scenario).device('lightSensor').expect('value').isGreaterThan(10)
+        device.triggers(Scenario).device('lightSensor').attribute('value').isGreaterThan(10)
         lightSensor.attribute.update('value', 11)
 
-        device.triggers(Scenario).device('lightSensor').expect('value2').isGreaterThanOrEqual(10)
+        device.triggers(Scenario).device('lightSensor').attribute('value2').isGreaterThanOrEqual(10)
         lightSensor.attribute.update('value2', 10)
 
-        device.triggers(Scenario).device('lightSensor').expect('value3').isLessThan(10)
+        device.triggers(Scenario).device('lightSensor').attribute('value3').isLessThan(10)
         lightSensor.attribute.update('value3', 9)
 
-        device.triggers(Scenario).device('lightSensor').expect('value4').isLessThanOrEqual(10)
+        device.triggers(Scenario).device('lightSensor').attribute('value4').isLessThanOrEqual(10)
         lightSensor.attribute.update('value4', 10)
 
         expect(Scenario.assert).toHaveBeenCalledTimes(4)
     })
 
     it('throws error if device is not found', () => {
-        expect(() => device.triggers(Scenario).device('unknownDevice').expect('foo').is(true)).toThrow()
+        expect(() => device.triggers(Scenario).device('unknownDevice').attribute('foo').is(true)).toThrow()
     })
 
     it('it triggers when an attribute is updated to true', () => {
-        device.triggers(Scenario).device('pir').expect('foo').is(true)
+        device.triggers(Scenario).device('pir').attribute('foo').is(true)
         playroomPir.attribute.update('foo', true)
         expect(Scenario.assert).toHaveBeenCalled()
     })
 
     it('it triggers when an attribute is updated to false', () => {
-        device.triggers(Scenario).device('pir').expect('foo').is(false)
+        device.triggers(Scenario).device('pir').attribute('foo').is(false)
         playroomPir.attribute.update('foo', false)
         expect(Scenario.assert).toHaveBeenCalled()
     })
 
     it('it does not trigger if another device attribute is updated', () => {
-        device.triggers(Scenario).device('pir').expect('foo').is(true)
+        device.triggers(Scenario).device('pir').attribute('foo').is(true)
         playroomPir.attribute.update('bar', true)
         expect(Scenario.assert).not.toHaveBeenCalled()
     })
 
     it('it does not trigger if another device was updated', () => {
         const livingPir = device.add('livingPir')
-        device.triggers(Scenario).device('pir').expect('foo').is(true)
+        device.triggers(Scenario).device('pir').attribute('foo').is(true)
         livingPir.attribute.update('foo', true)
         expect(Scenario.assert).not.toHaveBeenCalled()
     })
@@ -301,20 +301,20 @@ describe('Device triggers', () => {
     })
 
     it('it triggers when string matches', () => {
-        device.triggers(Scenario).device('pir').expect('colour').is('red')
+        device.triggers(Scenario).device('pir').attribute('colour').is('red')
         playroomPir.attribute.update('colour', 'red')
         expect(Scenario.assert).toHaveBeenCalled()
     })
 
     it('it triggers when string does not match', () => {
-        device.triggers(Scenario).device('pir').expect('colour').isNot('red')
+        device.triggers(Scenario).device('pir').attribute('colour').isNot('red')
         playroomPir.attribute.update('colour', 'red')
         playroomPir.attribute.update('colour', 'blue')
         expect(Scenario.assert).toHaveBeenCalledTimes(1)
     })
 
     it('it triggers when any change is made to the attribute', () => {
-        device.triggers(Scenario).device('pir').expect('colour').changes()
+        device.triggers(Scenario).device('pir').attribute('colour').changes()
         playroomPir.attribute.update('colour', 'red')
         playroomPir.attribute.update('colour', 'blue')
         playroomPir.attribute.update('colour', 'green')
@@ -337,7 +337,7 @@ describe('Device triggers with state', () => {
 
     it('it only triggers once because it is a stateful switch', () => {
         const playroomSwitch = device.add('playroomSwitch', { stateful: true })
-        device.triggers(Scenario).device('playroomSwitch').expect('switch').is('on')
+        device.triggers(Scenario).device('playroomSwitch').attribute('switch').is('on')
         playroomSwitch.attribute.update('switch', 'on')
         playroomSwitch.attribute.update('switch', 'on')      
         expect(Scenario.assert).toHaveBeenCalledTimes(1)
@@ -346,7 +346,7 @@ describe('Device triggers with state', () => {
     it('it only triggers once because it is a stateful switch by default', () => {
         //Create switch with stateful not defined, make sure default it is stateful
         const playroomSwitch = device.add('playroomSwitch')
-        device.triggers(Scenario).device('playroomSwitch').expect('switch').is('on')
+        device.triggers(Scenario).device('playroomSwitch').attribute('switch').is('on')
         playroomSwitch.attribute.update('switch', 'on')
         playroomSwitch.attribute.update('switch', 'on')      
         expect(Scenario.assert).toHaveBeenCalledTimes(1)
@@ -354,7 +354,7 @@ describe('Device triggers with state', () => {
 
     it('it can trigger multiple times because it is a none stateful button', () => {
         const playroomButton = device.add('playroomButton', { stateful: false })
-        device.triggers(Scenario).device('playroomButton').expect('switch').is('on')
+        device.triggers(Scenario).device('playroomButton').attribute('switch').is('on')
         playroomButton.attribute.update('switch', 'on')
         playroomButton.attribute.update('switch', 'on')      
         expect(Scenario.assert).toHaveBeenCalledTimes(2)

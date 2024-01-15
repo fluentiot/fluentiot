@@ -1,5 +1,5 @@
 const Component = require('./../component')
-const logger = require('./../../utils/logger')
+const logger = require('./../../commons/logger')
 const config = require('./../../config')
 
 const TuyaMqtt = require('./tuya_mqtt');

@@ -1,5 +1,5 @@
 const dayjs = require('dayjs')
-const logger = require('./../../utils/logger')
+const logger = require('./../../commons/logger')
 const Component = require('./../component')
 const Expect = require('./../../utils/expect')
 const { validation } = require('./../../utils')

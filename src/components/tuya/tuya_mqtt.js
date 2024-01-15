@@ -3,7 +3,7 @@ const mqtt = require('mqtt');
 const crypto = require('crypto');
 const { v1: uuidv1 } = require('uuid');
 
-const logger = require('./../../utils/logger')
+const logger = require('./../../commons/logger')
 const { isJSONString } = require('./../../utils/index');
 
 class TuyaOpenMQ extends EventEmitter {

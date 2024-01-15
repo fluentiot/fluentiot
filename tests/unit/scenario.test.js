@@ -1,6 +1,6 @@
 
-jest.mock('./../../src/utils/logger')
-const logger = require('./../../src/utils/logger')
+jest.mock('./../../src/commons/logger')
+const logger = require('./../../src/commons/logger')
 
 const mockdate = require('mockdate')
 const dayjs = require('dayjs')

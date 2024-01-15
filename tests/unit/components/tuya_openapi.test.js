@@ -2,8 +2,8 @@ const TuyaOpenApi = require('./../../../src/components/tuya/tuya_openapi');
 
 const mockdate = require('mockdate')
 
-jest.mock('./../../../src/utils/logger')
-const logger = require('./../../../src/utils/logger')
+jest.mock('./../../../src/commons/logger')
+const logger = require('./../../../src/commons/logger')
 
 jest.mock('axios');
 const axios = require('axios');

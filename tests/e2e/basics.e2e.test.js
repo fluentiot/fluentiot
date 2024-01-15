@@ -1,5 +1,5 @@
 
-jest.mock('./../../src/utils/logger')
+jest.mock('./../../src/commons/logger')
 jest.useFakeTimers()
 
 const { Fluent, event, scenario, variable, device } = require('./../../index')

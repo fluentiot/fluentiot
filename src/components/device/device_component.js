@@ -1,7 +1,7 @@
 const Device = require('./device')
 const Component = require('./../component')
 const Expect = require('./../../utils/expect')
-const logger = require('./../../utils/logger')
+const logger = require('./../../commons/logger')
 const { validation } = require('./../../utils')
 const { QueryDslMixin } = require('./../_mixins/query_dsl')
 

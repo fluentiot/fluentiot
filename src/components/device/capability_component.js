@@ -1,5 +1,5 @@
 const Component = require('./../component')
-const logger = require('./../../utils/logger')
+const logger = require('./../../commons/logger')
 const { validation } = require('./../../utils')
 
 /**

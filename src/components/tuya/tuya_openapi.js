@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const axios = require('axios');
 
-const logger = require('./../../utils/logger')
+const logger = require('./../../commons/logger')
 
 const TUYA_ERROR_CODE_TOKEN_INVALID = 1010;
 

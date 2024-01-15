@@ -6,7 +6,7 @@ dayjs.extend(customParseFormat)
 dayjs.extend(isBetween)
 dayjs.extend(advancedFormat)
 
-const logger = require('./../../utils/logger')
+const logger = require('./../../commons/logger')
 const Component = require('./../component')
 
 /**

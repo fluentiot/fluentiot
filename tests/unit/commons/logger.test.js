@@ -1,4 +1,4 @@
-const logger = require('./../../../src/utils/logger')
+const logger = require('./../../../src/commons/logger')
 
 const _originalTypes = logger.types
 const _originalConfig = logger.config

@@ -1,6 +1,6 @@
 const Component = require('./../component')
 const Room = require('./room')
-const logger = require('./../../utils/logger')
+const logger = require('./../../commons/logger')
 const Expect = require('./../../utils/expect')
 const { validation } = require('./../../utils')
 const { QueryDslMixin } = require('./../_mixins/query_dsl')
