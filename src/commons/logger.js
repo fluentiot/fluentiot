@@ -1,3 +1,4 @@
+const winston = require('winston')
 const config = require('./../config.js')
 
 /**
@@ -14,13 +15,27 @@ class Logger {
         this._ignored = []  // Array of log messages to ignore
         this._only = []     // Array of log messages to only show
 
+        // Winston logger
+        this.winston = winston.createLogger({
+            level: config.get('logging.levels.default') || 'debug',
+            format: winston.format.combine(
+                winston.format.printf(({ _level, message }) => {
+                    return message
+                })
+            ),
+            transports: [
+                new winston.transports.Console()
+            ]
+        });
+
         // Types of log messages
         this.types = {
             error: { color: '\x1b[31m', level: 0 },
-            log: { color: '\x1b[37m', level: 0 },
-            info: { color: '\x1b[36m', level: 1 },
-            warn: { color: '\x1b[33m', level: 2 },
-            debug: { color: '\x1b[35m', level: 3 },
+            warn: { color: '\x1b[33m', level: 1 },
+            info: { color: '\x1b[36m', level: 2 },
+            http: { color: '\x1b[35m', level: 3 },
+            verbose: { color: '\x1b[35m', level: 4 },
+            debug: { color: '\x1b[35m', level: 5 },
         }
 
         // For each log type create a new method
@@ -154,7 +169,10 @@ class Logger {
         // Construct the final log string
         const logString = `${logTimestamp} ${logComponent} ${logType} ${logMessage}`;
 
-        console.log(logString);
+        this.winston.log({
+            level: type,
+            message: logString,
+        });
     }
 
     /**
@@ -197,10 +215,6 @@ class Logger {
         return formattedMessage + reset;
     }
     
-
-      
-      
-
 }
 
 module.exports = new Logger()

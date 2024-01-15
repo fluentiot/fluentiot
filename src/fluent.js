@@ -58,7 +58,7 @@ class Fluent {
             "|  _| | | |_| |  __/ | | | |_ | | (_) | |  \n" +
             "|_|   |_|\\__,_|\\___|_| |_|\\__|___\\___/|_|  "
         );
-        console.log("\nhttps://github.com/darrenmoore/fluent-iot\n");
+        console.log("\nhttps://fluentiot.github.io\n");
     }
 
     /**

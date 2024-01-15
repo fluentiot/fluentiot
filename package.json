@@ -14,7 +14,7 @@
     "bugs": {
         "url": "https://github.com/fluentiot/fluentiot/issues"
     },
-    "homepage": "https://github.com/fluentiot/fluentiot",
+    "homepage": "https://fluentiot.github.io",
     "dependencies": {
         "app-root-path": "^3.1.0",
         "axios": "^1.6.5",
@@ -22,7 +22,8 @@
         "dayjs": "^1.11.10",
         "mqtt": "^5.3.4",
         "node-schedule": "^2.1.1",
-        "uuid": "^9.0.1"
+        "uuid": "^9.0.1",
+        "winston": "^3.11.0"
     },
     "devDependencies": {
         "jest": "^29.7.0",
