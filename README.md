@@ -1852,7 +1852,7 @@ logger.ignore('temperature');
 ---
 
 
-## Contributing
+# Contributing
 
 Bug reports, bug fixes, improvements and new components.
 
@@ -1860,6 +1860,6 @@ This project is still very beta so any help is welcomed!
 
 
 
-## License
+# License
 
 Fluent IoT is licensed under [MIT License](./LICENSE).
