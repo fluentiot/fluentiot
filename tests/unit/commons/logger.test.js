@@ -1,3 +1,12 @@
+
+// mock config
+jest.mock('./../../../src/config', () => {
+    return {
+        get: jest.fn(() => {})
+    }
+})
+const config = require('./../../../src/config')
+
 const logger = require('./../../../src/commons/logger')
 
 // Mock winston
@@ -11,6 +20,7 @@ jest.mock('winston', () => {
         format: {
             combine: jest.fn(),
             printf: jest.fn(),
+            timestamp: jest.fn(),
         },
         transports: {
             Console: jest.fn(),
@@ -31,32 +41,6 @@ describe('Logger basic methods and setup', () => {
             expect(typeof logger[method]).toBe('function')
         })
     })
-
-    it('timestamp method returns a string in "Dec 17 10:38:14" or "HH:mm:ss" format', () => {
-        // Check if the timestamp follows the "Dec 17 10:38:14" format or "HH:mm:ss" format
-        const timestamp = logger._getCurrentTimestamp();
-        
-        const isDecDateFormat = /^\w{3} \d{1,2} \d{2}:\d{2}:\d{2}$/.test(timestamp);
-        const isHHMMSSFormat = /^\d{2}:\d{2}:\d{2}$/.test(timestamp);
-    
-        expect(isDecDateFormat || isHHMMSSFormat).toBe(true);
-    
-        if (isDecDateFormat) {
-            // If it's in "Dec 17 10:38:14" format, additional checks can be added
-            const [month, day, time] = timestamp.split(' ');
-            const [hours, minutes, seconds] = time.split(':');
-    
-            expect(month).toMatch(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/);
-            expect(Number(day)).toBeGreaterThanOrEqual(1);
-            expect(Number(day)).toBeLessThanOrEqual(31);
-            expect(Number(hours)).toBeGreaterThanOrEqual(0);
-            expect(Number(hours)).toBeLessThan(24);
-            expect(Number(minutes)).toBeGreaterThanOrEqual(0);
-            expect(Number(minutes)).toBeLessThan(60);
-            expect(Number(seconds)).toBeGreaterThanOrEqual(0);
-            expect(Number(seconds)).toBeLessThan(60);
-        }
-    });
     
     it('returns the default log level if component is not found', () => {
         expect(logger._getLogLevel()).toBe(5) //Debug level
@@ -75,6 +59,35 @@ describe('Logger basic methods and setup', () => {
 })
 
 
+
+describe('Parsing messages', () => {
+
+    it('parses a string', () => {
+        const result = logger._parseMessage('foobar')
+        expect(result).toEqual('foobar')
+    })
+
+    it('parses json', () => {
+        const result = logger._parseMessage({ foo: 'bar' })
+        expect(result).toEqual('{"foo":"bar"}')
+    })
+
+    it('parses an error', () => {
+        const result = logger._parseMessage(new Error('foobar'))
+        expect(result).toContain('foobar')
+    })
+
+    it('parses an array with string elements', () => {
+        const result = logger._parseMessage(['foo', 'bar'])
+        expect(result).toEqual('foo bar')
+    })
+
+    it('parses an array with a string and json', () => {
+        const result = logger._parseMessage(['foo', { bar: 'baz' }])
+        expect(result).toEqual('foo {"bar":"baz"}')
+    })
+
+})
 
 
 describe('Logging messages', () => {

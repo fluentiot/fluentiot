@@ -1,8 +1,7 @@
 const winston = require('winston')
-const { format } = require('winston');
 const fs = require('fs');
 const path = require('path');
-const config = require('./../config.js')
+const config = require('./../config')
 
 /**
  * Logger utility
@@ -17,9 +16,6 @@ class Logger {
     constructor() {
         this._ignored = []  // Array of log messages to ignore
         this._only = []     // Array of log messages to only show
-
-        // Winston logger
-        this.winston = this._createLogger();
 
         // Types of log messages
         this.types = {
@@ -39,6 +35,9 @@ class Logger {
             }
         })
 
+        // Winston logger
+        this.winston = this._createLogger()
+
         // Load config
         this.config = config.get('logging') || { levels: { default: 'debug' } }
     }
@@ -53,7 +52,7 @@ class Logger {
         const transports = [new winston.transports.Console()];
 
         const fileConfig = config.get('logging.file');
-        if (fileConfig.enabled) {
+        if (fileConfig?.enabled) {
             // Ensure the log directory exists
             const logDir = path.dirname(fileConfig.filename);
             if (!fs.existsSync(logDir)) {
