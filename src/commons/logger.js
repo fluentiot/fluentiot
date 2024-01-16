@@ -1,4 +1,7 @@
 const winston = require('winston')
+const { format } = require('winston');
+const fs = require('fs');
+const path = require('path');
 const config = require('./../config.js')
 
 /**
@@ -16,17 +19,7 @@ class Logger {
         this._only = []     // Array of log messages to only show
 
         // Winston logger
-        this.winston = winston.createLogger({
-            level: config.get('logging.levels.default') || 'debug',
-            format: winston.format.combine(
-                winston.format.printf(({ _level, message }) => {
-                    return message
-                })
-            ),
-            transports: [
-                new winston.transports.Console()
-            ]
-        });
+        this.winston = this._createLogger();
 
         // Types of log messages
         this.types = {
@@ -50,6 +43,51 @@ class Logger {
         this.config = config.get('logging') || { levels: { default: 'debug' } }
     }
 
+
+    /**
+     * Create a Winston logger
+     * 
+     * @returns {winston.Logger} - Winston logger
+     */
+    _createLogger() {
+        const transports = [new winston.transports.Console()];
+
+        const fileConfig = config.get('logging.file');
+        if (fileConfig.enabled) {
+            // Ensure the log directory exists
+            const logDir = path.dirname(fileConfig.filename);
+            if (!fs.existsSync(logDir)) {
+                fs.mkdirSync(logDir, { recursive: true });
+            }
+
+            transports.push(new winston.transports.File({
+                filename: fileConfig.filename,
+                maxsize: fileConfig.maxsize,
+                maxFiles: fileConfig.maxFiles,
+                format: format.combine(
+                    winston.format.timestamp({ format: 'MMM DD HH:mm:ss' }),
+                    winston.format.printf(({ level, message, timestamp, component, type }) => {
+                        return `${timestamp} ${component} ${level} ${message}`;
+                    })
+                ),
+            }));
+        }
+
+        return winston.createLogger({
+            level: config.get('logging.levels.default') || 'debug',
+            format: winston.format.combine(
+                winston.format.timestamp({ format: 'MMM DD HH:mm:ss' }),
+                winston.format.printf(({ level, message, timestamp, component }) => {
+                    const _message = this._formatLogMessage(message)
+                    const _component = this._formatComponent(component)
+                    const _type = this._formatType(level)
+                    return `${timestamp} ${_component} ${_type} ${_message}`;
+                })
+            ),
+            transports,
+        });
+    }
+
     /**
      * Method to ignore log messages by a regular expression
      * 
@@ -68,25 +106,6 @@ class Logger {
      */
     only(regex, component = null) {
         this._only.push({ regex, component })
-    }
-
-    /**
-     * Get current time stamp for logging output
-     *
-     * @private
-     * @returns {string} - Timestamp
-     */
-    _getCurrentTimestamp() {
-        const now = new Date();
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-        const month = monthNames[now.getMonth()];
-        const day = now.getDate().toString().padStart(2, '0');
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-    
-        return `${month} ${day} ${hours}:${minutes}:${seconds}`;
     }
     
     /**
@@ -122,27 +141,8 @@ class Logger {
             return;
         }
 
-        const timestamp = this._getCurrentTimestamp();
-        
-        const logTypeColour = this.types[type].color
-        const logTypeBackground = '\x1b[40m'
-        const timeStampColor = '\x1b[37m'
-        const componentColor = '\x1b[94m'
-
-        // Construct log components
-        const logTimestamp = `${timeStampColor}${timestamp}\x1b[0m`;
-        const logComponent = `${componentColor}${component}\x1b[0m`
-        const logType = `${logTypeBackground}${logTypeColour}${type.toUpperCase()}\x1b[0m`
-
-        // Message
-        let logMessage;
-        if (message instanceof Error) {
-            logMessage = `${message.message}\n${message.stack}`
-        } else if(typeof message === 'object') {
-            logMessage = JSON.stringify(message)
-        } else {
-            logMessage = message
-        }
+        // Parse the message depending on what type it is
+        let logMessage = this._parseMessage(message)
 
         // Check if the message should be ignored or only
         if (!(message instanceof Error)) {
@@ -163,16 +163,58 @@ class Logger {
             }
         }
 
-        // Format the log message
-        logMessage = this._formatLogMessage(logMessage)
-
-        // Construct the final log string
-        const logString = `${logTimestamp} ${logComponent} ${logType} ${logMessage}`;
-
         this.winston.log({
             level: type,
-            message: logString,
+            message: logMessage,
+            component: component
         });
+    }
+
+    /**
+     * Parse message
+     * 
+     * @param {any} message - Message to parse
+     * @returns {string} - Parsed message
+     * @private
+     */
+    _parseMessage(message) {
+        // recursively parse each element of the array and call back this method
+        if (Array.isArray(message)) {
+            return message.map((element) => this._parseMessage(element)).join(' ')
+        }
+
+        // parse the message depending on what type it is
+        let result
+        if (message instanceof Error) {
+            result = `${message.message}\n${message.stack}`
+        } else if(typeof message === 'object') {
+            result = JSON.stringify(message)
+        } else {
+            result = message
+        }
+        return result
+    }
+
+    /**
+     * Format type
+     * 
+     * @param {string} type
+     * @returns {string} - Formatted string
+     * @private
+     */
+    _formatType(type) {
+        return this.types[type].color + type.toUpperCase() + '\x1b[0m'
+    }
+
+    /**
+     * Format component
+     * 
+     * @param {string} component 
+     * @returns {string} - Formatted string
+     * @private
+     */
+    _formatComponent(component) {
+        return `\x1b[94m${component}\x1b[0m`
     }
 
     /**
