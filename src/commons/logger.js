@@ -1,4 +1,5 @@
 const winston = require('winston')
+const { format } = require('winston')
 const fs = require('fs');
 const path = require('path');
 const config = require('./../config')

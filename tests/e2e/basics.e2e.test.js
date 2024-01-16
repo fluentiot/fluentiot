@@ -1,4 +1,3 @@
-
 jest.mock('./../../src/commons/logger')
 jest.useFakeTimers()
 
@@ -166,18 +165,9 @@ describe('Scenario creation basics', () => {
         expect(action3).toHaveBeenCalledTimes(1)
     })
 
-    it('will not throw an error if', () => {
-        const action = jest.fn()
-
-        const test = scenario('test', { suppressFor:0 })
-            .when()
-                .empty()
-            .then(() => action())
-        test.assert()
-        test.assert()
-        test.assert()
-
-        expect(action).toHaveBeenCalledTimes(3)
+    it('will throw an error if properties passed are not allowed ', () => {
+        expect(() => scenario('test', { supressFor:0 }).when().empty().then()).toThrow()
+        expect(() => scenario('test', { foobar:0 }).when().empty().then()).toThrow()
     })
 
 })

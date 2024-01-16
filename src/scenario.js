@@ -35,7 +35,15 @@ class Scenario {
         this.trace = [] //Debug stack trace
         this.properties = {} //Scenario properties
 
-        // Scenario rules
+        // Scenario properties
+        const validProperties = ['suppressFor', 'only'];
+
+        // Validate properties
+        const invalidKeys = Object.keys(properties || {}).filter(key => !validProperties.includes(key));
+        if (invalidKeys.length > 0) {
+            throw new Error(`Invalid option(s): ${invalidKeys.join(', ')}`);
+        }
+
         const defaultProperties = {
             only: false,
             suppressFor: 1000

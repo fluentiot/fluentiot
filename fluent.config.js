@@ -15,6 +15,12 @@ const config = {
         levels: {
             default: 'debug',
         },
+        file: {
+            enabled: false,
+            filename: 'logs/app.log',
+            maxsize: 10 * 1024 * 1024,
+            maxFiles: 5,
+        }
     },
     tuya: {
         uid: "",
