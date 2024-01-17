@@ -1,4 +1,5 @@
 const Component = require('./../component')
+const Capability = require('./capability')
 const logger = require('./../../commons/logger')
 const { validation } = require('./../../utils')
 
@@ -38,9 +39,17 @@ class CapabilityComponent extends Component {
             throw new Error(`Capability name "${name} is not valid`)
         }
 
+        const _capability = new Capability(this, name, callback)
+
+        this.capabilities[name] = (...args) => {
+            return _capability.run(...args)
+        }
+        return this.capabilities[name]
+
         // Wrapper for callback
         this.capabilities[name] = (...args) => {
             const [device] = args
+            let result;
 
             if (device && typeof device === 'object' && device.name) {
                 logger.info(`Capability "${name}" running for device "${device.name}"`, 'device');
@@ -48,9 +57,33 @@ class CapabilityComponent extends Component {
                 logger.info(`Capability "${name}" running`, 'device');
             }
 
-            return callback(...args)
+            try {
+                result = callback(...args)
+            }
+            catch (err) {
+                logger.error([`Capability "${name}" failed`, err], 'device')
+            }
+
+            return this._callbackScope(result)
+
         }
         return this.capabilities[name]
+    }
+
+    _callbackScope(result) {
+        let callbackThen
+        let callbackError
+
+        return {
+            then(_callbackThen) {
+                callbackThen = _callbackThen
+                return this
+            },
+            onError(_callbackError) {
+                callbackError = _callbackError
+                return this
+            }
+        }
     }
 
     /**

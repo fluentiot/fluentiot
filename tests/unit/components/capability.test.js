@@ -10,6 +10,7 @@ beforeEach(() => {
 })
 
 describe('Capabilities', () => {
+
     it('can create a new capability', () => {
         const callback = () => {}
         capability.add('turnOn', callback)
@@ -75,4 +76,72 @@ describe('Capabilities', () => {
     it('returns null if trying to get a capability that does not exist', () => {
         expect(capability.get('doesNotExist')).toBeNull()
     })
+
+    it('can run the capability', () => {
+        const callback = jest.fn()
+        capability.add('turnOn', callback)
+        capability.get('turnOn')()
+        expect(callback).toHaveBeenCalledTimes(1)
+    })
+
+})
+
+
+describe('Capability chain methods', () => {
+
+    it('can have a success callback and capability returns a value that can be used in then()', () => {
+        const callbackCapability = jest.fn(() => 'foobar')
+        const fn = capability.add('turnOn', callbackCapability)
+
+        const callbackThen = jest.fn()
+        fn().then((resp) => { callbackThen(resp) })
+
+        expect(callbackCapability).toHaveBeenCalledTimes(1)
+        expect(callbackThen).toHaveBeenCalledTimes(1)
+        expect(callbackThen).toHaveBeenCalledWith('foobar')
+    })
+
+    it('will call onError if capability throws an error', () => {
+        const callbackCapability = jest.fn(() => { throw new Error('foobar') })
+        const fn = capability.add('turnOn', callbackCapability)
+
+        const callbackThen = jest.fn()
+        const callbackError = jest.fn()
+        fn()
+            .then((resp) => { callbackThen(resp) })
+            .catch((resp) => { callbackError(resp) })
+
+        expect(callbackCapability).toHaveBeenCalledTimes(1)
+
+        expect(callbackThen).toHaveBeenCalledTimes(0)
+
+        expect(callbackError).toHaveBeenCalledTimes(1)
+        expect(callbackError).toHaveBeenCalledWith(new Error('foobar'))
+    })
+
+    it('will call finally for both error and successful capability', () => {
+        const callbackCapability = jest.fn(() => 'foobar')
+        const fn = capability.add('turnOn', callbackCapability)
+
+        const callbackThen = jest.fn()
+        const callbackError = jest.fn()
+        const callbackFinally = jest.fn()
+        fn()
+            .then((resp) => { callbackThen(resp) })
+            .catch((resp) => { callbackError(resp) })
+            .finally((resp) => { callbackFinally(resp) })
+
+        expect(callbackCapability).toHaveBeenCalledTimes(1)
+
+        expect(callbackThen).toHaveBeenCalledTimes(1)
+        expect(callbackThen).toHaveBeenCalledWith('foobar')
+
+        expect(callbackError).toHaveBeenCalledTimes(0)
+
+        expect(callbackFinally).toHaveBeenCalledTimes(1)
+        expect(callbackFinally).toHaveBeenCalledWith('foobar')
+    })
+
+    
+
 })
