@@ -22,10 +22,10 @@ class Scene {
     /**
      * Runs the scene
      */
-    run() {
+    run(...args) {
         logger.info(`Scene "${this.name}" running`, 'scene')
         this.parent.emit('scene.run', this.name)
-        return this.callback()
+        return this.callback(...args)
     }
 }
 

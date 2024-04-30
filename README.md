@@ -1373,7 +1373,7 @@ console.log(scene.get('cool').name) //"cool"
 scene.get('cool').run() //"Super cool!"
 ```
 
-#### `scene.run(name: string)`
+#### `scene.run(name: string, [...args])`
 
 Runs a scene.
 
@@ -1382,7 +1382,14 @@ scene.add('cool', () => {
     console.log('cool')
 })
 scene.run('cool') //"cool"
+
+//Passing arguments to the scene.
+scene.add('hot', (temp) => {
+    console.log(`Temp: ${temp}`)
+})
+scene.run('hot', 30)  //"Temp: 30"
 ```
+
 
 ---
 

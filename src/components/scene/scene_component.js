@@ -60,15 +60,16 @@ class SceneComponent extends Component {
      * Run a scene by name.
      *
      * @param {string} name - The name of the scene.
+     * @param {any} args - Arguments to pass to the scene.
      * @returns {any|boolean} - Return from the callback
      */
-    run(name) {
+    run(name, ...args) {
         const scene = this.get(name)
         if (!scene) {
             logger.error(`Scene "${name}" not found and cannot be run`, 'scene')
             return false
         }
-        return scene.run()
+        return scene.run(...args)
     }
 }
 

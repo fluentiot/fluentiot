@@ -61,4 +61,20 @@ describe('Scene', () => {
         scene.run('foobar')
         expect(mock).toHaveBeenCalled()
     })
+
+    it('passes args to the scene when running', () => {
+        const mock = jest.fn()
+        scene.add('foobar', (a, b) => {
+            mock(a, b)
+        })
+        scene.run('foobar', 1, 2)
+
+        //Fetch the scene and run it
+        const sceneObj = scene.get('foobar')
+        sceneObj.run(1, 2)
+
+        expect(mock).toHaveBeenCalledTimes(2)
+        expect(mock).toHaveBeenCalledWith(1, 2)
+    })
+
 })
