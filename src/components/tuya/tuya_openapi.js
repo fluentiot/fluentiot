@@ -63,6 +63,45 @@ class TuyaOpenAPI {
     }
 
     /**
+     * Connect to Tuya Open API
+     * 
+     * @returns object - HTTP response
+     */
+    async connect() {
+        // Get token data
+        this.token_info = null
+        let response = await this.post(this.__token_path, {
+            username: this.__username,
+            password: crypto.createHash('md5').update(this.__password, 'utf8').digest('hex'),
+            country_code: this.__country_code,
+            schema: this.__schema
+        });
+
+        // Handle failed responses
+        if (!response.success) {
+            logger.error(`Failed to connect to Tuya Open API, trying again in 2 seconds`, 'tuya openapi');
+
+            // Try again in 2 seconds
+            setTimeout(() => {
+                if(!this.isConnected()) {
+                    this.connect();
+                }
+            }, 2000);
+
+            return response;
+        }
+
+        this.token_info = new TuyaTokenInfo(response);
+
+        // Call back for onConnect
+        if(this.onConnect) {
+            this.onConnect();
+        }
+
+        return true;
+    }
+
+    /**
      * Calculate sign
      * 
      * @private
@@ -121,7 +160,7 @@ class TuyaOpenAPI {
             return false;
         }
 
-        logger.debug('Tuya OpenAPI token expired, renewing', 'tuya');
+        logger.debug('Tuya OpenAPI token expired, renewing', 'tuya openapi');
 
         return await this.__refresh_access_token()
     }
@@ -132,11 +171,11 @@ class TuyaOpenAPI {
      * @returns boolean - True if token was refreshed
      */
     async __refresh_access_token() {
-        logger.debug('Refreshing Tuya access token', 'tuya');
+        logger.debug('Refreshing Tuya access token', 'tuya openapi');
 
         // Invalid refresh token
         if (!this.token_info?.refresh_token) {
-            logger.warn(`Refresh token is missing, attempting full reconnection`, 'tuya')
+            logger.warn(`Refresh token is missing, attempting full reconnection`, 'tuya openapi')
             return await this.connect();
         }
 
@@ -148,44 +187,13 @@ class TuyaOpenAPI {
 
         // Failed to refresh token
         if (response === false || !response.success) {
-            logger.error(`Failed to refresh Tuya OpenAPI token`, 'tuya')
+            logger.error(`Failed to refresh Tuya OpenAPI token`, 'tuya openapi')
             return false
         }
 
         // Update token info
         this.token_info = new TuyaTokenInfo(response);
         return true
-    }
-
-    /**
-     * Connect to Tuya Open API
-     * 
-     * @returns object - HTTP response
-     */
-    async connect() {
-        // Get token data
-        this.token_info = null
-        let response = await this.post(this.__token_path, {
-            username: this.__username,
-            password: crypto.createHash('md5').update(this.__password, 'utf8').digest('hex'),
-            country_code: this.__country_code,
-            schema: this.__schema
-        });
-
-        // Handle failed responses
-        if (!response.success) {
-            logger.error(`Failed to connect to Tuya Open API`, 'tuya');
-            return response;
-        }
-
-        this.token_info = new TuyaTokenInfo(response);
-
-        // Call back for onConnect
-        if(this.onConnect) {
-            this.onConnect();
-        }
-
-        return true;
     }
 
     /**
@@ -237,7 +245,7 @@ class TuyaOpenAPI {
             json: true
         };
 
-        logger.debug(`Request: method = "${method}", url = "${options.url}", params = ${params}, body = ${JSON.stringify(body)}, t = ${Date.now()}`,'tuya');
+        logger.debug(`Request: method = "${method}", url = "${options.url}", params = ${params}, body = ${JSON.stringify(body)}, t = ${Date.now()}`,'tuya openapi');
 
         // Send request
         let result
@@ -253,16 +261,16 @@ class TuyaOpenAPI {
             }
         }
         catch (error) {
-            logger.error(`Failed to send request to Tuya Open API`, 'tuya');
-            logger.error(`URL: ${options.url}`, 'tuya');
-            logger.error(error, 'tuya');
+            logger.error(`Failed to send request to Tuya Open API`, 'tuya openapi');
+            logger.error(`URL: ${options.url}`, 'tuya openapi');
+            logger.error(error, 'tuya openapi');
             return false;
         }
 
         // No result
         if (!result) {
-            logger.error(`No result from Tuya Open API`, 'tuya');
-            logger.error(`URL: ${options.url}`, 'tuya');
+            logger.error(`No result from Tuya Open API`, 'tuya openapi');
+            logger.error(`URL: ${options.url}`, 'tuya openapi');
             return false;
         }
 
@@ -271,27 +279,27 @@ class TuyaOpenAPI {
             if (await this.__refresh_access_token()) {
                 return await this.__request(method, path, params, body);
             }
-            logger.error(`Tuya API token expired but failed to refresh it`, 'tuya')
+            logger.error(`Tuya API token expired but failed to refresh it`, 'tuya openapi')
             return false;
         }
 
         // Data was not returned
         if (!result.data) {
-            logger.error(`Tuya did not return any data`, 'tuya')
-            logger.error(`URL: ${options.url}`, 'tuya')
-            logger.error(result, 'tuya')
+            logger.error(`Tuya did not return any data`, 'tuya openapi')
+            logger.error(`URL: ${options.url}`, 'tuya openapi')
+            logger.error(result, 'tuya openapi')
             return false;
         }
 
         // Check if not successful
         if (result.data.success == false) {
-            logger.error(`Did not receive success from tuya`, 'tuya')
-            logger.error(`URL: ${options.url}`, 'tuya')
-            logger.error(result.data, 'tuya')
+            logger.error(`Did not receive success from tuya`, 'tuya openapi')
+            logger.error(`URL: ${options.url}`, 'tuya openapi')
+            logger.error(result.data, 'tuya openapi')
             return false;
         }
 
-        logger.debug(result.data,'tuya');
+        logger.debug(result.data,'tuya openapi');
 
         return result.data;
     }

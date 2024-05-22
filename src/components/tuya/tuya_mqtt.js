@@ -32,6 +32,7 @@ class TuyaOpenMQ extends EventEmitter {
      * Start MQTT connection
      */
     start() {
+        logger.debug(`Starting MQTT connection`, 'tuya mqtt')
         this.__run_mqtt();
 
         // Reconnect MQTT every x minutes
@@ -56,13 +57,13 @@ class TuyaOpenMQ extends EventEmitter {
     async __run_mqtt() {
         const mq_config = await this._get_mqtt_config();
         if (mq_config === null) {
-            logger.error('Error while getting MQTT config','tuya');
+            logger.error('Error while getting MQTT config','tuya mqtt');
             return;
         }
 
         this.mq_config = mq_config;
 
-        logger.debug(`Connecting to "${mq_config.url}"`,'tuya');
+        logger.debug(`Connecting to "${mq_config.url}"`,'tuya mqtt');
         this.client = this._connect(mq_config);
     }
 
@@ -80,11 +81,11 @@ class TuyaOpenMQ extends EventEmitter {
             msg_encrypted_version: '1.0',
         };
 
-        logger.debug(`Fetching auth details from Tuya Open API for MQTT connection`,'tuya');
+        logger.debug(`Fetching auth details from Tuya Open API for MQTT connection`,'tuya mqtt');
         let response = await this.api.post('/v1.0/open-hub/access/config', body);
 
         if (!response || response.success === false) {
-            logger.error(`Failed to get MQTT config from Tuya`, 'tuya');
+            logger.error(`Failed to get MQTT config from Tuya`, 'tuya mqtt');
             return null;
         }
 
@@ -118,7 +119,7 @@ class TuyaOpenMQ extends EventEmitter {
         // Check if the payload is a valid JSON string
         const payload_str = payload.toString('utf8')
         if (!isJSONString(payload_str)) {
-            logger.error(`Invalid JSON received from Tuya`, 'tuya');
+            logger.error(`Invalid JSON received from Tuya`, 'tuya mqtt');
             return;
         }
         
@@ -128,7 +129,7 @@ class TuyaOpenMQ extends EventEmitter {
         const decrypted_data = this._decode_mq_message(msg_dict.data, user_data.password, t);
 
         if (decrypted_data === null) {
-            logger.error(`Failed to decode data from Tuya`, 'tuya');
+            logger.error(`Failed to decode data from Tuya`, 'tuya mqtt');
             return;
         }
 
@@ -146,17 +147,17 @@ class TuyaOpenMQ extends EventEmitter {
      */
     async reconnect(force = false) {
         if(this._connected && force !== true) {
-            logger.debug('Cancelling reconnect, already connected','tuya');
+            logger.debug('Cancelling reconnect, already connected','tuya mqtt');
             return false;
         }
 
         // If already attemping to connect
         if(this._connecting === true) {
-            logger.debug('Cancelling reconnect, already connecting','tuya');
+            logger.debug('Cancelling reconnect, already connecting','tuya mqtt');
             return false;
         }
 
-        logger.debug('Restarting connection','tuya');
+        logger.debug(`Restarting MQTT Connection. Force connection: ${force}`,'tuya mqtt');
         this._connecting = true;
 
         if(this._connected) { this.stop(); }
@@ -164,8 +165,8 @@ class TuyaOpenMQ extends EventEmitter {
         // Try and get latest config
         const mq_config = await this._get_mqtt_config();
         if (mq_config === null) {
-            logger.error('Error while getting MQTT config, attempting full reconnect in 5 seconds','tuya');
-            setInterval(() => {
+            logger.error('Error while getting MQTT config, attempting full reconnect in 5 seconds','tuya mqtt');
+            setTimeout(() => {
                 this.__run_mqtt()
             }, 5000);
             return false;
@@ -197,12 +198,12 @@ class TuyaOpenMQ extends EventEmitter {
         });
 
         client.on('connect',  () => {
-            logger.info('Tuya MQTT Connected','tuya');
+            logger.info('Tuya MQTT Connected','tuya mqtt');
             this._connecting = false;
             this._connected = true;
 
             client.subscribe(mq_config.source_topic.device, (err) => {
-                logger.info('Listening to devices','tuya');
+                logger.info('Listening to devices','tuya mqtt');
             })
         });
 
@@ -211,12 +212,12 @@ class TuyaOpenMQ extends EventEmitter {
         })
 
         client.on('error', function (err) {
-            logger.error(err, 'tuya');
+            logger.error(err, 'tuya mqtt');
         });
 
         client.on('close', () => {
             this._connected = false;
-            logger.warn('Connection to MQTT broker lost. Attempting to reconnect...','tuya');
+            logger.warn('Connection to MQTT broker lost. Attempting to reconnect...','tuya mqtt');
 
             if (this._connecting === false) {
                 this.reconnect();

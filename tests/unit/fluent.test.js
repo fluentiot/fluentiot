@@ -102,6 +102,19 @@ describe('Scenario DSL', () => {
         Fluent.scenarios = {}
     })
 
+    it('returns a scenario by description', () => {
+        const scenario = Fluent.scenario.add('my foo bar scenario')
+        const found = Fluent.scenario.get('my foo bar scenario')
+
+        expect(found).toBeInstanceOf(Object)
+        expect(scenario).toBe(found)
+    })
+
+    it('returns null for a scenario that does not exist', () => {
+        const scenario = Fluent.scenario.get('my foo bar scenario')
+        expect(scenario).toBe(null)
+    })
+
     it('returns a count of how many scenarios have been created', () => {
         Fluent.scenario.add('my foo bar scenario')
         expect(Fluent.scenario.count()).toBe(1)

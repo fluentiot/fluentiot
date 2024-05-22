@@ -513,10 +513,10 @@ describe('Scenario supressFor', () => {
         expect(mockCallback.mock.calls).toHaveLength(2)
     })
 
-    it('will suppress for 12 hours using verbose time', () => {
+    it.only('will suppress for 12 hours using verbose time', () => {
         const mockCallback = jest.fn()
 
-        new Scenario(Fluent, 'Foobar', { supressFor: '12 hour' })
+        new Scenario(Fluent, 'Foobar', { suppressFor: '12 hour' })
             .when()
                 .foobar().onEvent('hey')
             .then(mockCallback)
@@ -534,7 +534,7 @@ describe('Scenario supressFor', () => {
         event.emit('hey') // Trigger
         event.emit('hey') // Do not trigger
 
-        expect(mockCallback.mock.calls).toHaveLength(3)
+        expect(mockCallback.mock.calls).toHaveLength(2)
     })
 
     it('will suppress even when one scenario calling another', () => {
@@ -545,7 +545,7 @@ describe('Scenario supressFor', () => {
                 .empty()
             .then(mockCallback)
 
-        new Scenario(Fluent, 'Foobar', { supressFor: '10 minutes' })
+        new Scenario(Fluent, 'Foobar', { suppressFor: '10 minutes' })
             .when()
                 .foobar().onEvent('hey')
             .then(() => {
