@@ -166,7 +166,7 @@ describe('Scenario creation basics', () => {
     })
 
     it('will throw an error if properties passed are not allowed ', () => {
-        expect(() => scenario('test', { supressFor:0 }).when().empty().then()).toThrow()
+        expect(() => scenario('test', { suppressFor:0 }).when().empty().then()).toThrow()
         expect(() => scenario('test', { foobar:0 }).when().empty().then()).toThrow()
     })
 

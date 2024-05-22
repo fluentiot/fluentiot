@@ -412,18 +412,18 @@ describe('Triggers', () => {
 })
 
 
-describe('Scenario supressFor', () => {
+describe('Scenario suppressFor', () => {
 
     afterEach(() => {
         mockdate.reset()
     })
 
-    it('will use the default supressFor to 1000', () => {
+    it('will use the default suppressFor to 1000', () => {
         const scenario1 = new Scenario(Fluent, 'Foobar')
         expect(scenario1.properties.suppressFor).toBe(1000)
     })
 
-    it('will set the supressFor when creating a scenario', () => {
+    it('will set the suppressFor when creating a scenario', () => {
         const scenario1 = new Scenario(Fluent, 'Foobar', { suppressFor:500 })
         expect(scenario1.properties.suppressFor).toBe(500)
 
@@ -475,7 +475,7 @@ describe('Scenario supressFor', () => {
         expect(mockCallback.mock.calls).toHaveLength(1)
     })
 
-    it('can trigger multiple times if supressFor is set to 0', () => {
+    it('can trigger multiple times if suppressFor is set to 0', () => {
         const mockCallback = jest.fn()
 
         new Scenario(Fluent, 'Foobar', { suppressFor:0 })
