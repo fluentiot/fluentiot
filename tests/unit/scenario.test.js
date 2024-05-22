@@ -513,7 +513,7 @@ describe('Scenario supressFor', () => {
         expect(mockCallback.mock.calls).toHaveLength(2)
     })
 
-    it.only('will suppress for 12 hours using verbose time', () => {
+    it('will suppress for 12 hours using verbose time', () => {
         const mockCallback = jest.fn()
 
         new Scenario(Fluent, 'Foobar', { suppressFor: '12 hour' })
