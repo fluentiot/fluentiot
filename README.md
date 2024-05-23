@@ -421,6 +421,31 @@ Fluent.scenario.get('fetch and run this').assert()
 
 
 
+### Suppress a scenario
+
+Suppressing a scenario ad-hoc is useful when you want to prevent a scenario from being triggered for a certain period of time. This can be particularly helpful in IoT setups, such as preventing a motion sensor from re-triggering a light switch right after it has been turned off, giving you time to leave the room without the light turning back on.
+
+```javascript
+scenario('foobar')
+    .when()
+        .empty()
+    .then(() => console.log('It ran!'))
+
+// Fetch the scenario by description
+s = Fluent.scenario.get('foobar')
+
+// Suppress for 10 seconds
+s.suppressFor('10 seconds')
+
+// Assert will not run the scenario until 10 seconds has passed
+s.assert()
+
+// Reset the adhoc suppression
+s.suppressFor(false)
+```
+
+
+
 
 ### Testing & debugging scenarios
 

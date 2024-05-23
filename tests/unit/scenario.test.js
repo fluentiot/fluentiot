@@ -429,36 +429,44 @@ describe('Scenario suppressFor', () => {
 
         const scenario2 = new Scenario(Fluent, 'Foobar', { suppressFor:'1 minute' })
         expect(scenario2.properties.suppressFor).toBe(60000)
+    })
 
-        const scenario3 = new Scenario(Fluent, 'Foobar', { suppressFor:0 })
-        expect(scenario3.properties.suppressFor).toBe(0)
+    it('will not set suppressFor', () => {
+        const scenario1 = new Scenario(Fluent, 'Foobar', { suppressFor:0 })
+        expect(scenario1.properties.suppressFor).toBe(0)
+
+        const scenario2 = new Scenario(Fluent, 'Foobar', { suppressFor:false })
+        expect(scenario2.properties.suppressFor).toBe(false)
+
+        const scenario3 = new Scenario(Fluent, 'Foobar', { suppressFor:undefined })
+        expect(scenario3.properties.suppressFor).toBe(undefined)
     })
 
     it('will update suppressFor with valid syntax', () => {
         const scenario = new Scenario(Fluent, 'Foobar')
 
-        scenario.suppressFor('500')
+        scenario.setSuppressFor('500')
         expect(scenario.properties.suppressFor).toBe(500)
 
-        scenario.suppressFor('500 ms')
+        scenario.setSuppressFor('500 ms')
         expect(scenario.properties.suppressFor).toBe(500)
 
-        scenario.suppressFor('1 minute')
+        scenario.setSuppressFor('1 minute')
         expect(scenario.properties.suppressFor).toBe(60000)
 
-        scenario.suppressFor('1 min')
+        scenario.setSuppressFor('1 min')
         expect(scenario.properties.suppressFor).toBe(60000)
 
-        scenario.suppressFor('1 second')
+        scenario.setSuppressFor('1 second')
         expect(scenario.properties.suppressFor).toBe(1000)
 
-        scenario.suppressFor('20hours')
+        scenario.setSuppressFor('20hours')
         expect(scenario.properties.suppressFor).toBe(72000000)
     })
 
     it('will throw error if suppressFor is invalid', () => {
         const scenario = new Scenario(Fluent, 'Foobar')
-        expect(() => scenario.suppressFor('foobar')).toThrow(Error)
+        expect(() => scenario.setSuppressFor('foobar')).toThrow(Error)
     })
 
     it('will not double trigger if two triggers are close to each other', () => {
@@ -562,6 +570,93 @@ describe('Scenario suppressFor', () => {
         event.emit('hey') // Do not trigger
 
         expect(mockCallback.mock.calls).toHaveLength(2)
+    })
+
+    it('can suppress a scenario manually', () => {
+        const mockCallback = jest.fn()
+
+        const scenario = new Scenario(Fluent, 'Foobar', { suppressFor: false })
+            .when()
+                .foobar().onEvent('hey')
+            .then(mockCallback)
+
+        scenario.suppressFor('10 seconds')
+        event.emit('hey')
+
+        // Not expecting mockCallback to be called
+        expect(mockCallback.mock.calls).toHaveLength(0)
+    })
+
+    it('can suppress a scenario and it will run after the given time', () => {
+        const mockCallback = jest.fn()
+
+        const scenario = new Scenario(Fluent, 'Foobar', { suppressFor: false })
+            .when()
+                .foobar().onEvent('hey')
+            .then(mockCallback)
+
+        scenario.suppressFor('10 seconds')
+        event.emit('hey')
+
+        // Add 9 seconds, will not run
+        mockdate.set(dayjs().add(9, 'seconds'));
+        event.emit('hey')
+
+        // Add another second, will run
+        mockdate.set(dayjs().add(1, 'seconds'));
+        event.emit('hey')
+
+        expect(mockCallback.mock.calls).toHaveLength(1)
+    })
+
+    it('can suppress manually then stop suppressing', () => {
+        const mockCallback = jest.fn()
+
+        const scenario = new Scenario(Fluent, 'Foobar B', { suppressFor: false })
+            .when()
+                .foobar().onEvent('hey')
+            .then(mockCallback)
+
+        // Both of these will trigger
+        event.emit('hey')
+        event.emit('hey')
+
+        scenario.suppressFor('10 seconds')
+
+        // These will not trigger
+        event.emit('hey')
+        event.emit('hey')
+
+        // Reset the suppressFor
+        scenario.suppressFor(0)
+
+        // These will trigger
+        event.emit('hey')
+        event.emit('hey')
+
+        // Not expecting mockCallback to be called
+        expect(mockCallback.mock.calls).toHaveLength(4)
+    })
+
+    it('scenario A can suppress scenario B', () => {
+        const mockCallback = jest.fn()
+
+        const scenarioA = new Scenario(Fluent, 'Foobar A', { suppressFor: '10 minutes' })
+            .when()
+                .foobar().onEvent('hey')
+            .then(() => {
+                Fluent.scenario.get('Foobar B').suppressFor('10 seconds')
+            })
+
+        const scenarioB = new Scenario(Fluent, 'Foobar B')
+            .when()
+                .empty()
+            .then(mockCallback)
+
+        event.emit('hey')
+
+        // Not expecting mockCallback to be called
+        expect(mockCallback.mock.calls).toHaveLength(0)
     })
 
 })

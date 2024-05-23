@@ -24,16 +24,17 @@ class Scenario {
             throw new Error(`Description is required for a scenario`)
         }
 
-        this.Fluent = Fluent //Singleton object for core
-        this.description = description //Verbose description of the scenario
+        this.Fluent = Fluent            //Singleton object for core
+        this.description = description  //Verbose description of the scenario
 
-        this.lastAssertTime = null //When the scenario last asserted, used for suppressFor
-        this.testMode = false //In test mode
-        this.runnable = true //Can scenario be run? Can be switched when .test() mode is used
-        this.triggers = {} //Triggers from components loaded in
-        this.callbacks = [] //Stores a group of constraints and callbacks for that group
-        this.trace = [] //Debug stack trace
-        this.properties = {} //Scenario properties
+        this.suppressUntil = null       //Suppress until time
+        this.lastAssertTime = null      //When the scenario last asserted
+        this.testMode = false           //In test mode
+        this.runnable = true            //Can scenario be run? Can be switched when .test() mode is used
+        this.triggers = {}              //Triggers from components loaded in
+        this.callbacks = []             //Stores a group of constraints and callbacks for that group
+        this.trace = []                 //Debug stack trace
+        this.properties = {}            //Scenario properties
 
         // Scenario properties
         const validProperties = ['suppressFor', 'only'];
@@ -52,11 +53,12 @@ class Scenario {
 
         // Suppress for duration between triggering scenarios
         if (
+            properties.suppressFor !== false &&
             properties.suppressFor !== 0 &&
             properties.suppressFor !== undefined && 
             properties.suppressFor !== defaultProperties.suppressFor) {
             // Parse suppressFor to milliseconds
-            this.suppressFor(properties.suppressFor)
+            this.setSuppressFor(properties.suppressFor)
         }
 
         // Test mode?
@@ -75,15 +77,40 @@ class Scenario {
     }
 
     /**
+     * Ad-hoc set the current suppression time for this scenario
+     * 
+     * This is useful in the case of a light switch being turned off
+     * and we want to suppress the PIR sensor for a period of time
+     * 
+     * @param {*} duration
+     * @returns {Boolean} - True if suppression was set
+     */
+    suppressFor(duration) {
+        // Turn off
+        if (duration === false || duration === 0) {
+            this.suppressUntil = null
+            return true
+        }
+
+        const parsed = datetime.getDurationInMilliseconds(duration)
+        if (parsed === false) {
+            throw new Error(`Invalid duration "${duration}"`)
+        }
+
+        this.suppressUntil = Date.now() + parsed
+        return true
+    }
+
+    /**
      * Suppress scenario for a duration
      * 
      * @param {string} duration 
      * @returns
      */
-    suppressFor(duration) {
+    setSuppressFor(duration) {
         const parsed = datetime.getDurationInMilliseconds(duration)
         if (parsed === false) {
-            throw new Error(`Invalid duration "${duration}" passed to suppressFor`)
+            throw new Error(`Invalid duration "${duration}" set for suppressFor`)
         }
         this.properties.suppressFor = parsed
         return this
@@ -265,9 +292,8 @@ class Scenario {
         // suppressFor checks
         const currentTime = Date.now();
         if (
-            this.properties.suppressFor > 0 &&
-            this.lastAssertTime !== null &&
-            currentTime - this.lastAssertTime < this.properties.suppressFor
+            this.suppressUntil !== null &&
+            currentTime < this.suppressUntil
         ) {
             logger.warn(`Scenario "${this.description}" did not trigger because in suppressFor period`, 'scenario');
             return false;
@@ -305,8 +331,15 @@ class Scenario {
             return false
         }
     
-        // Run callbacks
+        // Set last assert time
         this.lastAssertTime = currentTime
+
+        // Update suppressUntil if suppressFor is set
+        if (this.properties.suppressFor > 0) {
+            this.suppressUntil = currentTime + this.properties.suppressFor
+        }
+
+        // Run callbacks
         let ranCallback = true
         logger.info(`Scenario "${this.description}" triggered`, 'scenario')
 
