@@ -41,8 +41,18 @@ class CapabilityComponent extends Component {
 
         const _capability = new Capability(this, name, callback)
 
-        this.capabilities[name] = async (...args) => {
-            return await _capability.run(...args)
+        this.capabilities[name] = (...args) => {
+            try {
+                const result = _capability.run(...args)
+                // Check if the callback returned a promise
+                if (result && typeof result.then === 'function') {
+                    return result
+                }
+                // If not a promise, return the result directly
+                return result
+            } catch (err) {
+                throw err
+            }
         }
 
         return this.capabilities[name]

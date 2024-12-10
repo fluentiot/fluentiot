@@ -128,18 +128,6 @@ describe('Capability chain methods', () => {
         expect(callbackError).toHaveBeenCalledWith(new Error('foobar'))
     })
 
-    it.only('supporting with await and no await on a none async method', async () => {
-        const callbackCapability = async () => { throw new Error('foobar') }
-        const fn = capability.add('turnOn', callbackCapability)
-
-        const callbackError = jest.fn()
-        fn().catch(async (resp) => { console.log('oops'); callbackError(resp) })
-        //await fn().catch((resp) => { callbackError(resp) })
-
-        //expect(callbackCapability).toHaveBeenCalledTimes(1)
-        //expect(callbackError).toHaveBeenCalledTimes(1)
-        //expect(callbackError).toHaveBeenCalledWith(new Error('foobar'))
-    })
 
     it('will call onError and not call then if capability throws an error', async () => {
         const callbackCapability = jest.fn(() => { throw new Error('foobar') })
@@ -152,11 +140,9 @@ describe('Capability chain methods', () => {
             .catch((resp) => { callbackError(resp) })
 
         expect(callbackCapability).toHaveBeenCalledTimes(1)
-
-        // expect(callbackThen).toHaveBeenCalledTimes(0)
-
-        // expect(callbackError).toHaveBeenCalledTimes(1)
-        // expect(callbackError).toHaveBeenCalledWith(new Error('foobar'))
+        expect(callbackThen).toHaveBeenCalledTimes(0)           // It failed so it should not call
+        expect(callbackError).toHaveBeenCalledTimes(1)
+        expect(callbackError).toHaveBeenCalledWith(new Error('foobar'))
     })
 
     it('will call finally for both error and successful capability', async () => {
@@ -169,7 +155,7 @@ describe('Capability chain methods', () => {
         await fn()
             .then((resp) => { callbackThen(resp) })
             .catch((resp) => { callbackError(resp) })
-            .finally((resp) => { callbackFinally(resp) })
+            .finally(() => { callbackFinally() })
 
         expect(callbackCapability).toHaveBeenCalledTimes(1)
 
@@ -179,7 +165,6 @@ describe('Capability chain methods', () => {
         expect(callbackError).toHaveBeenCalledTimes(0)
 
         expect(callbackFinally).toHaveBeenCalledTimes(1)
-        expect(callbackFinally).toHaveBeenCalledWith('foobar')
     })
 
     

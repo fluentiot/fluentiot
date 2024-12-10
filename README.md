@@ -1883,6 +1883,18 @@ logger.ignore('temperature');
 
 ---
 
+# Tests
+
+Module tests are built with Jest.
+
+
+To run an individual test
+```bash
+npm test -- capability.test.js
+```
+
+
+
 
 # Contributing
 
