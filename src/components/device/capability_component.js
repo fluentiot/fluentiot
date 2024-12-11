@@ -10,6 +10,7 @@ const { validation } = require('./../../utils')
  * @class
  */
 class CapabilityComponent extends Component {
+
     /**
      * Constructor
      *
@@ -29,18 +30,25 @@ class CapabilityComponent extends Component {
      * @throws {Error} Throws an error if a capability with the same name already exists.
      */
     add(name, callback) {
+        // Check if the capability already exists
         if (this.capabilities[name]) {
             throw new Error(`Capability with the name "${name}" already exists`)
         }
-        if (!callback) {
+
+        // Ensure the callback is a function
+        if (!callback || typeof callback !== 'function') {
             throw new Error(`Capability "${name}" requires a callback method`)
         }
+
+        // Check if the name is valid
         if (!validation.isValidName(name)) {
             throw new Error(`Capability name "${name} is not valid`)
         }
 
+        // Create a new capability
         const _capability = new Capability(this, name, callback)
 
+        // Add the capability to the capabilities object
         this.capabilities[name] = (...args) => {
             try {
                 const result = _capability.run(...args)

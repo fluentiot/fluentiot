@@ -261,10 +261,6 @@ In this example at 6:00pm the office lights are turned on. There are no constrai
 
 # API
 
-This API includes working examples.
-
-## Contents
-
 -   [Scenario API](#scenario-api)
 -   [Day API](#day-api)
 -   [Time API](#time-api)

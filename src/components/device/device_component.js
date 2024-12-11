@@ -12,6 +12,7 @@ const { QueryDslMixin } = require('./../_mixins/query_dsl')
  * @class
  */
 class DeviceComponent extends Component {
+    
     /**
      * Constructor
      *
