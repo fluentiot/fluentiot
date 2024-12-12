@@ -1,4 +1,3 @@
-// datetime.js
 const dayjs = require('dayjs');
 
 const DURATION_REGEX = /^(\d+)?\s*(?:(second|minute|hour|sec|min|hr|ms|millisecond)s?)?$/i;

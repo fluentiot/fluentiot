@@ -1891,12 +1891,26 @@ npm test -- capability.test.js
 
 
 
+# Todo
+
+- [] Document unit testing
+- [] Capability retry when it fails
+- [] Recode Tuya interface
+- [] Upgrade to latest NodeJS
+- [] Move /src/commons/logger.js to /src/logger.js
+- [] Ability to put config in ENV for sensitive info
+- [] Document utilities
+- [] Clean up isJSONString, file name
+- [] Replace prettier
+- [] Date component, between renamed to isBetween for consistancy
+- [] Restore state if power down etc..
+
 
 # Contributing
 
 Bug reports, bug fixes, improvements and new components.
 
-This project is still very beta so any help is welcomed!
+This project is experimental.
 
 
 
