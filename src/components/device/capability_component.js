@@ -1,6 +1,6 @@
 const Component = require('./../component')
 const Capability = require('./capability')
-const logger = require('./../../commons/logger')
+const logger = require('./../../logger')
 const { validation } = require('./../../utils')
 
 /**

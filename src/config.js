@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const logger = require('./commons/logger');
+const logger = require('./logger');
 const { dot } = require('./utils')
 
 /**

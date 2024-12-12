@@ -2,7 +2,7 @@
  * Fluent IoT - The Programmers IoT Framework
  */
 const Fluent = require('./src/fluent')
-const logger = require('./src/commons/logger')
+const logger = require('./src/logger')
 const utils = require('./src/utils')
 const components = Fluent.component.list()
 

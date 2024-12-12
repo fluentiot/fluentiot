@@ -1893,11 +1893,11 @@ npm test -- capability.test.js
 
 # Todo
 
+- [/] Recode Tuya interface
+- [/] Move /src/commons/logger.js to /src/logger.js
 - [] Document unit testing
 - [] Capability retry when it fails
-- [] Recode Tuya interface
 - [] Upgrade to latest NodeJS
-- [] Move /src/commons/logger.js to /src/logger.js
 - [] Ability to put config in ENV for sensitive info
 - [] Document utilities
 - [] Clean up isJSONString, file name

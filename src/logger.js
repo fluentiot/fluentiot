@@ -2,7 +2,7 @@ const winston = require('winston')
 const { format } = require('winston')
 const fs = require('fs');
 const path = require('path');
-const config = require('./../config')
+const config = require('./config')
 
 /**
  * Logger utility

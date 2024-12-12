@@ -2,7 +2,7 @@ const RoomComponent = require('./../../../src/components/room/room_component');
 const Fluent = require('./../../../src/fluent');
 const ComponentHelper = require('./../../helpers/component_helper.js');
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'));
-jest.mock('./../../../src/commons/logger');
+jest.mock('./../../../src/logger');
 
 const DeviceComponent = require('./../../../src/components/device/device_component');
 const EventEmitter = require('events');

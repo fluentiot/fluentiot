@@ -2,7 +2,7 @@ const VariableComponent = require('./../../../src/components/variable/variable_c
 const Fluent = require('./../../../src/fluent')
 const ComponentHelper = require('./../../helpers/component_helper.js')
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'))
-jest.mock('./../../../src/commons/logger')
+jest.mock('./../../../src/logger')
 
 let variable
 

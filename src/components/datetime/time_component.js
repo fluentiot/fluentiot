@@ -7,7 +7,7 @@ dayjs.extend(isBetween)
 dayjs.extend(advancedFormat)
 
 const schedule = require('node-schedule')
-const logger = require('./../../commons/logger')
+const logger = require('./../../logger')
 const Component = require('./../component')
 
 /**

@@ -1,5 +1,5 @@
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'))
-jest.mock('./../../../src/commons/logger')
+jest.mock('./../../../src/logger')
 
 const CapabilityComponent = require('./../../../src/components/device/capability_component')
 const Fluent = require('./../../../src/fluent')

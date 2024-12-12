@@ -1,4 +1,4 @@
-const logger = require('./../../commons/logger');
+const logger = require('./../../logger');
 const TuyaApiClient = require('./tuya_api_client');
 const TuyaMqttClient = require('./tuya_mqtt_client');
 const { v1: uuidv1 } = require('uuid');

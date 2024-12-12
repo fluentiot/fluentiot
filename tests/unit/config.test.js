@@ -5,12 +5,12 @@ jest.spyOn(console, 'warn').mockImplementation(() => {})
 
 const { Config } = require('./../../src/config');
 
-jest.mock('./../../src/commons/logger', () => ({
+jest.mock('./../../src/logger', () => ({
     info: jest.fn(),
     error: jest.fn(),
     warn: jest.fn()
 }))
-const logger = require('./../../src/commons/logger');
+const logger = require('./../../src/logger');
 
 let originalCwd;
 

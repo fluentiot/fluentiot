@@ -4,7 +4,7 @@ schedule.scheduleJob = jest.fn()
 const mockdate = require('mockdate')
 const dayjs = require('dayjs')
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'))
-jest.mock('./../../../src/commons/logger')
+jest.mock('./../../../src/logger')
 
 const DayComponent = require('./../../../src/components/datetime/day_component')
 const Fluent = require('./../../../src/fluent')

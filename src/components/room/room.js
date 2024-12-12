@@ -1,5 +1,5 @@
 const dayjs = require('dayjs')
-const logger = require('./../../commons/logger');
+const logger = require('./../../logger');
 const { datetime } = require('./../../utils')
 const { AttributeDslMixin } = require('./../_mixins/attribute_dsl');
 

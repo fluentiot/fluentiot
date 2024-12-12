@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const axios = require('axios');
-const logger = require('./../../commons/logger');
+const logger = require('./../../logger');
 
 /**
  * Simplified Tuya API client

@@ -1,4 +1,4 @@
-jest.mock('./../../src/commons/logger')
+jest.mock('./../../src/logger')
 jest.useFakeTimers()
 
 const mockdate = require('mockdate')

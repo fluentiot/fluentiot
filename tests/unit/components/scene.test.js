@@ -1,4 +1,4 @@
-jest.mock('./../../../src/commons/logger')
+jest.mock('./../../../src/logger')
 const SceneComponent = require('./../../../src/components/scene/scene_component')
 
 const Fluent = require('./../../../src/fluent')

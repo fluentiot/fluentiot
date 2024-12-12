@@ -1,4 +1,4 @@
-jest.mock('./../../src/commons/logger')
+jest.mock('./../../src/logger')
 jest.mock('./../../src/config')
 jest.mock('./../../src/scenario', () => require('./../__mocks__/scenario'))
 const path = require('path')

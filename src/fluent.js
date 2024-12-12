@@ -3,7 +3,7 @@ const path = require('path')
 const appRoot = require('app-root-path')
 
 const Scenario = require('./scenario')
-const logger = require('./commons/logger')
+const logger = require('./logger')
 const config = require('./config')
 
 const { QueryDslMixin } = require('./components/_mixins/query_dsl')

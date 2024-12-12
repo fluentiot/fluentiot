@@ -1,5 +1,5 @@
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'))
-jest.mock('./../../../src/commons/logger')
+jest.mock('./../../../src/logger')
 
 const Component = require('./../../../src/components/component')
 const BurgerComponent = require('./../../components/burger/burger_component')

@@ -1,4 +1,4 @@
-const logger = require('./../../commons/logger');
+const logger = require('./../../logger');
 
 /**
  * Manages queuing and sending of Tuya device commands

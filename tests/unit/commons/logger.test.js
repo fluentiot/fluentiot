@@ -7,7 +7,7 @@ jest.mock('./../../../src/config', () => {
 })
 const config = require('./../../../src/config')
 
-const logger = require('./../../../src/commons/logger')
+const logger = require('./../../../src/logger')
 
 // Mock winston
 jest.mock('winston', () => {

@@ -2,8 +2,8 @@ const TuyaOpenMQ = require('./../../../src/components/tuya/tuya_mqtt');
 const TuyaOpenAPI = require('./../../../src/components/tuya/tuya_openapi');
 jest.mock('./../../../src/components/tuya/tuya_openapi');
 
-jest.mock('./../../../src/commons/logger')
-const logger = require('./../../../src/commons/logger')
+jest.mock('./../../../src/logger')
+const logger = require('./../../../src/logger')
 
 jest.mock('crypto');
 const crypto = require('crypto');

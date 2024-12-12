@@ -1,4 +1,4 @@
-const logger = require('./../../commons/logger')
+const logger = require('./../../logger')
 const Expect = require('./../../utils/expect')
 
 const setupAttributes = (parent, defaultAttributes, definedAttributes) => {

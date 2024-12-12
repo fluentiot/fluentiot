@@ -1,6 +1,6 @@
 
-jest.mock('./../../../src/commons/logger')
-const logger = require('./../../../src/commons/logger')
+jest.mock('./../../../src/logger')
+const logger = require('./../../../src/logger')
 
 jest.mock('./../../../src/config')
 const config = require('./../../../src/config')

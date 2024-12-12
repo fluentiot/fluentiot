@@ -1,5 +1,5 @@
 const { datetime } = require('./utils')
-const logger = require('./commons/logger')
+const logger = require('./logger')
 
 /**
  * Scenario

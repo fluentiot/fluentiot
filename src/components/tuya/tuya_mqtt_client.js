@@ -1,6 +1,6 @@
 const mqtt = require('mqtt');
 const crypto = require('crypto');
-const logger = require('./../../commons/logger');
+const logger = require('./../../logger');
 const { isJSONString } = require('./../../utils/index');
 
 /**

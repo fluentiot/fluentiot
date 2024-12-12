@@ -1,6 +1,6 @@
 const TuyaOpenAPI = require('../src/components/tuya/tuya_openapi')
 const config = require('../src/config')
-const logger = require('../src/commons/logger')
+const logger = require('../src/logger')
 
 // Setup Tuya based on your config
 const tuyaConfig = config.get('tuya')

@@ -1,7 +1,7 @@
 const ExpectComponent = require('./../../../src/components/expect/expect_component')
 const Fluent = require('./../../../src/fluent')
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'))
-jest.mock('./../../../src/commons/logger')
+jest.mock('./../../../src/logger')
 
 let fexpect
 
