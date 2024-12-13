@@ -61,7 +61,7 @@ class Config {
      * Load config file, abstraction useful for testing
      * 
      * @param {string} path - Path to require
-     * @returns 
+     * @returns {object} - Config object
      */
     loadConfigFile(configFile) {
         return require(configFile)
@@ -71,7 +71,7 @@ class Config {
      * Get a nested property from the configuration file
      * 
      * @param {string} key - Dot notation of the key to fetch from config file
-     * @returns 
+     * @returns {any} - Value of the key
      */
     get(key) {
         if (!this.config) {
