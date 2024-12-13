@@ -1,9 +1,18 @@
 const dayjs = require('dayjs');
 
+// Regex to match duration format
 const DURATION_REGEX = /^(\d+)?\s*(?:(second|minute|hour|sec|min|hr|ms|millisecond)s?)?$/i;
+
+// Error messages
 const INVALID_FORMAT_ERROR = 'Invalid duration format';
 const INVALID_UNIT_ERROR = 'Invalid duration unit';
 
+/**
+ * Add duration to current time
+ * 
+ * @param {string} duration - Duration to add to current time
+ * @returns {dayjs.Dayjs} - New date time
+ */
 function addDurationToNow(duration) {
     const match = duration.match(DURATION_REGEX);
     if (!match) {
@@ -38,8 +47,9 @@ function addDurationToNow(duration) {
 /**
  * Get duration in milliseconds
  * 
- * @param {string} duration 
- * @returns 
+ * @param {string} duration - Duration in milliseconds
+ * @param {string} defaultUnit - Default unit to use if no unit is specified
+ * @returns {number} - Duration in milliseconds 
  */
 function getDurationInMilliseconds(duration, defaultUnit = 'ms') {
     if (typeof duration === 'number') {
@@ -86,7 +96,6 @@ function getDurationInMinutes(duration) {
     if (typeof duration === 'number') {
         return duration;
     }
-
     const milliseconds = getDurationInMilliseconds(duration, 'minute')
     return milliseconds / 60000;
 }

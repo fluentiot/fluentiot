@@ -1,3 +1,14 @@
+
+/**
+ * Get a value from an object using dot notation
+ * 
+ * Inspired by dotty.js
+ * Coded only for what was needed to keep module size small
+ * 
+ * @param {object} data - Object to search
+ * @param {string} key - Key to search for
+ * @returns {any} - Value of the key in the object
+ */
 class dot {
     static get(data, key) {
         // Check if key is a string before splitting

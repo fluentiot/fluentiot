@@ -1,6 +1,6 @@
 /**
  * Expect utility
- *
+ * 
  * @class
  */
 class Expect {
@@ -58,6 +58,8 @@ class Expect {
 
     /**
      * Negates the matching
+     * 
+     * @returns {Expect} - Expect instance
      */
     get not() {
         const notInstance = new Expect(this.value, this.returnDirect)
