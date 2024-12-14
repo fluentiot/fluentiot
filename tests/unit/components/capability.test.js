@@ -108,12 +108,23 @@ describe('Capability chain methods', () => {
             }, 100)
         })
         const fn = capability.add('turnOn', callbackCapability)
-
+    
         const callbackThen = jest.fn()
-        await fn().then((resp) => { callbackThen(resp) })
-
+        
+        // Start the async operation
+        const promise = fn().then((resp) => { callbackThen(resp) })
+        
+        // Advance timers to trigger the setTimeout
+        jest.advanceTimersByTime(100)
+        
+        // Wait for the promise to resolve
+        await promise
+    
         expect(callbackThen).toHaveBeenCalledTimes(1)
         expect(callbackThen).toHaveBeenCalledWith('foobar')
+        
+        // Clean up
+        jest.useRealTimers()
     })
 
     it('will call onError if capability throws an error', async () => {

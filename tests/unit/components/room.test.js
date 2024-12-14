@@ -15,7 +15,6 @@ let room;
 beforeEach(() => {
     jest.useFakeTimers();
     room = new RoomComponent(Fluent)
-    //jest.spyOn(variable, 'emit')
 })
 
 describe('Room add and get', () => {

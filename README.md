@@ -1895,11 +1895,11 @@ npm test -- capability.test.js
 
 - [/] Recode Tuya interface
 - [/] Move /src/commons/logger.js to /src/logger.js
+- [/] Document utilities
 - [] Document unit testing
 - [] Capability retry when it fails
 - [] Upgrade to latest NodeJS
 - [] Ability to put config in ENV for sensitive info
-- [] Document utilities
 - [] Clean up isJSONString, file name
 - [] Replace prettier
 - [] Date component, between renamed to isBetween for consistancy

@@ -1,13 +1,13 @@
 
 // mock config
-jest.mock('./../../../src/config', () => {
+jest.mock('./../../src/config', () => {
     return {
         get: jest.fn(() => {})
     }
 })
-const config = require('./../../../src/config')
+const config = require('./../../src/config')
 
-const logger = require('./../../../src/logger')
+const logger = require('./../../src/logger')
 
 // Mock winston
 jest.mock('winston', () => {
