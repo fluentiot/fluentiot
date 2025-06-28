@@ -1,7 +1,0 @@
-# Ignore artifacts:
-build
-coverage
-examples
-.gitignore
-.prettierignore
-README.md
