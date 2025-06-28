@@ -7,7 +7,9 @@ dayjs.extend(isBetween)
 dayjs.extend(advancedFormat)
 
 const schedule = require('node-schedule')
+const SunCalc = require('suncalc')
 const logger = require('./../../logger')
+const config = require('./../../config')
 const Component = require('./../component')
 
 /**
@@ -24,7 +26,26 @@ class TimeComponent extends Component {
      */
     constructor(Fluent) {
         super(Fluent)
+        
+        // Default location (Bangkok, Thailand) - can be overridden with setLocation()
+        this.location = {
+            latitude: 13.7563,
+            longitude: 100.5018
+        }
+        
+        // Try to load location from config if available
+        try {
+            if (config && typeof config.get === 'function') {
+                this.location.latitude = config.get('location.latitude', this.location.latitude)
+                this.location.longitude = config.get('location.longitude', this.location.longitude)
+            }
+        } catch (error) {
+            // Config may not be available during testing, use defaults
+            logger.debug('Using default location coordinates', 'datetime')
+        }
+        
         this._schedules()
+        this._setupSolarSchedules()
     }
 
     /**
@@ -51,6 +72,63 @@ class TimeComponent extends Component {
     }
 
     /**
+     * Setup solar-based schedules (sunrise, sunset, etc.)
+     * 
+     * @private
+     */
+    _setupSolarSchedules() {
+        // Calculate solar times for today and schedule events
+        this._scheduleSolarEvents()
+        
+        // Schedule daily recalculation at midnight
+        schedule.scheduleJob('0 0 * * *', () => {
+            this._scheduleSolarEvents()
+        })
+    }
+
+    /**
+     * Calculate and schedule solar events for the current day
+     * 
+     * @private
+     */
+    _scheduleSolarEvents() {
+        const today = new Date()
+        const times = SunCalc.getTimes(today, this.location.latitude, this.location.longitude)
+        
+        const solarEvents = {
+            'sunrise': times.sunrise,
+            'sunset': times.sunset,
+            'dawn': times.dawn,
+            'dusk': times.dusk,
+            'nauticalDawn': times.nauticalDawn,
+            'nauticalDusk': times.nauticalDusk,
+            'nightEnd': times.nightEnd,
+            'night': times.night,
+            'goldenHour': times.goldenHour,
+            'goldenHourEnd': times.goldenHourEnd
+        }
+
+        // Cancel existing solar jobs
+        if (this.solarJobs) {
+            this.solarJobs.forEach(job => job.cancel())
+        }
+        this.solarJobs = []
+
+        // Schedule new solar events
+        Object.entries(solarEvents).forEach(([eventName, eventTime]) => {
+            if (eventTime && !isNaN(eventTime.getTime()) && eventTime > new Date()) {
+                const job = schedule.scheduleJob(eventTime, () => {
+                    this.emit(`time.${eventName}`)
+                    this.emit('solar', eventName)
+                    logger.debug(`Solar event triggered: ${eventName} at ${dayjs(eventTime).format('HH:mm')}`, 'datetime')
+                })
+                this.solarJobs.push(job)
+                logger.debug(`Scheduled solar event: ${eventName} at ${dayjs(eventTime).format('HH:mm')}`, 'datetime')
+            }
+        })
+    }
+
+    /**
      * Defines triggers related to datetime for a given Scenario.
      *
      * @param {Scenario} Scenario - The Scenario object.
@@ -60,8 +138,19 @@ class TimeComponent extends Component {
         return {
             time: {
                 is: (targetTime) => {
+                    // Check if it's a solar time (sunrise, sunset, etc.)
+                    if (this._isSolarTime(targetTime)) {
+                        this.event().on('solar', (eventName) => {
+                            if (eventName === targetTime) {
+                                scope.assert()
+                            }
+                        })
+                        return scope
+                    }
+                    
+                    // Regular time format (HH:mm)
                     if (!dayjs(targetTime, 'HH:mm', true).isValid()) {
-                        throw new Error(`Time "${targetTime}" is not in the correct format of HH:mm`)
+                        throw new Error(`Time "${targetTime}" is not in the correct format of HH:mm or a valid solar time`)
                     }
                     this.event().on('time', (time) => {
                         if (time === targetTime) {
@@ -206,6 +295,70 @@ class TimeComponent extends Component {
             default:
                 return null
         }
+    }
+
+    /**
+     * Check if a given time string is a solar time
+     *
+     * @private
+     * @param {string} time - Time string to check
+     * @returns {boolean} - True if it's a solar time
+     */
+    _isSolarTime(time) {
+        const solarTimes = [
+            'sunrise', 'sunset', 'dawn', 'dusk', 
+            'nauticalDawn', 'nauticalDusk', 
+            'nightEnd', 'night', 
+            'goldenHour', 'goldenHourEnd'
+        ]
+        return solarTimes.includes(time.toLowerCase())
+    }
+
+    /**
+     * Get current solar times for today
+     *
+     * @returns {object} - Object containing all solar times for today
+     */
+    getSolarTimes() {
+        const today = new Date()
+        return SunCalc.getTimes(today, this.location.latitude, this.location.longitude)
+    }
+
+    /**
+     * Get the time for a specific solar event
+     *
+     * @param {string} eventName - Name of the solar event (sunrise, sunset, etc.)
+     * @returns {Date|null} - Date object for the solar event or null if invalid
+     */
+    getSolarTime(eventName) {
+        const times = this.getSolarTimes()
+        return times[eventName.toLowerCase()] || null
+    }
+
+    /**
+     * Check if current time matches a solar time (within 1 minute)
+     *
+     * @param {string} solarEvent - Name of the solar event
+     * @returns {boolean} - True if current time matches the solar time
+     */
+    isSolarTime(solarEvent) {
+        const solarTime = this.getSolarTime(solarEvent)
+        if (!solarTime) return false
+        
+        const now = dayjs()
+        const solar = dayjs(solarTime)
+        return Math.abs(now.diff(solar, 'minute')) <= 1
+    }
+
+    /**
+     * Update location coordinates for solar calculations
+     *
+     * @param {number} latitude - Latitude coordinate
+     * @param {number} longitude - Longitude coordinate
+     */
+    setLocation(latitude, longitude) {
+        this.location = { latitude, longitude }
+        this._scheduleSolarEvents() // Recalculate with new location
     }
 }
 

@@ -6,6 +6,21 @@ const dayjs = require('dayjs')
 jest.mock('./../../../src/fluent', () => require('./../../__mocks__/fluent'))
 jest.mock('./../../../src/logger')
 
+// Mock SunCalc for consistent test results
+jest.mock('suncalc', () => ({
+    getTimes: jest.fn(() => ({
+        sunrise: new Date('2000-11-22T06:30:00'),
+        sunset: new Date('2000-11-22T18:45:00'),
+        dawn: new Date('2000-11-22T06:00:00'),
+        dusk: new Date('2000-11-22T19:15:00'),
+        nauticalDawn: new Date('2000-11-22T05:30:00'),
+        nauticalDusk: new Date('2000-11-22T19:45:00'),
+        nightEnd: new Date('2000-11-22T05:00:00'),
+        night: new Date('2000-11-22T20:15:00'),
+        goldenHour: new Date('2000-11-22T18:00:00'),
+        goldenHourEnd: new Date('2000-11-22T07:00:00')
+    }))
+}))
 
 const TimeComponent = require('./../../../src/components/datetime/time_component')
 const Fluent = require('./../../../src/fluent')
@@ -14,10 +29,12 @@ const ComponentHelper = require('./../../helpers/component_helper.js')
 describe('Time setup', () => {
     it('has setup scheduler', () => {
         new TimeComponent(Fluent)
-        expect(schedule.scheduleJob).toHaveBeenCalledTimes(3)
+        // Original 3 schedules plus 1 for daily solar recalculation
+        expect(schedule.scheduleJob).toHaveBeenCalledTimes(4)
         expect(schedule.scheduleJob).toHaveBeenNthCalledWith(1, '*/1 * * * *', expect.anything())
         expect(schedule.scheduleJob).toHaveBeenNthCalledWith(2, '0 * * * *', expect.anything())
         expect(schedule.scheduleJob).toHaveBeenNthCalledWith(3, '* * * * * *', expect.anything())
+        expect(schedule.scheduleJob).toHaveBeenNthCalledWith(4, '0 0 * * *', expect.anything()) // Daily solar recalculation
     })
 })
 
@@ -232,5 +249,168 @@ describe('Time triggers', () => {
         expect(() => time.triggers(Scenario).time.every('minz')).toThrow(Error)
 
         expect(Scenario.assert).not.toHaveBeenCalled()
+    })
+})
+
+describe('Solar Time functionality', () => {
+    let time
+    let SunCalc
+
+    beforeEach(() => {
+        SunCalc = require('suncalc')
+        schedule.scheduleJob = jest.fn()
+        time = new TimeComponent(Fluent)
+        jest.clearAllMocks()
+    })
+
+    afterEach(() => {
+        mockdate.reset()
+    })
+
+    describe('Solar time setup', () => {
+        it('sets up solar schedules on initialization', () => {
+            // The constructor should call _setupSolarSchedules which schedules daily recalculation
+            expect(schedule.scheduleJob).toHaveBeenCalledWith('0 0 * * *', expect.anything())
+        })
+
+        it('has default location coordinates', () => {
+            expect(time.location).toBeDefined()
+            expect(time.location.latitude).toBe(13.7563) // Bangkok latitude
+            expect(time.location.longitude).toBe(100.5018) // Bangkok longitude
+        })
+    })
+
+    describe('getSolarTimes', () => {
+        it('returns solar times for current date', () => {
+            const solarTimes = time.getSolarTimes()
+            
+            expect(SunCalc.getTimes).toHaveBeenCalledWith(
+                expect.any(Date),
+                time.location.latitude,
+                time.location.longitude
+            )
+            expect(solarTimes).toHaveProperty('sunrise')
+            expect(solarTimes).toHaveProperty('sunset')
+            expect(solarTimes).toHaveProperty('dawn')
+            expect(solarTimes).toHaveProperty('dusk')
+        })
+    })
+
+    describe('getSolarTime', () => {
+        it('returns specific solar time', () => {
+            const sunrise = time.getSolarTime('sunrise')
+            expect(sunrise).toEqual(new Date('2000-11-22T06:30:00'))
+        })
+
+        it('returns null for invalid solar event', () => {
+            const invalid = time.getSolarTime('invalidEvent')
+            expect(invalid).toBeNull()
+        })
+    })
+
+    describe('_isSolarTime', () => {
+        it('returns true for valid solar times', () => {
+            expect(time._isSolarTime('sunrise')).toBe(true)
+            expect(time._isSolarTime('sunset')).toBe(true)
+            expect(time._isSolarTime('dawn')).toBe(true)
+            expect(time._isSolarTime('dusk')).toBe(true)
+            expect(time._isSolarTime('nauticalDawn')).toBe(true)
+            expect(time._isSolarTime('nauticalDusk')).toBe(true)
+            expect(time._isSolarTime('nightEnd')).toBe(true)
+            expect(time._isSolarTime('night')).toBe(true)
+            expect(time._isSolarTime('goldenHour')).toBe(true)
+            expect(time._isSolarTime('goldenHourEnd')).toBe(true)
+        })
+
+        it('returns false for invalid solar times', () => {
+            expect(time._isSolarTime('noon')).toBe(false)
+            expect(time._isSolarTime('midnight')).toBe(false)
+            expect(time._isSolarTime('invalid')).toBe(false)
+            expect(time._isSolarTime('12:00')).toBe(false)
+        })
+
+        it('is case insensitive', () => {
+            expect(time._isSolarTime('SUNRISE')).toBe(true)
+            expect(time._isSolarTime('SunSet')).toBe(true)
+            expect(time._isSolarTime('DAWN')).toBe(true)
+        })
+    })
+
+    describe('setLocation', () => {
+        it('updates location coordinates', () => {
+            const newLat = 40.7128
+            const newLng = -74.0060
+            
+            time.setLocation(newLat, newLng)
+            
+            expect(time.location.latitude).toBe(newLat)
+            expect(time.location.longitude).toBe(newLng)
+        })
+    })
+
+    describe('isSolarTime', () => {
+        it('returns true when current time matches solar time (within 1 minute)', () => {
+            mockdate.set('2000-11-22T06:30:30') // 30 seconds after sunrise
+            expect(time.isSolarTime('sunrise')).toBe(true)
+        })
+
+        it('returns false when current time does not match solar time', () => {
+            mockdate.set('2000-11-22T12:00:00') // Noon
+            expect(time.isSolarTime('sunrise')).toBe(false)
+        })
+
+        it('returns false for invalid solar event', () => {
+            expect(time.isSolarTime('invalidEvent')).toBe(false)
+        })
+    })
+})
+
+describe('Solar Time triggers', () => {
+    let Scenario
+    let time
+
+    beforeEach(() => {
+        time = new TimeComponent(Fluent)
+        Scenario = ComponentHelper.ScenarioAndEvent(time)
+        schedule.scheduleJob = jest.fn()
+        jest.clearAllMocks()
+    })
+
+    it('solar time event triggers for sunrise', () => {
+        time.triggers(Scenario).time.is('sunrise')
+        time.event().emit('solar', 'sunrise')
+        expect(Scenario.assert).toHaveBeenCalled()
+    })
+
+    it('solar time event triggers for sunset', () => {
+        time.triggers(Scenario).time.is('sunset')
+        time.event().emit('solar', 'sunset')
+        expect(Scenario.assert).toHaveBeenCalled()
+    })
+
+    it('different solar event does not trigger', () => {
+        time.triggers(Scenario).time.is('sunrise')
+        time.event().emit('solar', 'sunset')
+        expect(Scenario.assert).not.toHaveBeenCalled()
+    })
+
+    it('regular time triggers still work with solar functionality', () => {
+        time.triggers(Scenario).time.is('10:00')
+        time.event().emit('time', '10:00')
+        expect(Scenario.assert).toHaveBeenCalled()
+    })
+
+    it('throws error for invalid time format that is not solar time', () => {
+        expect(() => time.triggers(Scenario).time.is('invalid:time')).toThrow(
+            'Time "invalid:time" is not in the correct format of HH:mm or a valid solar time'
+        )
+    })
+
+    it('accepts all valid solar times', () => {
+        const solarTimes = ['sunrise', 'sunset', 'dawn', 'dusk', 'nauticalDawn', 'nauticalDusk', 'nightEnd', 'night', 'goldenHour', 'goldenHourEnd']
+        
+        solarTimes.forEach(solarTime => {
+            expect(() => time.triggers(Scenario).time.is(solarTime)).not.toThrow()
+        })
     })
 })

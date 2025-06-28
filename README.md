@@ -714,6 +714,65 @@ scenario('Triggers 12 hours')
     })
 ```
 
+#### `.time.is(solar_time: string)` - Solar Times
+
+Fluent IoT supports solar-based time triggers using the SunCalc library. You can trigger scenarios based on astronomical events like sunrise, sunset, dawn, and dusk.
+
+**Supported Solar Times:**
+- `sunrise` - Sun appears above the horizon
+- `sunset` - Sun disappears below the horizon  
+- `dawn` - Morning civil twilight starts
+- `dusk` - Evening civil twilight starts
+- `nauticalDawn` - Morning nautical twilight starts
+- `nauticalDusk` - Evening nautical twilight starts
+- `nightEnd` - Night ends (morning astronomical twilight starts)
+- `night` - Night starts (evening astronomical twilight starts)
+- `goldenHour` - Evening golden hour starts
+- `goldenHourEnd` - Morning golden hour ends
+
+```javascript
+scenario('Turn on garden lights at sunset')
+    .when()
+        .time.is('sunset')
+    .then(() => {
+        device.get('gardenLights').turnOn()
+    })
+
+scenario('Turn off security lights at sunrise')
+    .when()
+        .time.is('sunrise')
+    .then(() => {
+        device.get('securityLights').turnOff()
+    })
+
+scenario('Close blinds at dusk')
+    .when()
+        .time.is('dusk')
+    .then(() => {
+        device.get('livingRoomBlinds').close()
+    })
+```
+
+**Location Configuration:**
+Solar times are calculated based on your geographical location. By default, Fluent IoT uses Bangkok, Thailand coordinates. To set your location, add the following to your `fluent.config.js`:
+
+```javascript
+const config = {
+    location: {
+        latitude: 40.7128,   // Your latitude
+        longitude: -74.0060  // Your longitude (New York City example)
+    },
+    // ...existing config
+}
+```
+
+You can also programmatically update the location:
+
+```javascript
+const { time } = require('fluentiot')
+time.setLocation(40.7128, -74.0060) // Latitude, Longitude
+```
+
 ### Constraints
 
 #### `.time.between(start_time: string, end_time: string)`
@@ -753,6 +812,17 @@ scenario('Between times')
 | `time.hour`   | Every hour, on the hour     | -    |
 | `time.minute` | Every minute, on the minute | -    |
 | `time.second` | Every second                | -    |
+| `solar`       | Solar time events           | Solar event name (e.g., 'sunrise', 'sunset') |
+| `time.sunrise` | When sun rises             | -    |
+| `time.sunset`  | When sun sets              | -    |
+| `time.dawn`    | Civil dawn                 | -    |
+| `time.dusk`    | Civil dusk                 | -    |
+| `time.nauticalDawn` | Nautical dawn        | -    |
+| `time.nauticalDusk` | Nautical dusk        | -    |
+| `time.nightEnd`     | Night ends           | -    |
+| `time.night`        | Night starts         | -    |
+| `time.goldenHour`   | Golden hour starts   | -    |
+| `time.goldenHourEnd`| Golden hour ends     | -    |
 
 Example using the `event` component directly.
 
@@ -783,6 +853,21 @@ scenario('Runs every second')
         .event('time.second').on()
     .then(() => {
         console.log('Every second')
+    })
+
+// Solar event examples
+scenario('Listen for any solar event')
+    .when()
+        .event('solar').on()
+    .then((Scenario, data) => {
+        console.log(`Solar event occurred: ${data}`)
+    })
+
+scenario('Listen for sunrise specifically')
+    .when()
+        .event('time.sunrise').on()
+    .then(() => {
+        console.log('The sun has risen!')
     })
 ```
 
@@ -1896,12 +1981,12 @@ npm test -- capability.test.js
 - [/] Recode Tuya interface
 - [/] Move /src/commons/logger.js to /src/logger.js
 - [/] Document utilities
+- [/] Replace prettier = removed for now
 - [] Improve command interface
 - [] Capability retry when it fails
-- [] Upgrade to latest NodeJS
+- [] Change to typescript
 - [] Ability to put config in ENV for sensitive info
 - [] Clean up isJSONString, file name
-- [] Replace prettier
 - [] Date component, between renamed to isBetween for consistancy
 - [] Backup/restore functionality for device states (State persistence across restarts)
 - [] Sunset/rise, times of the day shifting based on location
