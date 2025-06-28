@@ -18,7 +18,7 @@ const config = {
         file: {
             enabled: false,
             filename: 'logs/app.log',
-            maxsize: 10 * 1024 * 1024,
+            maxsize: 1 * 1024 * 1024,
             maxFiles: 5,
         }
     },

@@ -1896,14 +1896,23 @@ npm test -- capability.test.js
 - [/] Recode Tuya interface
 - [/] Move /src/commons/logger.js to /src/logger.js
 - [/] Document utilities
-- [] Document unit testing
+- [] Improve command interface
 - [] Capability retry when it fails
 - [] Upgrade to latest NodeJS
 - [] Ability to put config in ENV for sensitive info
 - [] Clean up isJSONString, file name
 - [] Replace prettier
 - [] Date component, between renamed to isBetween for consistancy
-- [] Restore state if power down etc..
+- [] Backup/restore functionality for device states (State persistence across restarts)
+- [] Sunset/rise, times of the day shifting based on location
+
+
+## Bigger ideas
+- [] Include Google Cast component
+- [] Voice assistant (check Home Assistant)
+- [] API Access / remote access
+- [] Rename room to zone/group + support home/s
+
 
 
 # Contributing
