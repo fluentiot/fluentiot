@@ -29,72 +29,19 @@
             }
         }
     </script>
-    <style>
-        .animate-in {
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .scrollbar::-webkit-scrollbar-track {
-            background: #161b22;
-        }
-
-        .scrollbar::-webkit-scrollbar-thumb {
-            background: #30363d;
-            border-radius: 3px;
-        }
-
-        .loading-dots::after {
-            content: '';
-            animation: dots 1.5s infinite;
-        }
-
-        @keyframes dots {
-            0%, 20% { content: ''; }
-            40% { content: '.'; }
-            60% { content: '..'; }
-            80%, 100% { content: '...'; }
-        }
-
-        .tab-button {
-            transition: all 0.2s ease;
-        }
-
-        .tab-button:hover {
-            background-color: #30363d;
-        }
-
-        .tab-button.active {
-            background-color: #30363d;
-            color: #c9d1d9;
-        }
-    </style>
+    <link rel="stylesheet" href="main.css">
 </head>
 <body class="dark">
     <div class="bg-github-dark text-github-text font-mono text-sm h-screen overflow-hidden">
-        <div class="grid grid-cols-[1fr_350px] grid-rows-[50px_1fr_120px] gap-0.5 h-full bg-github-darker border border-github-border rounded-lg overflow-hidden">
+        <div class="dashboard-grid grid grid-cols-[1fr_350px] grid-rows-[50px_1fr_120px] gap-0.5 h-full bg-github-darker border border-github-border rounded-lg overflow-hidden">
             <!-- Header -->
-            <div class="col-span-2 bg-github-darker px-4 flex items-center justify-between border-b border-github-border">
+            <header class="col-span-2 bg-github-darker px-4 flex items-center justify-between border-b border-github-border">
                 <div class="flex items-center gap-3">
                     <span class="text-white font-bold">Fluent IoT Dashboard</span>
                 </div>
                 <div class="flex gap-4 text-xs">
                     <div id="connection-indicator" class="flex items-center gap-2 text-xs">
-                        <div class="w-2 h-2 rounded-full bg-github-red" id="status-dot"></div>
+                        <div class="w-2 h-2 rounded-full bg-github-red status-indicator" id="status-dot"></div>
                         <span id="status-text">Connecting...</span>
                     </div>
                     <div class="flex items-center gap-2">
@@ -105,17 +52,14 @@
                         <div class="w-2 h-2 rounded-full bg-github-green" id="socketio-status"></div>
                         <span>SocketIO</span>
                     </div>
-                    <div class="text-github-muted">
-                        <span id="stats-text">Loading<span class="loading-dots"></span></span>
-                    </div>
                     <button onclick="clearActivityLog()" class="px-2 py-1 bg-github-border text-github-text text-xs rounded hover:bg-github-muted/20">
                         Clear
                     </button>
                 </div>
-            </div>
+            </header>
 
             <!-- Activity Panel -->
-            <div class="bg-github-dark overflow-y-auto p-3 scrollbar" id="activity-panel">
+            <main class="bg-github-dark overflow-y-auto p-3 scrollbar" id="activity-panel">
                 <div class="text-github-muted text-xs mb-2">Activity Log</div>
                 <div id="activity-log">
                     <div class="log-entry animate-in bg-blue-500/10 border-l-2 border-blue-500 p-2 mb-2 rounded-r text-xs">
@@ -124,12 +68,12 @@
                         Dashboard starting up<span class="loading-dots"></span>
                     </div>
                 </div>
-            </div>
+            </main>
 
             <!-- Sidebar -->
-            <div class="bg-github-darker overflow-y-auto p-3 border-l border-github-border scrollbar row-span-2">
+            <aside class="sidebar bg-github-darker overflow-y-auto p-3 border-l border-github-border scrollbar row-span-2">
                 <!-- Tab Navigation -->
-                <div class="flex border-b border-github-border mb-3">
+                <nav class="flex border-b border-github-border mb-3">
                     <button onclick="switchTab('scenes')" id="scenes-tab" class="tab-button active px-3 py-2 text-xs bg-github-border text-github-text rounded-t">
                         Scenes
                     </button>
@@ -142,586 +86,133 @@
                     <button onclick="switchTab('scenarios')" id="scenarios-tab" class="tab-button px-3 py-2 text-xs text-github-muted rounded-t hover:text-github-text">
                         Scenarios
                     </button>
-                </div>
+                </nav>
 
                 <!-- Scenes Tab Content -->
-                <div id="scenes-content" class="tab-content">
-                    <div class="text-github-text font-semibold text-xs mb-2 pb-1 border-b border-github-border flex items-center gap-2">
-                        <span>Scenes</span>
-                        <div id="scenes-loading" class="loading-dots text-github-muted"></div>
+                <section id="scenes-content" class="tab-content">
+                    <div id="scenes-loading" class="loading-dots text-github-muted mb-2"></div>
+                    <div class="mb-2">
+                        <div class="flex gap-1">
+                            <input 
+                                type="text" 
+                                id="scene-search" 
+                                placeholder="Search scenes..." 
+                                class="flex-1 bg-github-darker border border-github-border text-github-text px-2 py-1 rounded text-xs outline-none focus:border-github-blue"
+                            >
+                            <button 
+                                id="clear-scene-search" 
+                                class="bg-github-border hover:bg-github-dark text-github-text px-2 py-1 rounded text-xs"
+                                onclick="clearSceneSearch()"
+                                aria-label="Clear search"
+                            >×</button>
+                        </div>
                     </div>
                     <div id="scenes-list" class="space-y-1">
                         <div class="text-github-muted text-xs p-2">Loading scenes<span class="loading-dots"></span></div>
                     </div>
-                </div>
+                </section>
 
                 <!-- Devices Tab Content -->
-                <div id="devices-content" class="tab-content hidden">
-                    <div class="text-github-text font-semibold text-xs mb-2 pb-1 border-b border-github-border flex items-center gap-2">
-                        <span>Devices</span>
-                        <div id="devices-loading" class="loading-dots text-github-muted"></div>
+                <section id="devices-content" class="tab-content hidden">
+                    <div id="devices-loading" class="loading-dots text-github-muted mb-2"></div>
+                    <div class="mb-2">
+                        <div class="flex gap-1">
+                            <input 
+                                type="text" 
+                                id="device-search" 
+                                placeholder="Search devices..." 
+                                class="flex-1 bg-github-darker border border-github-border text-github-text px-2 py-1 rounded text-xs outline-none focus:border-github-blue"
+                            >
+                            <button 
+                                id="clear-device-search" 
+                                class="bg-github-border hover:bg-github-dark text-github-text px-2 py-1 rounded text-xs"
+                                onclick="clearDeviceSearch()"
+                                aria-label="Clear search"
+                            >×</button>
+                        </div>
                     </div>
                     <div id="devices-list" class="space-y-1">
                         <div class="text-github-muted text-xs p-2">Loading devices<span class="loading-dots"></span></div>
                     </div>
-                </div>
+                </section>
 
                 <!-- Rooms Tab Content -->
-                <div id="rooms-content" class="tab-content hidden">
-                    <div class="text-github-text font-semibold text-xs mb-2 pb-1 border-b border-github-border flex items-center gap-2">
-                        <span>Rooms</span>
-                        <div id="rooms-loading" class="loading-dots text-github-muted"></div>
+                <section id="rooms-content" class="tab-content hidden">
+                    <div id="rooms-loading" class="loading-dots text-github-muted mb-2"></div>
+                    <div class="mb-2">
+                        <div class="flex gap-1">
+                            <input 
+                                type="text" 
+                                id="room-search" 
+                                placeholder="Search rooms..." 
+                                class="flex-1 bg-github-darker border border-github-border text-github-text px-2 py-1 rounded text-xs outline-none focus:border-github-blue"
+                            >
+                            <button 
+                                id="clear-room-search" 
+                                class="bg-github-border hover:bg-github-dark text-github-text px-2 py-1 rounded text-xs"
+                                onclick="clearRoomSearch()"
+                                aria-label="Clear search"
+                            >×</button>
+                        </div>
                     </div>
                     <div id="rooms-list" class="space-y-1">
                         <div class="text-github-muted text-xs p-2">Loading rooms<span class="loading-dots"></span></div>
                     </div>
-                </div>
+                </section>
 
                 <!-- Scenarios Tab Content -->
-                <div id="scenarios-content" class="tab-content hidden">
-                    <div class="text-github-text font-semibold text-xs mb-2 pb-1 border-b border-github-border flex items-center gap-2">
-                        <span>Scenarios</span>
-                        <div id="scenarios-loading" class="loading-dots text-github-muted"></div>
+                <section id="scenarios-content" class="tab-content hidden">
+                    <div id="scenarios-loading" class="loading-dots text-github-muted mb-2"></div>
+                    <div class="mb-2">
+                        <div class="flex gap-1">
+                            <input 
+                                type="text" 
+                                id="scenario-search" 
+                                placeholder="Search scenarios..." 
+                                class="flex-1 bg-github-darker border border-github-border text-github-text px-2 py-1 rounded text-xs outline-none focus:border-github-blue"
+                            >
+                            <button 
+                                id="clear-scenario-search" 
+                                class="bg-github-border hover:bg-github-dark text-github-text px-2 py-1 rounded text-xs"
+                                onclick="clearScenarioSearch()"
+                                aria-label="Clear search"
+                            >×</button>
+                        </div>
                     </div>
                     <div id="scenarios-list" class="space-y-1">
                         <div class="text-github-muted text-xs p-2">Loading scenarios<span class="loading-dots"></span></div>
                     </div>
-                </div>
-            </div>
+                </section>
+            </aside>
 
             <!-- Command Panel -->
-            <div class="bg-github-dark border-t border-github-border p-3">
+            <footer class="bg-github-dark border-t border-github-border p-3">
                 <input 
                     type="text" 
                     class="w-full bg-github-darker border border-github-border text-github-text p-2 rounded font-mono text-xs outline-none focus:border-github-blue" 
-                    placeholder="Enter command... (try 'help', 'scenes', 'devices', 'play [sound]', 'say [text]')" 
+                    placeholder="Enter command... (try 'help', 'devices', 'execute [capability] on [device]', 'device [name] [capability]')" 
                     id="command-input"
                     disabled
+                    aria-label="Command input"
                 >
                 <div class="text-github-muted text-xs mt-2">
                     💡 <strong>Quick commands:</strong> <span id="quick-commands-text">Loading commands...</span>
                 </div>
                 <div id="command-suggestions" class="hidden bg-github-darker border border-github-border rounded mt-2 max-h-20 overflow-y-auto">
                 </div>
-            </div>
+            </footer>
         </div>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="dashboard.js"></script>
     <script>
-        // Global state
-        let devices = {};
-        let rooms = {};
-        let scenes = {};
-        let scenarios = [];
-        let isConnected = false;
-        let commandCounter = 0;
-        let activeTab = 'scenes';
-
-        // SocketIO connection
-        const socketioUrl = '{{SOCKETIO_URL}}';
-        const authToken = '{{AUTH_TOKEN}}';
-        console.log('Attempting to connect to SocketIO server at:', socketioUrl);
-        console.log('Using auth token:', authToken ? 'Yes' : 'No');
-        
-        const socket = io(socketioUrl, {
-            auth: {
-                token: authToken
-            }
+        // Initialize dashboard with SocketIO configuration
+        document.addEventListener('DOMContentLoaded', function() {
+            const socketioUrl = '{{SOCKETIO_URL}}';
+            const authToken = '{{AUTH_TOKEN}}';
+            initializeDashboard(socketioUrl, authToken);
         });
-
-        // DOM elements
-        const statusDot = document.getElementById('status-dot');
-        const statusText = document.getElementById('status-text');
-        const socketioStatus = document.getElementById('socketio-status');
-        const statsText = document.getElementById('stats-text');
-        const activityLog = document.getElementById('activity-log');
-        const commandInput = document.getElementById('command-input');
-        const commandSuggestions = document.getElementById('command-suggestions');
-
-        // Available commands - will be populated from backend
-        let commands = [];
-
-        // Connection handlers
-        socket.on('connect', function() {
-            isConnected = true;
-            statusDot.className = 'w-2 h-2 rounded-full bg-github-green';
-            socketioStatus.className = 'w-2 h-2 rounded-full bg-github-green';
-            statusText.textContent = 'Connected';
-            commandInput.disabled = false;
-            addLogEntry('info', 'system', 'Connected to SocketIO server');
-            
-            // Request initial data
-            requestData();
-        });
-
-        socket.on('disconnect', function() {
-            isConnected = false;
-            statusDot.className = 'w-2 h-2 rounded-full bg-github-red';
-            socketioStatus.className = 'w-2 h-2 rounded-full bg-github-red';
-            statusText.textContent = 'Disconnected';
-            commandInput.disabled = true;
-            addLogEntry('warn', 'system', 'Disconnected from SocketIO server');
-        });
-
-        socket.on('connect_error', function(error) {
-            statusText.textContent = 'Connection failed';
-            addLogEntry('error', 'system', 'Connection failed: ' + error.message);
-        });
-
-        // Data event handlers
-        socket.on('log', function(data) {
-            addLogEntry(data.level || 'info', data.component || 'system', data.message || data);
-        });
-
-        socket.on('activity', function(data) {
-            const message = `${data.type}: ${data.message || JSON.stringify(data.data)}`;
-            addLogEntry('info', data.component || 'activity', message);
-        });
-
-        socket.on('device_activity', function(data) {
-            addLogEntry('info', 'device', data.message || JSON.stringify(data));
-            updateDeviceData(data);
-        });
-
-        socket.on('scenario_activity', function(data) {
-            addLogEntry('scenario', 'scenario', data.message || JSON.stringify(data));
-            updateScenarioData(data);
-        });
-
-        socket.on('scene_activity', function(data) {
-            addLogEntry('scenario', 'scene', data.message || JSON.stringify(data));
-        });
-
-        socket.on('system_activity', function(data) {
-            addLogEntry('warn', 'system', data.message || JSON.stringify(data));
-        });
-
-        socket.on('heartbeat', function(data) {
-            // Don't log heartbeats to avoid spam, just update status
-            updateStats();
-        });
-
-        // Data response handlers
-        socket.on('command_result', function(data) {
-            console.log('Command result:', data);
-            
-            if (data.success && data.result && data.result.data) {
-                const result = data.result.data;
-                
-                // Handle different types of command responses based on command ID
-                if (data.commandId === 'list-scenes') {
-                    if (result && typeof result === 'object') {
-                        scenes = result; // result should be the scenes object
-                        renderScenes();
-                        updateStats();
-                        addLogEntry('info', 'system', `Loaded ${Object.keys(scenes).length} scenes`);
-                    } else {
-                        addLogEntry('warn', 'system', 'No scenes found or invalid format');
-                        document.getElementById('scenes-loading').style.display = 'none';
-                        document.getElementById('scenes-list').innerHTML = '<div class="text-github-muted text-xs p-2">No scenes found</div>';
-                    }
-                } else if (data.commandId === 'list-devices') {
-                    if (result && typeof result === 'object') {
-                        devices = result; // result should be the devices object
-                        renderDevices();
-                        updateStats();
-                        addLogEntry('info', 'system', `Loaded ${Object.keys(devices).length} devices`);
-                    } else {
-                        addLogEntry('warn', 'system', 'No devices found or invalid format');
-                        document.getElementById('devices-loading').style.display = 'none';
-                        document.getElementById('devices-list').innerHTML = '<div class="text-github-muted text-xs p-2">No devices found</div>';
-                    }
-                } else if (data.commandId === 'list-rooms') {
-                    if (result && typeof result === 'object') {
-                        rooms = result; // result should be the rooms object
-                        renderRooms();
-                        updateStats();
-                        addLogEntry('info', 'system', `Loaded ${Object.keys(rooms).length} rooms`);
-                    } else {
-                        addLogEntry('warn', 'system', 'No rooms found or invalid format');
-                        document.getElementById('rooms-loading').style.display = 'none';
-                        document.getElementById('rooms-list').innerHTML = '<div class="text-github-muted text-xs p-2">No rooms found</div>';
-                    }
-                } else if (data.commandId === 'list-scenarios') {
-                    if (result && (Array.isArray(result.scenarios) || typeof result === 'object')) {
-                        scenarios = Array.isArray(result.scenarios) ? result.scenarios : Object.keys(result);
-                        renderScenarios();
-                        addLogEntry('info', 'system', `Loaded ${scenarios.length} scenarios`);
-                    } else {
-                        addLogEntry('warn', 'system', 'No scenarios found or invalid format');
-                        document.getElementById('scenarios-loading').style.display = 'none';
-                        document.getElementById('scenarios-list').innerHTML = '<div class="text-github-muted text-xs p-2">No scenarios found</div>';
-                    }
-                } else if (data.commandId && data.commandId.startsWith('inspect-device-')) {
-                    // Handle device inspection results
-                    if (result && result.name) {
-                        const capabilities = result.capabilities ? result.capabilities.join(', ') : 'None';
-                        const attributes = result.attributes ? Object.entries(result.attributes).map(([key, value]) => `${key}: ${value}`).join(', ') : 'None';
-                        
-                        const deviceInfo = `Device: ${result.name}\nCapabilities: ${capabilities}\nAttributes: ${attributes}`;
-                        addLogEntry('cli', 'device', deviceInfo);
-                    } else {
-                        addLogEntry('error', 'device', 'Device not found or invalid response');
-                    }
-                } else if (data.commandId && data.commandId.startsWith('inspect-room-')) {
-                    // Handle room inspection results
-                    if (result) {
-                        const roomInfo = `Room: ${result.name || 'Unknown'}\nStatus: ${result.occupied ? 'Occupied' : 'Vacant'}`;
-                        addLogEntry('cli', 'room', roomInfo);
-                    } else {
-                        addLogEntry('error', 'room', 'Room not found or invalid response');
-                    }
-                } else if (data.commandId && data.commandId.startsWith('inspect-scenario-')) {
-                    // Handle scenario inspection results
-                    if (result && result.description) {
-                        const scenarioInfo = `Scenario: ${result.description}\nRunnable: ${result.runnable ? 'Yes' : 'No'}\nTest Mode: ${result.testMode ? 'Yes' : 'No'}\nTriggers: ${result.triggersCount || 0}\nCallbacks: ${result.callbacksCount || 0}\nSuppressed Until: ${result.suppressUntil ? new Date(result.suppressUntil).toLocaleString() : 'None'}`;
-                        addLogEntry('cli', 'scenario', scenarioInfo);
-                    } else {
-                        addLogEntry('error', 'scenario', 'Scenario not found or invalid response');
-                    }
-                }
-            } else if (data.error) {
-                addLogEntry('error', 'command', `Command failed: ${data.error}`);
-                // Hide loading indicators on error
-                document.getElementById('devices-loading').style.display = 'none';
-                document.getElementById('rooms-loading').style.display = 'none';
-            } else {
-                console.log('Unexpected command result format:', data);
-            }
-        });
-
-        socket.on('command_response', function(data) {
-            addLogEntry(data.success ? 'cli' : 'error', 'cli', data.message);
-        });
-
-        socket.on('command_suggestions', function(data) {
-            if (data && data.suggestions) {
-                commands = data.suggestions;
-                addLogEntry('info', 'system', `Loaded ${commands.length} available commands`);
-                
-                // Update the quick commands help text
-                const quickCommandsText = document.getElementById('quick-commands-text');
-                if (quickCommandsText) {
-                    quickCommandsText.textContent = commands.slice(0, 8).join(' | ');
-                }
-            }
-        });
-
-        // Functions
-        function requestData() {
-            // Use the correct command system
-            executeCommand('scene.list', {}, 'list-scenes');
-            executeCommand('device.list', {}, 'list-devices');
-            executeCommand('room.list', {}, 'list-rooms');
-            
-            // Request command suggestions from backend
-            socket.emit('get_command_suggestions');
-        }
-
-        function executeCommand(command, parameters = {}, commandId = null) {
-            if (!commandId) {
-                commandId = `cmd-${++commandCounter}`;
-            }
-            
-            socket.emit('execute_command', {
-                id: commandId,
-                command: command,
-                parameters: parameters
-            });
-        }
-
-        function addLogEntry(level, component, message) {
-            const timestamp = new Date().toLocaleTimeString();
-            const entry = document.createElement('div');
-            
-            // Handle object messages
-            if (typeof message === 'object' && message !== null) {
-                message = JSON.stringify(message, null, 2);
-            }
-            
-            // Convert message to string and handle line breaks
-            message = String(message);
-            // Replace line breaks with proper formatting while preserving structure
-            message = message.replace(/\n/g, '<br>');
-            
-            // Default to info if level is unknown
-            if (!level || level === 'unknown') {
-                level = 'info';
-            }
-            
-            let bgColor = 'bg-blue-500/10 border-blue-500';
-            let componentColor = 'text-github-blue';
-            
-            switch(level) {
-                case 'debug':
-                    bgColor = 'bg-gray-500/10 border-gray-500';
-                    componentColor = 'text-gray-400';
-                    break;
-                case 'warn':
-                    bgColor = 'bg-yellow-500/10 border-yellow-500';
-                    componentColor = 'text-yellow-500';
-                    break;
-                case 'error':
-                    bgColor = 'bg-red-500/10 border-red-500';
-                    componentColor = 'text-red-500';
-                    break;
-                case 'scenario':
-                    bgColor = 'bg-purple-500/10 border-purple-500';
-                    componentColor = 'text-purple-500';
-                    break;
-                case 'cli':
-                    bgColor = 'bg-green-500/10 border-green-500';
-                    componentColor = 'text-github-green';
-                    break;
-                // 'info' and default cases use the initial values
-            }
-            
-            entry.className = `log-entry animate-in ${bgColor} border-l-2 p-2 mb-2 rounded-r text-xs`;
-            entry.innerHTML = `
-                <div class="flex items-start gap-2">
-                    <span class="text-github-muted whitespace-nowrap">[${timestamp}]</span> 
-                    <span class="${componentColor} font-semibold whitespace-nowrap">${component}</span> 
-                    <span class="flex-1">${message}</span>
-                </div>
-            `;
-            
-            // Add to bottom instead of top
-            activityLog.appendChild(entry);
-            
-            // Keep only last 100 entries
-            while (activityLog.children.length > 100) {
-                activityLog.removeChild(activityLog.firstChild);
-            }
-            
-            // Auto-scroll to bottom to show latest messages
-            const activityPanel = document.getElementById('activity-panel');
-            activityPanel.scrollTop = activityPanel.scrollHeight;
-        }
-
-        function renderDevices() {
-            const container = document.getElementById('devices-list');
-            document.getElementById('devices-loading').style.display = 'none';
-            
-            if (Object.keys(devices).length === 0) {
-                container.innerHTML = '<div class="text-github-muted text-xs p-2">No devices found</div>';
-                return;
-            }
-
-            container.innerHTML = Object.keys(devices).map(deviceName => {
-                const device = devices[deviceName];
-                let status = '';
-                let statusColor = 'text-github-muted';
-                
-                // Try to determine device status - only show if we can determine it
-                if (device.attributes) {
-                    if (device.attributes.switch !== undefined) {
-                        status = device.attributes.switch ? 'ON' : 'OFF';
-                        statusColor = device.attributes.switch ? 'text-github-green' : 'text-github-red';
-                    } else if (device.attributes.motion !== undefined) {
-                        status = device.attributes.motion ? 'ACTIVE' : 'INACTIVE';
-                        statusColor = device.attributes.motion ? 'text-github-yellow' : 'text-github-muted';
-                    } else if (device.attributes.temperature !== undefined) {
-                        status = `${device.attributes.temperature}°C`;
-                        statusColor = 'text-github-text';
-                    }
-                }
-
-                return `
-                    <div class="flex items-center justify-between p-2 hover:bg-github-dark/50 rounded cursor-pointer border-l-2 border-github-green text-xs"
-                         onclick="sendCommand('inspect device ${deviceName}')">
-                        <span class="text-github-text">${deviceName}</span>
-                        ${status ? `<span class="${statusColor}">${status}</span>` : ''}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderRooms() {
-            const container = document.getElementById('rooms-list');
-            document.getElementById('rooms-loading').style.display = 'none';
-            
-            if (Object.keys(rooms).length === 0) {
-                container.innerHTML = '<div class="text-github-muted text-xs p-2">No rooms found</div>';
-                return;
-            }
-
-            container.innerHTML = Object.keys(rooms).map(roomName => {
-                const room = rooms[roomName];
-                let status = 'VACANT';
-                let statusColor = 'text-github-muted';
-                
-                if (room.occupied) {
-                    status = 'OCCUPIED';
-                    statusColor = 'text-github-yellow';
-                }
-
-                return `
-                    <div class="flex items-center justify-between p-2 hover:bg-github-dark/50 rounded cursor-pointer border-l-2 border-github-yellow text-xs"
-                         onclick="sendCommand('inspect room ${roomName}')">
-                        <span class="text-github-text">${roomName}</span>
-                        <span class="${statusColor}">${status}</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderScenarios() {
-            const container = document.getElementById('scenarios-list');
-            document.getElementById('scenarios-loading').style.display = 'none';
-            
-            if (scenarios.length === 0) {
-                container.innerHTML = '<div class="text-github-muted text-xs p-2">No scenarios found</div>';
-                return;
-            }
-
-            container.innerHTML = scenarios.map(scenario => {
-                const scenarioName = typeof scenario === 'string' ? scenario : scenario.name || scenario;
-                return `
-                    <div class="flex items-center justify-between p-2 hover:bg-github-dark/50 rounded cursor-pointer border-l-2 border-github-purple text-xs"
-                         onclick="sendCommand('inspect scenario ${scenarioName}')">
-                        <span class="text-github-text">${scenarioName}</span>
-                        <span class="text-github-muted">READY</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderScenes() {
-            const container = document.getElementById('scenes-list');
-            document.getElementById('scenes-loading').style.display = 'none';
-            
-            if (Object.keys(scenes).length === 0) {
-                container.innerHTML = '<div class="text-github-muted text-xs p-2">No scenes found</div>';
-                return;
-            }
-
-            container.innerHTML = Object.keys(scenes).map(sceneName => {
-                return `
-                    <div class="flex items-center justify-between p-2 hover:bg-github-dark/50 rounded cursor-pointer border-l-2 border-github-purple text-xs"
-                         onclick="sendCommand('activate scene ${sceneName}')">
-                        <span class="text-github-text">${sceneName}</span>
-                        <span class="text-github-purple">RUN</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function updateStats() {
-            const sceneCount = Object.keys(scenes).length;
-            const deviceCount = Object.keys(devices).length;
-            const roomCount = Object.keys(rooms).length;
-            
-            statsText.textContent = `${sceneCount} scenes • ${deviceCount} devices • ${roomCount} rooms`;
-        }
-
-        function updateDeviceData(data) {
-            // Update device data when we receive device activity
-            if (data.device && devices[data.device]) {
-                // Update device state based on activity data
-                renderDevices();
-            }
-        }
-
-        function sendCommand(command) {
-            if (!isConnected) {
-                addLogEntry('error', 'cli', 'Not connected to server');
-                return;
-            }
-
-            addLogEntry('cli', 'cli', `> ${command}`);
-            
-            // Parse specific commands to proper format
-            if (command.startsWith('activate scene ')) {
-                const sceneName = command.replace('activate scene ', '');
-                executeCommand('scene.activate', { sceneName: sceneName });
-            } else if (command.startsWith('inspect device ')) {
-                const deviceName = command.replace('inspect device ', '');
-                const commandId = `inspect-device-${deviceName}`;
-                executeCommand('device.get', { deviceId: deviceName, action: 'describe' }, commandId);
-            } else if (command.startsWith('inspect room ')) {
-                const roomName = command.replace('inspect room ', '');
-                const commandId = `inspect-room-${roomName}`;
-                executeCommand('room.get', { roomId: roomName, action: 'describe' }, commandId);
-            } else if (command.startsWith('inspect scenario ')) {
-                const scenarioName = command.replace('inspect scenario ', '');
-                const commandId = `inspect-scenario-${scenarioName}`;
-                executeCommand('scenario.get', { scenarioName: scenarioName, action: 'describe' }, commandId);
-            } else {
-                // Send as generic command to the new handler
-                socket.emit('command', { command: command });
-            }
-            
-            commandInput.value = '';
-            commandSuggestions.classList.add('hidden');
-        }
-
-        // Tab functions
-        function switchTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active', 'bg-github-border', 'text-github-text');
-                button.classList.add('text-github-muted');
-            });
-            
-            // Show selected tab content
-            document.getElementById(`${tabName}-content`).classList.remove('hidden');
-            
-            // Add active class to selected tab
-            const selectedTab = document.getElementById(`${tabName}-tab`);
-            selectedTab.classList.add('active', 'bg-github-border', 'text-github-text');
-            selectedTab.classList.remove('text-github-muted');
-            
-            activeTab = tabName;
-            
-            // Load data for the tab if needed
-            if (tabName === 'scenarios' && scenarios.length === 0) {
-                executeCommand('scenario.list', {}, 'list-scenarios');
-            }
-            if (tabName === 'scenes' && Object.keys(scenes).length === 0) {
-                executeCommand('scene.list', {}, 'list-scenes');
-            }
-        }
-
-        // Clear activity log function
-        function clearActivityLog() {
-            activityLog.innerHTML = '';
-            addLogEntry('info', 'system', 'Activity log cleared');
-        }
-
-        // Command input handling
-        commandInput.addEventListener('input', (e) => {
-            const value = e.target.value.toLowerCase();
-            if (value.length > 0) {
-                const matches = commands.filter(cmd => cmd.toLowerCase().includes(value));
-                if (matches.length > 0) {
-                    commandSuggestions.innerHTML = matches.slice(0, 5).map((match, i) => 
-                        `<div class="p-2 hover:bg-github-border cursor-pointer text-xs ${i === 0 ? 'bg-github-border' : ''}" onclick="commandInput.value='${match}'; commandSuggestions.classList.add('hidden')">${match}</div>`
-                    ).join('');
-                    commandSuggestions.classList.remove('hidden');
-                } else {
-                    commandSuggestions.classList.add('hidden');
-                }
-            } else {
-                commandSuggestions.classList.add('hidden');
-            }
-        });
-
-        commandInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                commandSuggestions.classList.add('hidden');
-            } else if (e.key === 'Enter') {
-                sendCommand(e.target.value);
-            }
-        });
-
-        // Initial connection attempt
-        addLogEntry('info', 'system', 'Attempting to connect to SocketIO server...');
     </script>
 </body>
 </html>

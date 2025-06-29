@@ -1,0 +1,161 @@
+/* FluentIoT Dashboard Styles */
+
+.animate-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+    background: #161b22;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-radius: 3px;
+}
+
+.loading-dots::after {
+    content: '';
+    animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+.tab-button {
+    transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+    background-color: #30363d;
+}
+
+.tab-button.active {
+    background-color: #30363d;
+    color: #c9d1d9;
+}
+
+/* Device item styling */
+.device-item {
+    transition: all 0.2s ease;
+}
+
+.device-item:hover {
+    transform: translateX(2px);
+}
+
+/* Log entry animations */
+.log-entry {
+    transition: all 0.2s ease;
+}
+
+.log-entry:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Command input styling */
+#command-input:focus {
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
+}
+
+/* Search input styling */
+#device-search:focus {
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
+}
+
+/* Button hover effects */
+button {
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Capability button styling */
+.capability-btn {
+    transition: all 0.2s ease;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+}
+
+.capability-btn:hover {
+    background: #30363d;
+    border-color: #58a6ff;
+    color: #58a6ff;
+}
+
+/* Dashboard item styling - consistent across all tabs */
+.device-item, .scene-item, .room-item, .scenario-item {
+    transition: all 0.2s ease;
+}
+
+.device-item:hover, .scene-item:hover, .room-item:hover, .scenario-item:hover {
+    transform: translateX(2px);
+}
+
+.device-item .item-content, .scene-item .item-content, .room-item .item-content, .scenario-item .item-content {
+    transition: background-color 0.2s ease;
+}
+
+/* Status indicators */
+.status-indicator {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Grid layout responsiveness */
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 50px 1fr 200px 120px;
+    }
+    
+    .sidebar {
+        grid-row: 3;
+    }
+}
+
+/* Compact mode for smaller screens */
+@media (max-width: 768px) {
+    .tab-button {
+        padding: 8px 12px;
+        font-size: 10px;
+    }
+    
+    .device-item, .log-entry {
+        font-size: 10px;
+    }
+    
+    #command-input {
+        font-size: 10px;
+        padding: 8px;
+    }
+}

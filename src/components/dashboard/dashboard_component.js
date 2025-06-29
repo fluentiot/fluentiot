@@ -81,6 +81,10 @@ class DashboardComponent extends Component {
         
         if (url === '/index.html') {
             this.serveTemplate('index.html', res)
+        } else if (url === '/main.css') {
+            this.serveStaticFile('main.css', 'text/css', res)
+        } else if (url === '/dashboard.js') {
+            this.serveStaticFile('dashboard.js', 'application/javascript', res)
         } else {
             res.writeHead(404, { 'Content-Type': 'text/plain' })
             res.end('Not Found')
@@ -90,7 +94,7 @@ class DashboardComponent extends Component {
     /**
      * Serve template files
      */
-    serveTemplate(templateName, res) {
+    serveTemplate(templateName, res, contentType = 'text/html') {
         const templatePath = path.join(__dirname, 'templates', templateName)
         
         fs.readFile(templatePath, 'utf8', (err, data) => {
@@ -120,8 +124,30 @@ class DashboardComponent extends Component {
             let renderedData = data.replace('{{SOCKETIO_URL}}', socketioUrl)
             renderedData = renderedData.replace('{{AUTH_TOKEN}}', authToken)
             
-            res.writeHead(200, { 'Content-Type': 'text/html' })
+            res.writeHead(200, { 'Content-Type': contentType })
             res.end(renderedData)
+        })
+    }
+
+    /**
+     * Serve static files (CSS, JS)
+     */
+    serveStaticFile(fileName, contentType, res) {
+        const filePath = path.join(__dirname, 'templates', fileName)
+        
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                logger.error(`Failed to read static file ${fileName}: ${err.message}`, 'dashboard')
+                res.writeHead(404, { 'Content-Type': 'text/plain' })
+                res.end('Not Found')
+                return
+            }
+
+            res.writeHead(200, { 
+                'Content-Type': contentType,
+                'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
+            })
+            res.end(data)
         })
     }
 

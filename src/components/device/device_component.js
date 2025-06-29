@@ -201,6 +201,56 @@ class DeviceComponent extends Component {
 
         this.event().on(`device.${device.name}.attribute`, handler)
     }
+
+    /**
+     * Control a device by executing one of its capabilities
+     *
+     * @param {string} deviceName - The name of the device to control
+     * @param {string} capabilityName - The name of the capability to execute
+     * @param {...any} args - Additional arguments to pass to the capability
+     * @returns {any} The result of the capability execution
+     */
+    control(deviceName, capabilityName, ...args) {
+        const device = this.get(deviceName);
+        if (!device) {
+            throw new Error(`Device "${deviceName}" not found`);
+        }
+
+        // Check if the capability exists on the device
+        if (!device.capabilities[capabilityName]) {
+            const availableCapabilities = Object.keys(device.capabilities);
+            throw new Error(`Capability "${capabilityName}" not found on device "${deviceName}". Available capabilities: ${availableCapabilities.join(', ')}`);
+        }
+
+        // Execute the capability
+        logger.info(`Executing capability "${capabilityName}" on device "${deviceName}"`, 'device');
+        
+        try {
+            const result = device[capabilityName](...args);
+            logger.info(`Successfully executed capability "${capabilityName}" on device "${deviceName}"`, 'device');
+            return { 
+                success: true, 
+                device: deviceName, 
+                capability: capabilityName, 
+                result: result 
+            };
+        } catch (error) {
+            logger.error(`Failed to execute capability "${capabilityName}" on device "${deviceName}": ${error.message}`, 'device');
+            throw error;
+        }
+    }
+
+    /**
+     * Execute a capability on a device by name (alias for control)
+     *
+     * @param {string} deviceName - The name of the device
+     * @param {string} capabilityName - The name of the capability to execute
+     * @param {...any} args - Additional arguments to pass to the capability
+     * @returns {any} The result of the capability execution
+     */
+    executeCapability(deviceName, capabilityName, ...args) {
+        return this.control(deviceName, capabilityName, ...args);
+    }
 }
 
 module.exports = DeviceComponent

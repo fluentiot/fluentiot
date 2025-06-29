@@ -1991,6 +1991,8 @@ npm test -- capability.test.js
 
 
 ## Bigger ideas
+- [] Device discovery
+- [] State persistence across restarts
 - [] Change to typescript
 - [] Include Google Cast component
 - [] Voice assistant (check Home Assistant)

@@ -359,9 +359,9 @@ class SocketServer {
      * @returns {String|Promise} - Command result
      */
     parseAndExecuteCommand(command) {
-        const parts = command.toLowerCase().split(' ');
-        const cmd = parts[0];
-        const args = parts.slice(1);
+        const parts = command.split(' ');
+        const cmd = parts[0].toLowerCase(); // Only lowercase the command, not the arguments
+        const args = parts.slice(1); // Keep original case for arguments
 
         switch (cmd) {
             case 'help':
@@ -399,6 +399,24 @@ class SocketServer {
                     return this.executeDeviceControl(deviceName, action);
                 }
                 return 'Usage: turn [on|off] [device name]';
+            
+            case 'execute':
+                if (args.length >= 3) {
+                    const capabilityName = args[0];
+                    if (args[1].toLowerCase() === 'on' && args[2]) {
+                        const deviceName = args.slice(2).join(' ');
+                        return this.executeDeviceCapability(deviceName, capabilityName);
+                    }
+                }
+                return 'Usage: execute [capability] on [device name]';
+            
+            case 'device':
+                if (args.length >= 2) {
+                    const deviceName = args[0];
+                    const capabilityName = args[1];
+                    return this.executeDeviceCapability(deviceName, capabilityName);
+                }
+                return 'Usage: device [device name] [capability]';
             
             case 'trigger':
                 if (args.length >= 1) {
@@ -503,7 +521,9 @@ class SocketServer {
 • status - Show system status
 • logs - Show recent system logs
 • clear - Clear activity log
-• turn [on|off] [device] - Control a device
+• turn [on|off] [device] - Control a device (legacy)
+• execute [capability] on [device] - Execute a specific device capability
+• device [device] [capability] - Execute a capability on a device
 • trigger [scenario] - Run a scenario
 • activate scene [name] - Activate a scene
 • inspect device [name] - Get device details
@@ -661,6 +681,26 @@ Media Commands:
             });
         }
         return `Device control not available`;
+    }
+
+    executeDeviceCapability(deviceName, capabilityName) {
+        if (this.commandHandler) {
+            return new Promise((resolve, reject) => {
+                const params = {
+                    deviceId: deviceName,
+                    capabilityName: capabilityName
+                };
+                
+                this.commandHandler.execute({ command: 'device.capability', parameters: params }, (result) => {
+                    if (result.success && result.data) {
+                        resolve(`Executed ${capabilityName} on ${deviceName}`);
+                    } else {
+                        reject(new Error(result.error || `Failed to execute ${capabilityName} on ${deviceName}`));
+                    }
+                });
+            });
+        }
+        return `Device capability execution not available`;
     }
 
     executeScenarioTrigger(scenarioName) {
