@@ -1,25 +1,43 @@
-const BaseCommand = require('./BaseCommand');
+const Command = require('../command');
 
 /**
- * Room commands
+ * Room-related commands for managing and inspecting room states and occupancy
  */
-class RoomCommands extends BaseCommand {
+class RoomCommands extends Command {
+    
+    getComponentName() {
+        return 'room';
+    }
+
     getCommands() {
         return {
-            'room.list': this.listRooms.bind(this),
-            'room.get': this.getRoom.bind(this)
+            'room.list': {
+                handler: this.listRooms.bind(this),
+                description: 'List all rooms in the system with their occupancy status and associated devices',
+                parameters: []
+            },
+            'room.get': {
+                handler: this.getRoom.bind(this),
+                description: 'Get detailed information about a specific room including occupancy and attributes',
+                parameters: [
+                    { name: 'roomId', type: 'string', required: true, description: 'The ID or name of the room' },
+                    { name: 'action', type: 'string', required: false, description: 'Optional action like "describe" for detailed info' }
+                ]
+            }
         };
     }
 
     getCommandSuggestions() {
         return [
-            'inspect room [name]'
+            'inspect room [name]',
+            'list all rooms',
+            'check room occupancy [name]'
         ];
     }
 
     listRooms(params) {
         try {
-            const roomComponent = this.Fluent._component().get('room');
+            const roomComponent = this.getComponent('room');
             if (roomComponent) {
                 const rooms = roomComponent.rooms || {};
                 const roomCount = Object.keys(rooms).length;
@@ -50,7 +68,7 @@ class RoomCommands extends BaseCommand {
     getRoom(params) {
         try {
             const { roomId, action } = params;
-            const roomComponent = this.Fluent._component().get('room');
+            const roomComponent = this.getComponent('room');
             if (roomComponent && roomComponent.get) {
                 const room = roomComponent.get(roomId);
                 if (!room) {

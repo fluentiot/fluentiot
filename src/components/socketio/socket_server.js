@@ -444,6 +444,39 @@ class SocketServer {
                 }
                 return 'Usage: restart component [name]';
             
+            // Media commands
+            case 'play':
+                if (args.length >= 1) {
+                    const soundName = args.join(' ');
+                    return this.executePlaySound(soundName);
+                }
+                return 'Usage: play [sound name]';
+            
+            case 'say':
+                if (args.length >= 1) {
+                    const text = args.join(' ');
+                    return this.executeSayText(text);
+                }
+                return 'Usage: say [text to speak]';
+            
+            case 'sounds':
+                return this.executeListSounds();
+            
+            case 'voices':
+                return this.executeListVoices();
+            
+            case 'stop':
+                if (args.length >= 1 && args[0] === 'speech') {
+                    return this.executeStopSpeech();
+                }
+                return 'Usage: stop speech';
+            
+            case 'speech':
+                if (args.length >= 1 && args[0] === 'status') {
+                    return this.executeSpeechStatus();
+                }
+                return 'Usage: speech status';
+            
             case 'eval':
             case 'js':
                 // WARNING: This is potentially dangerous in production
@@ -477,7 +510,15 @@ class SocketServer {
 • inspect room [name] - Get room details
 • set variable [name] [value] - Set a variable
 • get variable [name] - Get a variable value
-• restart component [name] - Restart a component`;
+• restart component [name] - Restart a component
+
+Media Commands:
+• play [sound name] - Play a sound file
+• say [text] - Convert text to speech
+• sounds - List available sound files
+• voices - List available voices
+• stop speech - Stop current speech
+• speech status - Get speech status`;
     }
 
     executeDevicesList() {
@@ -721,6 +762,110 @@ class SocketServer {
         } catch (error) {
             return `Eval error: ${error.message}`;
         }
+    }
+
+    // Media command execution helpers
+    executePlaySound(soundName) {
+        if (this.commandHandler) {
+            return new Promise((resolve, reject) => {
+                this.commandHandler.execute({ command: 'media.play', parameters: { soundName: soundName } }, (result) => {
+                    if (result.success) {
+                        resolve(`Playing sound: ${soundName}`);
+                    } else {
+                        reject(new Error(result.error || `Failed to play sound '${soundName}'`));
+                    }
+                });
+            });
+        }
+        return 'Audio component not available';
+    }
+
+    executeSayText(text) {
+        if (this.commandHandler) {
+            return new Promise((resolve, reject) => {
+                this.commandHandler.execute({ command: 'media.say', parameters: { text: text } }, (result) => {
+                    if (result.success) {
+                        resolve(`Speaking: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+                    } else {
+                        reject(new Error(result.error || `Failed to speak text`));
+                    }
+                });
+            });
+        }
+        return 'Speech component not available';
+    }
+
+    executeListSounds() {
+        if (this.commandHandler) {
+            return new Promise((resolve, reject) => {
+                this.commandHandler.execute({ command: 'media.sounds' }, (result) => {
+                    if (result.success && result.data && result.data.sounds) {
+                        const sounds = result.data.sounds;
+                        if (sounds.length === 0) {
+                            resolve('No sound files found');
+                        } else {
+                            resolve(`Available sounds (${sounds.length}):\n${sounds.map(s => `• ${s}`).join('\n')}`);
+                        }
+                    } else {
+                        reject(new Error(result.error || 'Failed to list sounds'));
+                    }
+                });
+            });
+        }
+        return 'Audio component not available';
+    }
+
+    executeListVoices() {
+        if (this.commandHandler) {
+            return new Promise((resolve, reject) => {
+                this.commandHandler.execute({ command: 'media.voices' }, (result) => {
+                    if (result.success && result.data && result.data.voices) {
+                        const voices = result.data.voices;
+                        if (voices.length === 0) {
+                            resolve('No voices available or voice listing not supported on this platform');
+                        } else {
+                            resolve(`Available voices (${voices.length}):\n${voices.map(v => `• ${v}`).join('\n')}`);
+                        }
+                    } else {
+                        reject(new Error(result.error || 'Failed to list voices'));
+                    }
+                });
+            });
+        }
+        return 'Speech component not available';
+    }
+
+    executeStopSpeech() {
+        if (this.commandHandler) {
+            return new Promise((resolve, reject) => {
+                this.commandHandler.execute({ command: 'media.speech.stop' }, (result) => {
+                    if (result.success) {
+                        resolve('Speech stopped and queue cleared');
+                    } else {
+                        reject(new Error(result.error || 'Failed to stop speech'));
+                    }
+                });
+            });
+        }
+        return 'Speech component not available';
+    }
+
+    executeSpeechStatus() {
+        if (this.commandHandler) {
+            return new Promise((resolve, reject) => {
+                this.commandHandler.execute({ command: 'media.speech.status' }, (result) => {
+                    if (result.success && result.data && result.data.status) {
+                        const status = result.data.status;
+                        resolve(`Speech Status:
+• Currently speaking: ${status.speaking ? 'Yes' : 'No'}
+• Queue length: ${status.queueLength} items`);
+                    } else {
+                        reject(new Error(result.error || 'Failed to get speech status'));
+                    }
+                });
+            });
+        }
+        return 'Speech component not available';
     }
 
     /**

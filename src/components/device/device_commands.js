@@ -1,14 +1,38 @@
-const BaseCommand = require('./BaseCommand');
+const Command = require('../command');
 
 /**
- * Device commands
+ * Device-related commands for controlling and inspecting IoT devices
  */
-class DeviceCommands extends BaseCommand {
+class DeviceCommands extends Command {
+    
+    getComponentName() {
+        return 'device';
+    }
+
     getCommands() {
         return {
-            'device.list': this.listDevices.bind(this),
-            'device.get': this.getDevice.bind(this),
-            'device.control': this.controlDevice.bind(this)
+            'device.list': {
+                handler: this.listDevices.bind(this),
+                description: 'List all available devices in the system with their current status and capabilities',
+                parameters: []
+            },
+            'device.get': {
+                handler: this.getDevice.bind(this),
+                description: 'Get detailed information about a specific device including attributes and capabilities',
+                parameters: [
+                    { name: 'deviceId', type: 'string', required: true, description: 'The ID or name of the device' },
+                    { name: 'action', type: 'string', required: false, description: 'Optional action like "describe" for detailed info' }
+                ]
+            },
+            'device.control': {
+                handler: this.controlDevice.bind(this),
+                description: 'Control a device by executing an action with optional parameters',
+                parameters: [
+                    { name: 'deviceId', type: 'string', required: true, description: 'The ID or name of the device to control' },
+                    { name: 'action', type: 'string', required: true, description: 'The action to perform (e.g., "on", "off", "dim")' },
+                    { name: 'value', type: 'any', required: false, description: 'Optional value for the action (e.g., brightness level)' }
+                ]
+            }
         };
     }
 
@@ -16,13 +40,15 @@ class DeviceCommands extends BaseCommand {
         return [
             'inspect device [name]',
             'turn on [device]',
-            'turn off [device]'
+            'turn off [device]',
+            'dim [device] to [percentage]',
+            'list all devices'
         ];
     }
 
     listDevices(params) {
         try {
-            const deviceComponent = this.Fluent._component().get('device');
+            const deviceComponent = this.getComponent('device');
             if (deviceComponent) {
                 const devices = deviceComponent.devices || {};
                 const deviceCount = Object.keys(devices).length;
@@ -53,7 +79,7 @@ class DeviceCommands extends BaseCommand {
     getDevice(params) {
         try {
             const { deviceId, action } = params;
-            const deviceComponent = this.Fluent._component().get('device');
+            const deviceComponent = this.getComponent('device');
             if (deviceComponent && deviceComponent.get) {
                 const device = deviceComponent.get(deviceId);
                 if (!device) {
@@ -82,9 +108,11 @@ class DeviceCommands extends BaseCommand {
     controlDevice(params) {
         try {
             const { deviceId, action, value } = params;
-            const deviceComponent = this.Fluent._component().get('device');
+            const deviceComponent = this.getComponent('device');
             if (deviceComponent && deviceComponent.control) {
-                return deviceComponent.control(deviceId, action, value);
+                const result = deviceComponent.control(deviceId, action, value);
+                this.logSuccess(`Device "${deviceId}" controlled with action "${action}"`);
+                return result;
             }
             return { message: 'Device control not available' };
         } catch (error) {

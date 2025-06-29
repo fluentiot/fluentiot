@@ -1983,7 +1983,7 @@ npm test -- capability.test.js
 - [/] Document utilities
 - [/] Replace prettier = removed for now
 - [/] Sunset/rise, times of the day shifting based on location
-- [] Improve command interface
+- [/] Improve command interface
 - [] Capability retry when it fails
 - [] Ability to put config in ENV for sensitive info
 - [] Date component, between renamed to isBetween for consistancy

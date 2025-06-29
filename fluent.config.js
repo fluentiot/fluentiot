@@ -9,6 +9,10 @@ const config = {
         { name: 'room' },
         { name: 'variable' },
         { name: 'scene' },
+        { name: 'socketio' },
+        { name: 'scene' },
+        { name: 'dashboard' },
+        { name: 'media' }
         //{ name: 'tuya' }
     ],
     logging: {

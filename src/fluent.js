@@ -21,6 +21,7 @@ class Fluent {
     static setup() {
         Fluent.config = {} //Config data
         Fluent.components = {} //Components loaded in
+        Fluent.commands = {} //Commands loaded for components
         Fluent.scenarios = {} //Scenarios defined
         Fluent.inTestMode = false //If in test mode
 
@@ -33,6 +34,9 @@ class Fluent {
         let components = config.get('components') || []
         Fluent.loadSetupComponents(components)
 
+        // Load system commands (these are always available)
+        Fluent.loadSystemCommands()
+
         // After load callback
         for (const key in Fluent.components) {
             if (typeof Fluent.components[key].afterLoad === 'function') {
@@ -43,6 +47,7 @@ class Fluent {
         // DSL shortcuts
         Fluent.scenario = Fluent._scenario()
         Fluent.component = Fluent._component()
+        Fluent.command = Fluent._command()
 
         logger.info(`Fluent IoT Ready`, 'fluent');
     }
@@ -59,6 +64,25 @@ class Fluent {
             "|_|   |_|\\__,_|\\___|_| |_|\\__|___\\___/|_|  "
         );
         console.log("\nhttps://fluentiot.github.io\n");
+    }
+
+    /**
+     * Load system-wide commands that are always available
+     * @private
+     */
+    static loadSystemCommands() {
+        const projectRoot = appRoot.path
+        const systemCommandsPath = path.join(__dirname, 'components', 'system')
+        
+        if (fs.existsSync(systemCommandsPath)) {
+            const files = fs.readdirSync(systemCommandsPath)
+            files.forEach((file) => {
+                if (file.endsWith('_commands.js')) {
+                    const commandName = path.basename(file, '_commands.js')
+                    Fluent._command().add(systemCommandsPath, commandName, 'system')
+                }
+            })
+        }
     }
 
     /**
@@ -83,6 +107,9 @@ class Fluent {
                 if (file.endsWith('_component.js')) {
                     const name = path.basename(file, '_component.js')
                     Fluent._component().add(componentPath, name)
+                    
+                    // Also load commands for this component if they exist
+                    Fluent._command().loadForComponent(componentPath, name)
                 }
             })
         })
@@ -160,6 +187,108 @@ class Fluent {
 
         // Mixins
         dsl = Object.assign(dsl, QueryDslMixin(Fluent, () => { return Fluent.scenarios }))
+
+        return dsl
+    }
+
+    /**
+     * Command DSL for managing component commands
+     *
+     * @returns {Object} - Command management object
+     */
+    static _command() {
+        const load = (commandPath, name, component = null) => {
+            const file = commandPath + `/${name}_commands.js`
+
+            if (!fs.existsSync(file)) {
+                // Commands are optional, so don't throw an error
+                return null
+            }
+
+            try {
+                const CommandClass = require(file)
+                const commandInstance = new CommandClass(Fluent)
+                const componentName = component || name
+                
+                if (!Fluent.commands[componentName]) {
+                    Fluent.commands[componentName] = {}
+                }
+                
+                Fluent.commands[componentName][name] = commandInstance
+
+                logger.info(`Commands "${name}" loaded for component "${componentName}"`, 'fluent')
+
+                return commandInstance
+            } catch (error) {
+                logger.error(`Failed to load commands "${name}": ${error.message}`, 'fluent')
+                return null
+            }
+        }
+
+        const loadForComponent = (componentPath, componentName) => {
+            // Try to load commands with the same name as the component
+            const commandFile = path.join(componentPath, `${componentName}_commands.js`)
+            if (fs.existsSync(commandFile)) {
+                return load(componentPath, componentName)
+            }
+            
+            // If not found, try to find any *_commands.js files in the component directory
+            if (fs.existsSync(componentPath)) {
+                const files = fs.readdirSync(componentPath)
+                files.forEach((file) => {
+                    if (file.endsWith('_commands.js')) {
+                        const commandName = path.basename(file, '_commands.js')
+                        load(componentPath, commandName, componentName)
+                    }
+                })
+            }
+        }
+
+        // DSL for Commands
+        let dsl = {
+            add: (commandPath, name, component = null) => {
+                return load(commandPath, name, component)
+            },
+            loadForComponent: (componentPath, componentName) => {
+                return loadForComponent(componentPath, componentName)
+            },
+            get: (componentName, commandName = null) => {
+                if (commandName) {
+                    return Fluent.commands[componentName] && Fluent.commands[componentName][commandName]
+                }
+                return Fluent.commands[componentName]
+            },
+            getAll: () => {
+                return Fluent.commands
+            },
+            getAllCommands: () => {
+                const allCommands = {}
+                Object.keys(Fluent.commands).forEach(componentName => {
+                    Object.keys(Fluent.commands[componentName]).forEach(commandName => {
+                        const commandInstance = Fluent.commands[componentName][commandName]
+                        if (commandInstance && typeof commandInstance.getCommands === 'function') {
+                            Object.assign(allCommands, commandInstance.getCommands())
+                        }
+                    })
+                })
+                return allCommands
+            },
+            getAllSuggestions: () => {
+                const allSuggestions = []
+                Object.keys(Fluent.commands).forEach(componentName => {
+                    Object.keys(Fluent.commands[componentName]).forEach(commandName => {
+                        const commandInstance = Fluent.commands[componentName][commandName]
+                        if (commandInstance && typeof commandInstance.getCommandSuggestions === 'function') {
+                            allSuggestions.push(...commandInstance.getCommandSuggestions())
+                        }
+                    })
+                })
+                return allSuggestions
+            }
+        }
+
+        // Mixins
+        dsl = Object.assign(dsl, QueryDslMixin(Fluent, () => { return Fluent.commands }))
 
         return dsl
     }
