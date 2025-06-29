@@ -75,14 +75,14 @@ class Config {
      */
     get(key) {
         if (!this.config) {
-            logger.error(`Config not loaded`, 'core');
+            console.log(`Config not loaded`);
             return null;
         }
 
         const value = dot.get(this.config, key);
 
         if (value === null) {
-            logger.warn(`Config key "${key}" not found`, 'core');
+            console.log(`Config key "${key}" not found`);
         }
 
         return value;

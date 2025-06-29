@@ -2,6 +2,7 @@ const Component = require('./../component')
 const Scene = require('./scene')
 const logger = require('./../../logger')
 const { validation } = require('./../../utils')
+const { QueryDslMixin } = require('./../_mixins/query_dsl')
 
 /**
  * Scene component
@@ -19,6 +20,9 @@ class SceneComponent extends Component {
     constructor(Fluent) {
         super(Fluent)
         this.scenes = {}
+
+        // Mixins
+        Object.assign(this, QueryDslMixin(this, this.scenes))
     }
 
     /**

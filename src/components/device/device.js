@@ -95,6 +95,22 @@ class Device {
             },
         }
     }
+
+    /**
+     * Describe the device with its name and capabilities
+     * 
+     * @returns {object} Description object with name and capabilities
+     */
+    describe() {
+        const description = {
+            name: this.name,
+            type: 'device',
+            capabilities: Object.keys(this.capabilities),
+            attributes: this.attributes
+        }
+        
+        return description
+    }
 }
 
 module.exports = Device

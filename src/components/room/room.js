@@ -177,6 +177,23 @@ class Room {
         return !this.attribute.get('occupied');
     }
 
+    /**
+     * Describe the room with its name and status
+     * 
+     * @returns {object} Description object with name and status
+     */
+    describe() {
+        const description = {
+            name: this.name,
+            type: 'room',
+            occupied: this.isOccupied(),
+            attributes: this.attributes,
+            occupancyStatus: this.isOccupied() ? 'occupied' : 'vacant'
+        }
+        
+        return description
+    }
+
 }
 
 module.exports = Room;

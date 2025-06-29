@@ -147,7 +147,7 @@ class TimeComponent extends Component {
                         })
                         return scope
                     }
-                    
+
                     // Regular time format (HH:mm)
                     if (!dayjs(targetTime, 'HH:mm', true).isValid()) {
                         throw new Error(`Time "${targetTime}" is not in the correct format of HH:mm or a valid solar time`)

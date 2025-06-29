@@ -356,6 +356,24 @@ class Scenario {
 
         return ranCallback
     }
+
+    /**
+     * Get a clean description of the scenario for inspection
+     * @returns {Object} - Clean description object
+     */
+    describe() {
+        return {
+            description: this.description,
+            runnable: this.runnable,
+            testMode: this.testMode,
+            properties: this.properties,
+            suppressUntil: this.suppressUntil,
+            lastAssertTime: this.lastAssertTime,
+            triggersCount: Object.keys(this.triggers).length,
+            callbacksCount: this.callbacks.length,
+            traceCount: this.trace.length
+        };
+    }
 }
 
 module.exports = Scenario

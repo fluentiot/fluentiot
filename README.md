@@ -1982,17 +1982,16 @@ npm test -- capability.test.js
 - [/] Move /src/commons/logger.js to /src/logger.js
 - [/] Document utilities
 - [/] Replace prettier = removed for now
+- [/] Sunset/rise, times of the day shifting based on location
 - [] Improve command interface
 - [] Capability retry when it fails
-- [] Change to typescript
 - [] Ability to put config in ENV for sensitive info
-- [] Clean up isJSONString, file name
 - [] Date component, between renamed to isBetween for consistancy
 - [] Backup/restore functionality for device states (State persistence across restarts)
-- [] Sunset/rise, times of the day shifting based on location
 
 
 ## Bigger ideas
+- [] Change to typescript
 - [] Include Google Cast component
 - [] Voice assistant (check Home Assistant)
 - [] API Access / remote access
