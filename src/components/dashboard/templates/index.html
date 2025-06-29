@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HomeIot Dashboard</title>
+    <title>FluentIoT Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -199,7 +199,7 @@
                     disabled
                 >
                 <div class="text-github-muted text-xs mt-2">
-                    💡 <strong>Quick commands:</strong> scenes | devices | rooms | scenarios | activate scene [name] | turn on/off [device] | trigger [scenario] | help
+                    💡 <strong>Quick commands:</strong> <span id="quick-commands-text">Loading commands...</span>
                 </div>
                 <div id="command-suggestions" class="hidden bg-github-darker border border-github-border rounded mt-2 max-h-20 overflow-y-auto">
                 </div>
@@ -239,12 +239,8 @@
         const commandInput = document.getElementById('command-input');
         const commandSuggestions = document.getElementById('command-suggestions');
 
-        // Available commands
-        const commands = [
-            'help', 'scenes', 'devices', 'rooms', 'scenarios', 'status', 'logs', 'clear',
-            'turn on', 'turn off', 'trigger', 'activate scene', 'inspect device', 'inspect room', 'inspect scenario',
-            'set variable', 'get variable', 'restart component'
-        ];
+        // Available commands - will be populated from backend
+        let commands = [];
 
         // Connection handlers
         socket.on('connect', function() {
@@ -399,12 +395,28 @@
             addLogEntry(data.success ? 'cli' : 'error', 'cli', data.message);
         });
 
+        socket.on('command_suggestions', function(data) {
+            if (data && data.suggestions) {
+                commands = data.suggestions;
+                addLogEntry('info', 'system', `Loaded ${commands.length} available commands`);
+                
+                // Update the quick commands help text
+                const quickCommandsText = document.getElementById('quick-commands-text');
+                if (quickCommandsText) {
+                    quickCommandsText.textContent = commands.slice(0, 8).join(' | ');
+                }
+            }
+        });
+
         // Functions
         function requestData() {
             // Use the correct command system
             executeCommand('scene.list', {}, 'list-scenes');
             executeCommand('device.list', {}, 'list-devices');
             executeCommand('room.list', {}, 'list-rooms');
+            
+            // Request command suggestions from backend
+            socket.emit('get_command_suggestions');
         }
 
         function executeCommand(command, parameters = {}, commandId = null) {

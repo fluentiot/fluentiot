@@ -138,6 +138,11 @@ class SocketServer {
         socket.on('ping', () => {
             socket.emit('pong', { timestamp: Date.now() });
         });
+
+        // Get command suggestions
+        socket.on('get_command_suggestions', () => {
+            this.sendCommandSuggestions(socket);
+        });
     }
 
     /**
@@ -715,6 +720,24 @@ class SocketServer {
             return `Result: ${typeof result === 'object' ? JSON.stringify(result, null, 2) : result}`;
         } catch (error) {
             return `Eval error: ${error.message}`;
+        }
+    }
+
+    /**
+     * Send command suggestions to client
+     * 
+     * @param {Socket} socket - Client socket
+     */
+    sendCommandSuggestions(socket) {
+        try {
+            const commandInfo = this.commandHandler.getAvailableCommands();
+            socket.emit('command_suggestions', {
+                commands: commandInfo.commands,
+                suggestions: commandInfo.suggestions,
+                timestamp: new Date()
+            });
+        } catch (error) {
+            logger.error(`Error sending command suggestions: ${error.message}`, 'socketio');
         }
     }
 }
