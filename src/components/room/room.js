@@ -29,7 +29,7 @@ class Room {
 
         // Default attributes
         const defaultAttributes = {
-            occupied: false,
+            occupied: null,
             occupiedStartTime: null,
             vacancyDelay: 15,      // Default threshold duration in minutes
         };
@@ -198,7 +198,7 @@ class Room {
      * @returns {Boolean} - if room is occupied
      */
     isOccupied() {
-        return this.attribute.get('occupied');
+        return this.attribute.get('occupied') === true;
     }
 
     /**
@@ -207,7 +207,7 @@ class Room {
      * @returns {Boolean} - if room is vacant
      */
     isVacant() {
-        return !this.attribute.get('occupied');
+        return this.attribute.get('occupied') === false;
     }
 
     /**
@@ -216,12 +216,14 @@ class Room {
      * @returns {object} Description object with name and status
      */
     describe() {
+        const occupied = this.attribute.get('occupied');
+        const occupancyStatus = occupied === true ? 'occupied' : occupied === false ? 'vacant' : 'unknown';
         const description = {
             name: this.name,
             type: 'room',
-            occupied: this.isOccupied(),
+            occupied: occupied,
             attributes: this.attributes,
-            occupancyStatus: this.isOccupied() ? 'occupied' : 'vacant',
+            occupancyStatus: occupancyStatus,
             deviceCount: this.devices.length,
             devices: this.devices.map(d => d.name)
         }

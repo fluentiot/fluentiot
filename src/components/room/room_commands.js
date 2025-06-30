@@ -49,7 +49,7 @@ class RoomCommands extends Command {
                     const room = rooms[roomName];
                     safeRooms[roomName] = {
                         name: room.name || roomName,
-                        occupied: room.occupied || false,
+                        occupied: room.attribute.get('occupied'),
                         devices: Array.isArray(room.devices) ? room.devices.map(d => d.name || d) : [],
                         type: room.type || 'room'
                     };
@@ -83,7 +83,7 @@ class RoomCommands extends Command {
                 // Return basic room info without circular references
                 return {
                     name: room.name || roomId,
-                    occupied: room.isOccupied ? room.isOccupied() : false,
+                    occupied: room.attribute.get('occupied'),
                     attributes: room.attributes || {},
                     type: 'room'
                 };

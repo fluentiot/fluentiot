@@ -2002,11 +2002,9 @@ npm test -- capability.test.js
 - [/] Replace prettier = removed for now
 - [/] Sunset/rise, times of the day shifting based on location
 - [/] Improve command interface
-- [] Attach devices to rooms
+- [/] Attach devices to rooms
 - [] Capability retry when it fails
 - [] Ability to put config in ENV for sensitive info
-- [] Date component, between renamed to isBetween for consistancy
-- [] Backup/restore functionality for device states (State persistence across restarts)
 
 
 ## Bigger ideas

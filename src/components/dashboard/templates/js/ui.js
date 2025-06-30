@@ -280,8 +280,10 @@ window.DashboardUI = {
 
     handleRoomInspectResult: function(result) {
         if (result) {
+            const occupied = result.occupied;
+            const occupancyStatus = occupied === true ? 'Occupied' : occupied === false ? 'Vacant' : 'Unknown';
             const devices = result.devices && result.devices.length > 0 ? result.devices.join(', ') : 'None';
-            const roomInfo = `Room: ${result.name || 'Unknown'}\nStatus: ${result.occupied ? 'Occupied' : 'Vacant'}\nDevices: ${devices}`;
+            const roomInfo = `Room: ${result.name || 'Unknown'}\nStatus: ${occupancyStatus}\nDevices: ${devices}`;
             this.addLogEntry('cli', 'room', roomInfo);
         } else {
             this.addLogEntry('error', 'room', 'Room not found or invalid response');
