@@ -12,10 +12,12 @@ class SocketServer {
      * 
      * @param {Server} io - Socket.IO server instance
      * @param {Object} config - SocketIO configuration
+     * @param {Fluent} Fluent - The Fluent IoT framework instance
      */
-    constructor(io, config) {
+    constructor(io, config, Fluent = null) {
         this.io = io;
         this.config = config;
+        this.Fluent = Fluent;
         this.commandHandler = null;
         this.connectedClients = new Map();
     }
@@ -506,13 +508,17 @@ class SocketServer {
                 return 'Eval command is disabled for security reasons';
             
             default:
-                return `Unknown command: ${cmd}. Type 'help' for available commands.`;
+                // Try LLM processing for unmatched commands
+                return this.tryLLMProcessing(command);
         }
     }
 
     // Command execution helpers
     getCommandHelp() {
-        return `Available commands:
+        const llmComponent = this.getLLMComponent();
+        const hasLLM = llmComponent && llmComponent.isEnabled();
+        
+        let helpText = `Available commands:
 • help - Show this help message
 • scenes - List all scenes
 • devices - List all devices
@@ -539,6 +545,21 @@ Media Commands:
 • voices - List available voices
 • stop speech - Stop current speech
 • speech status - Get speech status`;
+
+        if (hasLLM) {
+            helpText += `
+
+Natural Language Commands (AI-powered):
+You can also use natural language! Try phrases like:
+• "turn off all the lights"
+• "activate movie time scene"
+• "make it dark in the bedroom"
+• "turn on the kitchen fan"
+
+The system will understand your intent and execute the appropriate commands.`;
+        }
+        
+        return helpText;
     }
 
     executeDevicesList() {
@@ -925,6 +946,93 @@ Media Commands:
             logger.error(`Error sending command suggestions: ${error.message}`, 'socketio');
         }
     }
+
+    /**
+     * Try LLM processing for unmatched commands
+     * 
+     * @param {String} command - The original command string
+     * @returns {String|Promise} - Command result or LLM response
+     */
+    async tryLLMProcessing(command) {
+        try {
+            // Check if LLM component is available and enabled
+            const llmComponent = this.getLLMComponent();
+            if (!llmComponent || !llmComponent.isEnabled()) {
+                return this.fallbackToUnknownCommand(command);
+            }
+
+            logger.info(`Trying LLM processing for command: "${command}"`, 'socketio');
+
+            // Process with LLM
+            const result = await llmComponent.processNaturalLanguage(command);
+            
+            if (result.success) {
+                // Return explanation of what was done
+                let response = `I understood: ${result.explanation}`;
+                
+                if (result.executedCommands && result.executedCommands.length > 0) {
+                    const successful = result.executedCommands.filter(cmd => cmd.success).length;
+                    const total = result.executedCommands.length;
+                    
+                    if (successful === total) {
+                        response += `\nSuccessfully executed ${total} command${total > 1 ? 's' : ''}.`;
+                    } else if (successful > 0) {
+                        response += `\nExecuted ${successful} of ${total} commands successfully.`;
+                    } else {
+                        response += `\nFailed to execute the commands.`;
+                    }
+                }
+                
+                return response;
+            } else {
+                // LLM processing failed, fallback
+                logger.warn(`LLM processing failed: ${result.error}`, 'socketio');
+                return this.fallbackToUnknownCommand(command, result.explanation);
+            }
+            
+        } catch (error) {
+            logger.error(`LLM processing error: ${error.message}`, 'socketio');
+            return this.fallbackToUnknownCommand(command);
+        }
+    }
+
+    /**
+     * Get LLM component if available
+     * 
+     * @returns {Object|null} LLM component or null if not available
+     */
+    getLLMComponent() {
+        try {
+            // Access the Fluent framework to get the LLM component
+            // This assumes the SocketIO component has access to Fluent
+            if (this.Fluent && this.Fluent._component) {
+                return this.Fluent._component().get('llm');
+            }
+            return null;
+        } catch (error) {
+            logger.debug(`Cannot access LLM component: ${error.message}`, 'socketio');
+            return null;
+        }
+    }
+
+    /**
+     * Fallback to unknown command message
+     * 
+     * @param {String} command - The original command
+     * @param {String} llmHint - Optional hint from LLM about why it failed
+     * @returns {String} Fallback message
+     */
+    fallbackToUnknownCommand(command, llmHint = null) {
+        let message = `Unknown command: ${command.split(' ')[0]}. Type 'help' for available commands.`;
+        
+        if (llmHint) {
+            message += `\n\nNote: ${llmHint}`;
+        }
+        
+        return message;
+    }
+
+    // Command execution helpers
 }
 
 module.exports = SocketServer;

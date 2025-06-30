@@ -20,6 +20,7 @@
         "axios": "^1.6.5",
         "crypto": "^1.0.1",
         "dayjs": "^1.11.10",
+        "js-yaml": "^4.1.0",
         "mqtt": "^5.3.4",
         "node-schedule": "^2.1.1",
         "suncalc": "^1.9.0",

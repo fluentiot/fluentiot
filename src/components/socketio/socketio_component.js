@@ -71,7 +71,7 @@ class SocketIOComponent extends Component {
             });
 
             // Initialize sub-components
-            this.socketServer = new SocketServer(this.io, this.config);
+            this.socketServer = new SocketServer(this.io, this.config, this.Fluent);
             this.commandHandler = new CommandHandler(this.Fluent);
             this.eventBroadcaster = new EventBroadcaster(this.io, this.event());
 

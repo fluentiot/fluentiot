@@ -24,15 +24,6 @@ class DeviceCommands extends Command {
                     { name: 'action', type: 'string', required: false, description: 'Optional action like "describe" for detailed info' }
                 ]
             },
-            'device.control': {
-                handler: this.controlDevice.bind(this),
-                description: 'Control a device by executing an action with optional parameters (legacy method)',
-                parameters: [
-                    { name: 'deviceId', type: 'string', required: true, description: 'The ID or name of the device to control' },
-                    { name: 'action', type: 'string', required: true, description: 'The action to perform (e.g., "on", "off", "dim")' },
-                    { name: 'value', type: 'any', required: false, description: 'Optional value for the action (e.g., brightness level)' }
-                ]
-            },
             'device.capability': {
                 handler: this.executeCapability.bind(this),
                 description: 'Execute a specific capability on a device by name',
@@ -110,41 +101,6 @@ class DeviceCommands extends Command {
             return { message: 'Device component not available' };
         } catch (error) {
             return this.handleError('getting device', error);
-        }
-    }
-
-    controlDevice(params) {
-        try {
-            const { deviceId, action, value } = params;
-            const deviceComponent = this.getComponent('device');
-            if (deviceComponent?.control) {
-                // Try to map legacy actions to common capability names
-                let capabilityName = action;
-                if (action === 'on') {
-                    // Try common "on" capability names
-                    const device = deviceComponent.get(deviceId);
-                    if (device) {
-                        const capabilities = Object.keys(device.capabilities);
-                        const onCapabilities = ['on', 'turnOn', 'switchOn', 'lightOn'];
-                        capabilityName = onCapabilities.find(cap => capabilities.includes(cap)) || action;
-                    }
-                } else if (action === 'off') {
-                    // Try common "off" capability names
-                    const device = deviceComponent.get(deviceId);
-                    if (device) {
-                        const capabilities = Object.keys(device.capabilities);
-                        const offCapabilities = ['off', 'turnOff', 'switchOff', 'lightOff'];
-                        capabilityName = offCapabilities.find(cap => capabilities.includes(cap)) || action;
-                    }
-                }
-
-                const result = deviceComponent.control(deviceId, capabilityName, value);
-                this.logSuccess(`Device "${deviceId}" controlled with action "${action}"`);
-                return result;
-            }
-            return { error: 'Device control not available' };
-        } catch (error) {
-            return this.handleError('controlling device', error);
         }
     }
 

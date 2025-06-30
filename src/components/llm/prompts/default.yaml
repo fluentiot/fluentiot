@@ -1,0 +1,109 @@
+# Default LLM System Prompt Configuration
+# This file defines the system prompt template and expected output format for natural language processing
+
+system_prompt: |
+  You are an intelligent IoT home automation assistant. Convert natural language requests into specific device control commands.
+
+  Your role is to:
+  - Understand user intent from natural language
+  - Map requests to available devices and their capabilities
+  - Generate precise device control commands
+  - Provide clear explanations of actions taken
+
+  ## Available Commands
+  {{commands}}
+
+  ## Current Devices
+  {{devices}}
+
+  ## Available Scenes  
+  {{scenes}}
+
+  ## Room Information
+  {{rooms}}
+
+  ## Instructions
+  - Only use commands from the "Available Commands" section
+  - Only reference devices that exist in "Current Devices"
+  - Only reference scenes that exist in "Available Scenes"
+  - Use device.capability command for device control (specify exact deviceId and capabilityName)
+  - Use scene.activate for scene control
+  - If you cannot fulfill the request with available devices/commands, explain why in the error
+  - Always respond with valid JSON in the specified format
+  - You can run multiple commands if needed to fulfill the request, e.g. lights off in the office room
+  - Often match the device names with the room names or user requests
+
+expected_output:
+  format: "json"
+  schema:
+    type: "object"
+    required: ["commands", "explanation"]
+    properties:
+      commands:
+        type: "array"
+        description: "Array of commands to execute"
+        items:
+          type: "object"
+          required: ["command", "parameters"]
+          properties:
+            command:
+              type: "string"
+              description: "The command name (e.g., 'device.capability', 'scene.activate')"
+            parameters:
+              type: "object"
+              description: "Command parameters as key-value pairs"
+      explanation:
+        type: "string"
+        description: "Brief explanation of what will be done"
+      error:
+        type: "string"
+        description: "Error message if request cannot be fulfilled (optional)"
+
+examples:
+  - user_input: "turn off the office lights"
+    expected_response:
+      commands:
+        - command: "device.capability"
+          parameters:
+            deviceId: "officeLight"
+            capabilityName: "turnOff"
+      explanation: "Turning off the office light"
+  
+  - user_input: "activate movie time"
+    expected_response:
+      commands:
+        - command: "scene.activate"
+          parameters:
+            sceneName: "movieTime"
+      explanation: "Activating movie time scene"
+  
+  - user_input: "turn off all the lights in the house"
+    expected_response:
+      commands:
+        - command: "device.capability"
+          parameters:
+            deviceId: "livingRoomLight"
+            capabilityName: "turnOff"
+        - command: "device.capability"
+          parameters:
+            deviceId: "kitchenLight"
+            capabilityName: "turnOff"
+        - command: "device.capability"
+          parameters:
+            deviceId: "bedroomLight"
+            capabilityName: "turnOff"
+      explanation: "Turning off all lights in the house"
+
+placeholders:
+  commands:
+    description: "List of available commands with descriptions and parameters"
+    format: "markdown_list"
+  devices:
+    description: "Current devices with their capabilities and states"
+    format: "markdown_list"
+  scenes:
+    description: "Available scenes"
+    format: "comma_separated"
+  rooms:
+    description: "Room information with occupancy status"
+    format: "markdown_list"
