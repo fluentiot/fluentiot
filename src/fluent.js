@@ -122,13 +122,13 @@ class Fluent {
      */
     static _component() {
         const load = (componentPath, name) => {
-            const file = componentPath + `/${name}_component.js`
+            const file = path.resolve(componentPath, `${name}_component.js`);
 
             if (!fs.existsSync(file)) {
-                throw new Error(`Component "${name}" not found in ${file}`)
+                throw new Error(`Component "${name}" not found in ${file}`);
             }
 
-            const ComponentClass = require(file)
+            const ComponentClass = require(file);
             const componentInstance = new ComponentClass(this)
             Fluent.components[name] = componentInstance
 
@@ -198,15 +198,15 @@ class Fluent {
      */
     static _command() {
         const load = (commandPath, name, component = null) => {
-            const file = commandPath + `/${name}_commands.js`
+            const file = path.resolve(commandPath, `${name}_commands.js`);
 
             if (!fs.existsSync(file)) {
                 // Commands are optional, so don't throw an error
-                return null
+                return null;
             }
 
             try {
-                const CommandClass = require(file)
+                const CommandClass = require(file);
                 const commandInstance = new CommandClass(Fluent)
                 const componentName = component || name
                 

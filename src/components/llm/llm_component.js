@@ -26,6 +26,8 @@ class LLMComponent extends Component {
         this.provider = null;
         this.fallbackToExact = this.config.fallbackToExact !== false; // Default true
         this.promptManager = new PromptManager();
+        this.history = [];
+        this.maxHistory = this.config.maxHistory || 10;
         
         // Timeout for LLM requests (10 seconds)
         this.requestTimeout = 10000;
@@ -103,15 +105,22 @@ class LLMComponent extends Component {
             const systemContext = await this.buildSystemContext();
             logger.debug(`System context built with ${Object.keys(systemContext.devices).length} devices, ${Object.keys(systemContext.commands).length} commands`, 'llm');
             
+            // Add current input to history
+            this.addToHistory({ role: 'user', content: input });
+
             // Process with timeout
             const result = await Promise.race([
-                this.provider.processNaturalLanguage(input, systemContext),
+                this.provider.processNaturalLanguage(input, systemContext, this.history),
                 new Promise((_, reject) => 
                     setTimeout(() => reject(new Error('LLM request timeout')), this.requestTimeout)
                 )
             ]);
             
             if (result.success) {
+                // Add LLM response to history
+                const assistantResponse = JSON.stringify(result.commands);
+                this.addToHistory({ role: 'assistant', content: assistantResponse });
+
                 logger.info(`LLM processing successful: ${result.explanation}`, 'llm');
                 logger.debug(`Generated ${result.commands.length} commands: ${JSON.stringify(result.commands, null, 2)}`, 'llm');
                 
@@ -196,6 +205,18 @@ class LLMComponent extends Component {
         });
         
         return sanitized;
+    }
+
+    /**
+     * Add a message to the history, ensuring it doesn't exceed maxHistory
+     * 
+     * @param {Object} message - Message to add to history
+     */
+    addToHistory(message) {
+        this.history.push(message);
+        if (this.history.length > this.maxHistory) {
+            this.history.shift();
+        }
     }
     
     /**

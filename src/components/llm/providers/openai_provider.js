@@ -55,7 +55,7 @@ class OpenAIProvider extends BaseLLMProvider {
      * @param {Object} systemContext - Current system state and available commands
      * @returns {Promise<Object>} Structured response with commands and explanation
      */
-    async processNaturalLanguage(input, systemContext) {
+    async processNaturalLanguage(input, systemContext, history = []) {
         if (!this.isReady) {
             throw new Error('OpenAI provider is not ready. Call initialize() first.');
         }
@@ -68,7 +68,7 @@ class OpenAIProvider extends BaseLLMProvider {
             logger.debug(`OpenAI System Prompt:\n${systemPrompt}`, 'llm-openai');
             logger.debug(`OpenAI User Query: ${userPrompt}`, 'llm-openai');
             
-            const response = await this.makeAPIRequest(systemPrompt, userPrompt);
+            const response = await this.makeAPIRequest(systemPrompt, userPrompt, history);
             
             logger.debug(`OpenAI Raw Response: ${JSON.stringify(response, null, 2)}`, 'llm-openai');
             
@@ -87,19 +87,23 @@ class OpenAIProvider extends BaseLLMProvider {
      * @param {string} userPrompt - User prompt
      * @returns {Promise<Object>} API response
      */
-    async makeAPIRequest(systemPrompt, userPrompt) {
+    async makeAPIRequest(systemPrompt, userPrompt, history = []) {
+        const messages = [
+            {
+                role: "system",
+                content: systemPrompt
+            },
+            // Add history messages
+            ...history,
+            {
+                role: "user",
+                content: userPrompt
+            }
+        ];
+
         const requestBody = {
             model: this.model,
-            messages: [
-                {
-                    role: "system",
-                    content: systemPrompt
-                },
-                {
-                    role: "user",
-                    content: userPrompt
-                }
-            ],
+            messages: messages,
             max_tokens: this.maxTokens,
             temperature: this.temperature
         };
@@ -149,7 +153,7 @@ class OpenAIProvider extends BaseLLMProvider {
                 req.destroy();
                 reject(new Error('OpenAI API request timeout'));
             });
-              req.write(postData);
+            req.write(postData);
             req.end();
         });
     }
