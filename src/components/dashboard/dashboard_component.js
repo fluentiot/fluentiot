@@ -85,6 +85,10 @@ class DashboardComponent extends Component {
             this.serveStaticFile('main.css', 'text/css', res)
         } else if (url === '/dashboard.js') {
             this.serveStaticFile('dashboard.js', 'application/javascript', res)
+        } else if (url.startsWith('/js/') && url.endsWith('.js')) {
+            // Serve JavaScript module files
+            const fileName = url.substring(4) // Remove '/js/' prefix
+            this.serveStaticFile(`js/${fileName}`, 'application/javascript', res)
         } else {
             res.writeHead(404, { 'Content-Type': 'text/plain' })
             res.end('Not Found')
