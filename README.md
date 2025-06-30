@@ -1230,6 +1230,24 @@ console.log(living.name) //"living"
 ### Methods for room objects
 
 
+#### `<room>.addDevice(device: string|object|array)`
+Adding a device to a room. You can add a single device or multiple devices by passing an array. Devices can be added by their alias (string) or by passing the device object.
+
+```javascript
+const livingPir = device.add('livingPir')
+const livingLight = device.add('livingLight')
+const living = room.add('living')
+
+// Add a single device by alias
+living.addDevice('livingPir')
+
+// Add a single device by object
+living.addDevice(livingLight)
+
+// Add multiple devices
+living.addDevice(['livingPir', livingLight])
+```
+
 #### `<room>.isOccupied()`
 
 Returns `true` if occupied or `false` if vacant.

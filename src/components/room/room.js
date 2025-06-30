@@ -20,6 +20,7 @@ class Room {
     constructor(parent, name, attributes) {
         this.parent = parent;
         this.name = name;
+        this.devices = [];
 
         // Mixins
         Object.assign(this, AttributeDslMixin(this, 'room'));
@@ -160,6 +161,38 @@ class Room {
     }
 
     /**
+     * Adds a device to the room.
+     *
+     * @param {string|object|array} device - The device alias, device object, or an array of devices.
+     */
+    addDevice(device) {
+        const deviceComponent = this.parent.Fluent.getComponent('device');
+        if (!deviceComponent) {
+            throw new Error('Device component not found');
+        }
+
+        const devicesToAdd = Array.isArray(device) ? device : [device];
+
+        devicesToAdd.forEach(d => {
+            let deviceObj = null;
+            if (typeof d === 'string') {
+                deviceObj = deviceComponent.get(d);
+                if (!deviceObj) {
+                    throw new Error(`Device with alias "${d}" not found`);
+                }
+            } else if (typeof d === 'object' && d.name) {
+                deviceObj = d;
+            } else {
+                throw new Error('Invalid device format. Must be a device alias or a device object.');
+            }
+
+            if (!this.devices.find(existingDevice => existingDevice.name === deviceObj.name)) {
+                this.devices.push(deviceObj);
+            }
+        });
+    }
+
+    /**
      * Is occupied
      * 
      * @returns {Boolean} - if room is occupied
@@ -188,7 +221,9 @@ class Room {
             type: 'room',
             occupied: this.isOccupied(),
             attributes: this.attributes,
-            occupancyStatus: this.isOccupied() ? 'occupied' : 'vacant'
+            occupancyStatus: this.isOccupied() ? 'occupied' : 'vacant',
+            deviceCount: this.devices.length,
+            devices: this.devices.map(d => d.name)
         }
         
         return description
