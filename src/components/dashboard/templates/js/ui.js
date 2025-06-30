@@ -13,10 +13,12 @@ window.DashboardUI = {
     createNewActivityIndicator: function() {
         const indicator = document.createElement('div');
         indicator.id = 'new-activity-indicator';
-        indicator.className = 'fixed bottom-32 right-6 bg-github-blue text-white px-3 py-2 rounded-lg cursor-pointer shadow-lg hidden text-xs z-50 animate-pulse';
+        indicator.className = 'absolute bottom-4 right-4 bg-blue-800 text-white px-3 py-2 rounded-lg cursor-pointer shadow-lg hidden text-xs z-50';
         indicator.innerHTML = '↓ New Activity';
         indicator.onclick = this.scrollToBottom;
-        document.body.appendChild(indicator);
+        
+        const activityPanel = document.getElementById('activity-panel');
+        activityPanel.appendChild(indicator);
         
         const elements = window.DashboardState.getDOMElements();
         elements.newActivityIndicator = indicator;
