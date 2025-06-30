@@ -62,7 +62,7 @@ class OpenAIProvider extends BaseLLMProvider {
         
         try {
             const systemPrompt = this.promptManager.buildSystemPrompt(systemContext);
-            const userPrompt = `Convert this request to JSON commands: "${input}"`;
+            const userPrompt = `Convert this request to JSON commands (respond with ONLY the JSON object, no additional text): "${input}"`;
             
             // Debug logging
             logger.debug(`OpenAI System Prompt:\n${systemPrompt}`, 'llm-openai');
@@ -155,25 +155,53 @@ class OpenAIProvider extends BaseLLMProvider {
     }
     
     /**
-     * Strip markdown code block wrappers from content
+     * Strip markdown code block wrappers from content and extract JSON
      * 
-     * @param {string} content - Content that may be wrapped in code blocks
-     * @returns {string} Clean content without code block wrappers
+     * @param {string} content - Content that may be wrapped in code blocks or contain explanatory text
+     * @returns {string} Clean JSON content
      */
     stripCodeBlocks(content) {
         // Remove leading/trailing whitespace
         const trimmed = content.trim();
         
-        // Check if content is wrapped in code blocks
-        const codeBlockPattern = /^```(?:json|javascript|js)?\s*\n?([\s\S]*?)\n?```$/;
-        const match = trimmed.match(codeBlockPattern);
+        // First, try to find JSON within code blocks
+        const codeBlockPattern = /```(?:json|javascript|js)?\s*\n?([\s\S]*?)\n?```/;
+        const codeBlockMatch = trimmed.match(codeBlockPattern);
         
-        if (match) {
-            // Return the content inside the code blocks
-            return match[1].trim();
+        if (codeBlockMatch) {
+            return codeBlockMatch[1].trim();
         }
         
-        // If no code blocks found, return original content
+        // If no code blocks, try to find JSON object in the content
+        // Look for { that starts a JSON object and find its matching }
+        const jsonStartIndex = trimmed.indexOf('{');
+        if (jsonStartIndex === -1) {
+            // No JSON object found, return original content
+            return trimmed;
+        }
+        
+        // Find the matching closing brace
+        let braceCount = 0;
+        let jsonEndIndex = -1;
+        
+        for (let i = jsonStartIndex; i < trimmed.length; i++) {
+            if (trimmed[i] === '{') {
+                braceCount++;
+            } else if (trimmed[i] === '}') {
+                braceCount--;
+                if (braceCount === 0) {
+                    jsonEndIndex = i;
+                    break;
+                }
+            }
+        }
+        
+        if (jsonEndIndex !== -1) {
+            // Extract the JSON portion
+            return trimmed.substring(jsonStartIndex, jsonEndIndex + 1);
+        }
+        
+        // If no valid JSON structure found, return original content
         return trimmed;
     }
 

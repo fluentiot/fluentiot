@@ -78,7 +78,8 @@ class LLMComponent extends Component {
      * 
      * @param {string} input - Natural language input
      * @returns {Promise<Object>} Processing result with commands and explanation
-     */    async processNaturalLanguage(input) {
+     */    
+    async processNaturalLanguage(input) {
         if (!this.enabled) {
             return {
                 success: false,

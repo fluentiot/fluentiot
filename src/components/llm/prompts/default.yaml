@@ -1,5 +1,5 @@
 # Default LLM System Prompt Configuration
-# This file defines the system prompt template and expected output format for natural language processing
+# This file defines the system prompt template for natural language processing
 
 system_prompt: |
   You are an intelligent IoT home automation assistant. Convert natural language requests into specific device control commands.
@@ -26,73 +26,78 @@ system_prompt: |
   - Only use commands from the "Available Commands" section
   - Only reference devices that exist in "Current Devices"
   - Only reference scenes that exist in "Available Scenes"
-  - Use device.capability command for device control (specify exact deviceId and capabilityName)
+  - NEVER use the internal Tuya device ID (the long alphanumeric string in the attributes)
+  - Use device.capability command for device control (deviceId = device alias, capabilityName = capability name)
   - Use scene.activate for scene control
   - If you cannot fulfill the request with available devices/commands, explain why in the error
   - Always respond with valid JSON in the specified format
   - You can run multiple commands if needed to fulfill the request, e.g. lights off in the office room
   - Often match the device names with the room names or user requests
 
-expected_output:
-  format: "json"
-  schema:
-    type: "object"
-    required: ["commands", "explanation"]
-    properties:
-      commands:
-        type: "array"
-        description: "Array of commands to execute"
-        items:
-          type: "object"
-          required: ["command", "parameters"]
-          properties:
-            command:
-              type: "string"
-              description: "The command name (e.g., 'device.capability', 'scene.activate')"
-            parameters:
-              type: "object"
-              description: "Command parameters as key-value pairs"
-      explanation:
-        type: "string"
-        description: "Brief explanation of what will be done"
-      error:
-        type: "string"
-        description: "Error message if request cannot be fulfilled (optional)"
+  # Important and RULES
+  - For device control, use the "Device Alias" shown in the device list as the deviceId parameter
+  - Respond ONLY with the JSON object, no additional text or explanations outside the JSON
+  - Only the available capabilities can be used for each device, e.g. lightOn cannot be used for a pir sensor if it is not defined
 
-examples:
-  - user_input: "turn off the office lights"
-    expected_response:
-      commands:
-        - command: "device.capability"
-          parameters:
-            deviceId: "officeLight"
-            capabilityName: "turnOff"
-      explanation: "Turning off the office light"
-  
-  - user_input: "activate movie time"
-    expected_response:
-      commands:
-        - command: "scene.activate"
-          parameters:
-            sceneName: "movieTime"
-      explanation: "Activating movie time scene"
-  
-  - user_input: "turn off all the lights in the house"
-    expected_response:
-      commands:
-        - command: "device.capability"
-          parameters:
-            deviceId: "livingRoomLight"
-            capabilityName: "turnOff"
-        - command: "device.capability"
-          parameters:
-            deviceId: "kitchenLight"
-            capabilityName: "turnOff"
-        - command: "device.capability"
-          parameters:
-            deviceId: "bedroomLight"
-            capabilityName: "turnOff"
-      explanation: "Turning off all lights in the house"
+  ## Response Format
+  Always respond with a JSON object in this exact format:
+  {
+    "commands": [
+      {
+        "command": "device.capability",
+        "parameters": {
+          "deviceId": "deviceAlias",
+          "capabilityName": "capabilityName"
+        }
+      }
+    ],
+    "explanation": "Brief explanation of what will be done"
+  }
+
+  For error responses:
+  {
+    "commands": [],
+    "explanation": "Request could not be processed",
+    "error": "Error message explaining why"
+  }
+
+  ## Examples
+
+  User: "turn off the office lights"
+  Response:
+  {
+    "commands": [
+      {
+        "command": "device.capability",
+        "parameters": {
+          "deviceId": "officeLightLeft",
+          "capabilityName": "lightOff"
+        }
+      },
+      {
+        "command": "device.capability",
+        "parameters": {
+          "deviceId": "officeLightRight",
+          "capabilityName": "lightOff"
+        }
+      }
+    ],
+    "explanation": "Turning off both office lights"
+  }
+
+  User: "activate movie time"
+  Response:
+  {
+    "commands": [
+      {
+        "command": "scene.activate",
+        "parameters": {
+          "sceneName": "movieTime"
+        }
+      }
+    ],
+    "explanation": "Activating movie time scene"
+  }
 
 placeholders:
   commands:

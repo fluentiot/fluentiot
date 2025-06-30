@@ -394,14 +394,6 @@ class SocketServer {
             case 'clear':
                 return 'Activity log cleared';
             
-            case 'turn':
-                if (args.length >= 2) {
-                    const action = args[0]; // 'on' or 'off'
-                    const deviceName = args.slice(1).join(' ');
-                    return this.executeDeviceControl(deviceName, action);
-                }
-                return 'Usage: turn [on|off] [device name]';
-            
             case 'execute':
                 if (args.length >= 3) {
                     const capabilityName = args[0];
@@ -527,7 +519,6 @@ class SocketServer {
 • status - Show system status
 • logs - Show recent system logs
 • clear - Clear activity log
-• turn [on|off] [device] - Control a device (legacy)
 • execute [capability] on [device] - Execute a specific device capability
 • device [device] [capability] - Execute a capability on a device
 • trigger [scenario] - Run a scenario
@@ -681,27 +672,6 @@ The system will understand your intent and execute the appropriate commands.`;
 • Connected clients: ${this.connectedClients.size}
 • Server time: ${new Date().toLocaleString()}
 • Command handler: ${this.commandHandler ? 'Available' : 'Not available'}`;
-    }
-
-    executeDeviceControl(deviceName, action) {
-        if (this.commandHandler) {
-            return new Promise((resolve, reject) => {
-                const params = {
-                    deviceId: deviceName,
-                    action: action,
-                    value: action === 'on' ? true : false
-                };
-                
-                this.commandHandler.execute({ command: 'device.control', parameters: params }, (result) => {
-                    if (result.success) {
-                        resolve(`${deviceName} turned ${action}`);
-                    } else {
-                        reject(new Error(result.error || `Failed to turn ${action} ${deviceName}`));
-                    }
-                });
-            });
-        }
-        return `Device control not available`;
     }
 
     executeDeviceCapability(deviceName, capabilityName) {

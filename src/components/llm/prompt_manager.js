@@ -34,7 +34,7 @@ class PromptManager {
             
             if (!fs.existsSync(defaultPromptPath)) {
                 logger.warn('Default prompt file not found, using fallback', 'llm-prompt');
-                this.defaultPrompt = this.getFallbackPrompt();
+                this.defaultPrompt = this.getBasicFallbackConfig();
                 return;
             }
             
@@ -50,7 +50,7 @@ class PromptManager {
             }
         } catch (error) {
             logger.error(`Failed to load default prompt: ${error.message}`, 'llm-prompt');
-            this.defaultPrompt = this.getFallbackPrompt();
+            this.defaultPrompt = this.getBasicFallbackConfig();
         }
     }
     
@@ -118,7 +118,7 @@ class PromptManager {
                 const params = cmdInfo.parameters ? 
                     cmdInfo.parameters.map(p => `${p.name}: ${p.type}${p.required ? ' (required)' : ''}`).join(', ') : 
                     'none';
-                text += `- **${cmdName}**: ${cmdInfo.description || 'No description'}\n  - Parameters: {${params}}\n`;
+                text += `- **${cmdName}**: ${cmdInfo.description || 'No description'}\nParameters: {${params}}\n\n`;
             });
             return text;
         }
@@ -147,7 +147,7 @@ class PromptManager {
                 const attributes = device.attributes ? 
                     Object.entries(device.attributes).map(([key, value]) => `${key}: ${value}`).join(', ') : 
                     'none';
-                text += `- **${deviceName}**: \n  - Capabilities: [${capabilities}]\n  - Current state: {${attributes}}\n`;
+                text += `- **${deviceName}**:\nDevice Alias: ${deviceName}\nCapabilities: [${capabilities}]\nCurrent state: {${attributes}}\n\n`;
             });
             return text;
         }
@@ -203,50 +203,22 @@ class PromptManager {
     }
     
     /**
-     * Get expected output format
+     * Build fallback prompt when YAML loading fails
      * 
-     * @returns {Object} Expected output configuration
+     * @param {Object} systemContext - Context data
+     * @returns {string} Fallback prompt
      */
-    getExpectedOutput() {
-        return this.defaultPrompt?.expected_output || {
-            format: 'json',
-            schema: {
-                type: 'object',
-                required: ['commands', 'explanation'],
-                properties: {
-                    commands: { type: 'array' },
-                    explanation: { type: 'string' }
-                }
-            }
-        };
-    }
-    
-    /**
-     * Get examples from the prompt configuration
-     * 
-     * @returns {Array} Examples array
-     */
-    getExamples() {
-        return this.defaultPrompt?.examples || [];
-    }
-    
-    /**
-     * Get fallback prompt configuration
-     * 
-     * @returns {Object} Fallback prompt
-     */
-    getFallbackPrompt() {
-        return {
-            system_prompt: `You are a smart home assistant. Convert natural language to specific commands.
+    buildFallbackPrompt(systemContext) {
+        const fallbackPrompt = `You are a smart home assistant. Convert natural language to specific commands.
 
 AVAILABLE COMMANDS:
-{{commands}}
+${this.formatCommands(systemContext.commands, { format: 'markdown_list' })}
 
 CURRENT DEVICES:
-{{devices}}
+${this.formatDevices(systemContext.devices, { format: 'markdown_list' })}
 
 AVAILABLE SCENES:
-{{scenes}}
+${this.formatScenes(systemContext.scenes, { format: 'comma_separated' })}
 
 Response format:
 {
@@ -256,33 +228,9 @@ Response format:
   "explanation": "Brief explanation of what will be done"
 }
 
-Important: Only use commands and devices that exist in the lists above.`,
-            placeholders: {
-                commands: { format: 'markdown_list' },
-                devices: { format: 'markdown_list' },
-                scenes: { format: 'comma_separated' },
-                rooms: { format: 'markdown_list' }
-            }
-        };
-    }
-    
-    /**
-     * Build fallback prompt when YAML loading fails
-     * 
-     * @param {Object} systemContext - Context data
-     * @returns {string} Fallback prompt
-     */
-    buildFallbackPrompt(systemContext) {
-        const fallback = this.getFallbackPrompt();
-        let prompt = fallback.system_prompt;
+Important: Only use commands and devices that exist in the lists above. Respond with ONLY the JSON object.`;
         
-        // Simple replacements
-        prompt = prompt.replace('{{commands}}', this.formatCommands(systemContext.commands, fallback.placeholders.commands));
-        prompt = prompt.replace('{{devices}}', this.formatDevices(systemContext.devices, fallback.placeholders.devices));
-        prompt = prompt.replace('{{scenes}}', this.formatScenes(systemContext.scenes, fallback.placeholders.scenes));
-        prompt = prompt.replace('{{rooms}}', this.formatRooms(systemContext.rooms, fallback.placeholders.rooms));
-        
-        return prompt;
+        return fallbackPrompt;
     }
     
     /**
@@ -298,7 +246,7 @@ Important: Only use commands and devices that exist in the lists above.`,
             const systemPromptMatch = yamlContent.match(/system_prompt:\s*\|\s*\n((?:\s{2}.*\n?)*)/);
             const systemPrompt = systemPromptMatch ? 
                 systemPromptMatch[1].replace(/^  /gm, '').trim() : 
-                this.getFallbackPrompt().system_prompt;
+                this.getBasicFallbackPrompt();
             
             return {
                 system_prompt: systemPrompt,
@@ -307,23 +255,73 @@ Important: Only use commands and devices that exist in the lists above.`,
                     devices: { format: 'markdown_list' },
                     scenes: { format: 'comma_separated' },
                     rooms: { format: 'markdown_list' }
-                },
-                expected_output: {
-                    format: 'json',
-                    schema: {
-                        type: 'object',
-                        required: ['commands', 'explanation'],
-                        properties: {
-                            commands: { type: 'array' },
-                            explanation: { type: 'string' }
-                        }
-                    }
                 }
             };
         } catch (error) {
             logger.warn(`Simple YAML parsing failed: ${error.message}`, 'llm-prompt');
-            return this.getFallbackPrompt();
+            return this.getBasicFallbackConfig();
         }
+    }
+
+    /**
+     * Get basic fallback configuration when YAML loading fails
+     * 
+     * @returns {Object} Basic fallback configuration
+     */
+    getBasicFallbackConfig() {
+        return {
+            system_prompt: this.getBasicFallbackPrompt(),
+            placeholders: {
+                commands: { format: 'markdown_list' },
+                devices: { format: 'markdown_list' },
+                scenes: { format: 'comma_separated' },
+                rooms: { format: 'markdown_list' }
+            }
+        };
+    }
+
+    /**
+     * Get basic fallback prompt text
+     * 
+     * @returns {string} Basic fallback prompt
+     */
+    getBasicFallbackPrompt() {
+        return `You are a smart home assistant. Convert natural language to specific commands.
+
+AVAILABLE COMMANDS:
+{{commands}}
+
+CURRENT DEVICES:
+{{devices}}
+
+AVAILABLE SCENES:
+{{scenes}}
+
+ROOM INFORMATION:
+{{rooms}}
+
+Instructions:
+- Only use commands from the "Available Commands" section
+- Only reference devices that exist in "Current Devices"
+- For device control, use the device alias shown in the device list as the deviceId parameter
+- NEVER use internal Tuya device IDs
+- Always respond with valid JSON in the specified format
+- Respond ONLY with the JSON object, no additional text
+
+Response format:
+{
+  "commands": [
+    {"command": "command.name", "parameters": {"param1": "value1"}}
+  ],
+  "explanation": "Brief explanation of what will be done"
+}
+
+For errors:
+{
+  "commands": [],
+  "explanation": "Request could not be processed",
+  "error": "Error message explaining why"
+}`;
     }
 }
 

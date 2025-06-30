@@ -28,7 +28,7 @@ class DeviceCommands extends Command {
                 handler: this.executeCapability.bind(this),
                 description: 'Execute a specific capability on a device by name',
                 parameters: [
-                    { name: 'deviceId', type: 'string', required: true, description: 'The ID or name of the device' },
+                    { name: 'deviceId', type: 'string', required: true, description: 'The alias/name of the device (NOT the Tuya ID)' },
                     { name: 'capabilityName', type: 'string', required: true, description: 'The name of the capability to execute' },
                     { name: 'args', type: 'array', required: false, description: 'Optional arguments to pass to the capability' }
                 ]
