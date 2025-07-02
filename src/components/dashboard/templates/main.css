@@ -188,3 +188,230 @@ button:active {
         padding: 8px;
     }
 }
+
+/* Light theme styles */
+body.light {
+    background-color: #ffffff;
+    color: #24292f;
+}
+
+body.light .bg-github-dark {
+    background-color: #f6f8fa !important;
+}
+
+body.light .bg-github-darker {
+    background-color: #ffffff !important;
+}
+
+body.light .bg-github-border {
+    background-color: #f3f4f6 !important;
+    color: #24292f !important;
+}
+
+body.light .border-github-border {
+    border-color: #d0d7de !important;
+}
+
+body.light .text-github-text {
+    color: #24292f !important;
+}
+
+body.light .text-github-muted {
+    color: #656d76 !important;
+}
+
+body.light .text-white {
+    color: #24292f !important;
+}
+
+body.light .text-github-blue {
+    color: #0969da !important;
+}
+
+body.light .text-github-green {
+    color: #1a7f37 !important;
+}
+
+body.light .text-github-yellow {
+    color: #9a6700 !important;
+}
+
+body.light .text-github-red {
+    color: #cf222e !important;
+}
+
+body.light .scrollbar::-webkit-scrollbar-track {
+    background: #f6f8fa;
+}
+
+body.light .scrollbar::-webkit-scrollbar-thumb {
+    background: #d0d7de;
+}
+
+body.light .tab-button:hover {
+    background-color: #f3f4f6;
+    color: #24292f !important;
+}
+
+body.light .tab-button.active {
+    background-color: #f3f4f6;
+    color: #24292f;
+}
+
+/* Light theme button fixes */
+body.light button {
+    color: #24292f !important;
+}
+
+body.light .hover\:bg-github-muted\/20:hover {
+    background-color: rgba(139, 148, 158, 0.2) !important;
+    color: #24292f !important;
+}
+
+body.light .hover\:bg-github-dark:hover {
+    background-color: #e5e7ea !important;
+    color: #24292f !important;
+}
+
+body.light .capability-btn {
+    border-color: #d0d7de;
+    background: #f6f8fa;
+    color: #24292f;
+}
+
+body.light .capability-btn:hover {
+    background: #f3f4f6;
+    border-color: #0969da;
+    color: #0969da;
+}
+
+body.light .log-entry:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Settings dialog light theme */
+body.light .bg-black {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Light theme specific log entry colors */
+body.light .border-gray-500 {
+    border-color: #8b949e !important;
+}
+
+body.light .border-yellow-500 {
+    border-color: #d1242f !important;
+}
+
+body.light .border-red-500 {
+    border-color: #cf222e !important;
+}
+
+body.light .border-green-500 {
+    border-color: #1a7f37 !important;
+}
+
+body.light .border-blue-500 {
+    border-color: #0969da !important;
+}
+
+body.light .text-gray-400 {
+    color: #656d76 !important;
+}
+
+body.light .text-yellow-500 {
+    color: #9a6700 !important;
+}
+
+body.light .text-red-500 {
+    color: #cf222e !important;
+}
+
+body.light .text-green-500 {
+    color: #1a7f37 !important;
+}
+
+body.light .bg-gray-500\/10 {
+    background-color: rgba(139, 148, 158, 0.1) !important;
+}
+
+body.light .bg-yellow-500\/10 {
+    background-color: rgba(154, 103, 0, 0.1) !important;
+}
+
+body.light .bg-red-500\/10 {
+    background-color: rgba(207, 34, 46, 0.1) !important;
+}
+
+body.light .bg-green-500\/10 {
+    background-color: rgba(26, 127, 55, 0.1) !important;
+}
+
+body.light .bg-blue-500\/10 {
+    background-color: rgba(9, 105, 218, 0.1) !important;
+}
+
+/* Settings dialog light theme fixes */
+body.light #settings-dialog .bg-black {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+body.light #cancel-settings-button {
+    background-color: #f3f4f6 !important;
+    color: #24292f !important;
+    border: 1px solid #d0d7de !important;
+}
+
+body.light #cancel-settings-button:hover {
+    background-color: #e5e7ea !important;
+    color: #24292f !important;
+}
+
+body.light #save-settings-button {
+    background-color: #0969da !important;
+    color: #ffffff !important;
+}
+
+body.light #save-settings-button:hover {
+    background-color: #0860ca !important;
+    color: #ffffff !important;
+}
+
+/* Header buttons light theme */
+body.light header button {
+    background-color: #f3f4f6 !important;
+    color: #24292f !important;
+    border: 1px solid #d0d7de !important;
+}
+
+body.light header button:hover {
+    background-color: #e5e7ea !important;
+    color: #24292f !important;
+}
+
+/* Transition improvements */
+body.light * {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
+}
+
+/* Light theme input and select fixes */
+body.light input, body.light select {
+    background-color: #ffffff !important;
+    color: #24292f !important;
+    border-color: #d0d7de !important;
+}
+
+body.light input:focus, body.light select:focus {
+    border-color: #0969da !important;
+    outline: 2px solid rgba(9, 105, 218, 0.3) !important;
+}
+
+body.light input[type="checkbox"] {
+    background-color: #ffffff !important;
+    border-color: #d0d7de !important;
+}
+
+body.light input[type="checkbox"]:checked {
+    background-color: #0969da !important;
+    border-color: #0969da !important;
+}

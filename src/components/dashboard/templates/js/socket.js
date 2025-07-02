@@ -73,8 +73,10 @@ window.DashboardSocket = {
 
     // Activity event handlers
     handleActivity: function(data) {
-        const message = `${data.type}: ${data.message || JSON.stringify(data.data)}`;
-        window.DashboardUI.addLogEntry('info', data.component || 'activity', message);
+        if (window.DashboardState.commands()) {
+            const message = `${data.type}: ${data.message || JSON.stringify(data.data)}`;
+            window.DashboardUI.addLogEntry('info', data.component || 'activity', message);
+        }
     },
 
     handleDeviceActivity: function(data) {

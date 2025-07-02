@@ -1995,7 +1995,6 @@ npm test -- capability.test.js
 
 
 # Todo
-
 - [/] Recode Tuya interface
 - [/] Move /src/commons/logger.js to /src/logger.js
 - [/] Document utilities

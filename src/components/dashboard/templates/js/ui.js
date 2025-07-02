@@ -6,6 +6,7 @@ window.DashboardUI = {
     initialize: function() {
         this.createNewActivityIndicator();
         this.setupEventListeners();
+        this.loadSettings();
         window.DashboardState.setUserHasScrolledUp(false);
     },
 
@@ -86,6 +87,10 @@ window.DashboardUI = {
             level = 'info';
         }
         
+        // Check if we should show debug messages
+        const settings = window.DashboardState.currentSettings();
+        const isDebugMessage = level === 'debug' || level === 'trace' || level === 'verbose' || component === 'debug';
+        
         const { bgColor, componentColor } = this.getLogEntryColors(level);
         
         entry.className = `log-entry animate-in ${bgColor} border-l-2 p-2 mb-2 rounded-r text-xs`;
@@ -96,6 +101,11 @@ window.DashboardUI = {
                 <span class="flex-1">${message}</span>
             </div>
         `;
+        
+        // Hide debug messages if setting is disabled
+        if (isDebugMessage && !settings.showDebugMessages) {
+            entry.style.display = 'none';
+        }
         
         activityLog.appendChild(entry);
         
@@ -128,7 +138,7 @@ window.DashboardUI = {
 
     // Event listeners setup
     setupEventListeners: function() {
-        const { commandInput, activityPanel } = window.DashboardState.getDOMElements();
+        const { commandInput, activityPanel, settingsButton, saveSettingsButton, cancelSettingsButton, themeSelect, showDebugMessagesCheckbox } = window.DashboardState.getDOMElements();
         
         // Command input handling
         commandInput.addEventListener('input', window.DashboardCommands.handleCommandInput);
@@ -136,6 +146,32 @@ window.DashboardUI = {
 
         // Activity panel scroll monitoring
         activityPanel.addEventListener('scroll', this.checkScrollPosition);
+
+        // Settings dialog
+        settingsButton.addEventListener('click', () => this.showSettingsDialog());
+        saveSettingsButton.addEventListener('click', () => this.saveSettingsAndClose());
+        cancelSettingsButton.addEventListener('click', () => this.cancelSettingsAndClose());
+        
+        // Preview theme changes
+        themeSelect.addEventListener('change', () => this.previewTheme());
+        
+        // Close dialog on background click
+        const settingsDialog = window.DashboardState.getDOMElements().settingsDialog;
+        settingsDialog.addEventListener('click', (e) => {
+            if (e.target === settingsDialog) {
+                this.cancelSettingsAndClose();
+            }
+        });
+        
+        // Escape key to close dialog
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const { settingsDialog } = window.DashboardState.getDOMElements();
+                if (!settingsDialog.classList.contains('hidden')) {
+                    this.cancelSettingsAndClose();
+                }
+            }
+        });
 
         // Search functionality for all tabs
         const deviceSearchInput = document.getElementById('device-search');
@@ -362,6 +398,137 @@ window.DashboardUI = {
         this.filterScenarios();
     },
 
+    // Settings dialog management
+    showSettingsDialog: function() {
+        const { settingsDialog, themeSelect, showDebugMessagesCheckbox } = window.DashboardState.getDOMElements();
+        
+        // Store original settings for cancel functionality
+        const currentSettings = window.DashboardState.currentSettings();
+        window.DashboardState.setOriginalSettings({ ...currentSettings });
+        
+        // Apply current settings to dialog
+        this.populateSettingsDialog();
+        
+        settingsDialog.classList.remove('hidden');
+    },
+
+    populateSettingsDialog: function() {
+        const { themeSelect, showDebugMessagesCheckbox } = window.DashboardState.getDOMElements();
+        const settings = window.DashboardState.currentSettings();
+        
+        themeSelect.value = settings.theme || 'dark';
+        showDebugMessagesCheckbox.checked = settings.showDebugMessages !== false;
+    },
+
+    previewTheme: function() {
+        const { themeSelect } = window.DashboardState.getDOMElements();
+        const theme = themeSelect.value;
+        
+        // Apply theme immediately for preview
+        document.body.className = theme;
+        
+        // Update current settings (but don't save yet)
+        const settings = window.DashboardState.currentSettings();
+        settings.theme = theme;
+        window.DashboardState.setCurrentSettings(settings);
+    },
+
+    saveSettingsAndClose: function() {
+        const { themeSelect, showDebugMessagesCheckbox, settingsDialog } = window.DashboardState.getDOMElements();
+        
+        // Get settings from dialog
+        const settings = {
+            theme: themeSelect.value,
+            showDebugMessages: showDebugMessagesCheckbox.checked
+        };
+        
+        // Update state
+        window.DashboardState.setCurrentSettings(settings);
+        window.DashboardState.setOriginalSettings({ ...settings });
+        
+        // Apply settings
+        this.applySettings(settings);
+        
+        // Save to server
+        this.saveSettingsToServer(settings);
+        
+        // Close dialog
+        settingsDialog.classList.add('hidden');
+    },
+
+    cancelSettingsAndClose: function() {
+        const { settingsDialog } = window.DashboardState.getDOMElements();
+        
+        // Restore original settings
+        const originalSettings = window.DashboardState.originalSettings();
+        window.DashboardState.setCurrentSettings({ ...originalSettings });
+        
+        // Apply original settings (revert any preview changes)
+        this.applySettings(originalSettings);
+        
+        // Close dialog
+        settingsDialog.classList.add('hidden');
+    },
+
+    applySettings: function(settings) {
+        // Apply theme
+        document.body.className = settings.theme || 'dark';
+        
+        // Apply debug message visibility
+        this.updateDebugMessageVisibility(settings.showDebugMessages !== false);
+    },
+
+    updateDebugMessageVisibility: function(showDebugMessages) {
+        const logEntries = document.querySelectorAll('.log-entry');
+        logEntries.forEach(entry => {
+            const componentSpan = entry.querySelector('span[class*="color"]');
+            if (componentSpan) {
+                const component = componentSpan.textContent;
+                // Hide debug messages if setting is off and this is a debug-type component
+                if (!showDebugMessages && (component === 'debug' || component === 'trace' || component === 'verbose')) {
+                    entry.style.display = 'none';
+                } else {
+                    entry.style.display = 'block';
+                }
+            }
+        });
+    },
+
+    saveSettingsToServer: function(settings) {
+        fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+        }).catch(error => {
+            console.error('Failed to save settings:', error);
+        });
+    },
+
+    loadSettings: function() {
+        fetch('/api/settings')
+            .then(res => res.json())
+            .then(settings => {
+                // Update state
+                window.DashboardState.setCurrentSettings(settings);
+                window.DashboardState.setOriginalSettings({ ...settings });
+                
+                // Apply settings
+                this.applySettings(settings);
+                
+                // Apply debug message visibility to existing messages
+                this.updateDebugMessageVisibility(settings.showDebugMessages !== false);
+            })
+            .catch(error => {
+                console.error('Failed to load settings:', error);
+                // Use defaults
+                const defaultSettings = { theme: 'dark', showDebugMessages: true };
+                window.DashboardState.setCurrentSettings(defaultSettings);
+                window.DashboardState.setOriginalSettings({ ...defaultSettings });
+                this.applySettings(defaultSettings);
+                this.updateDebugMessageVisibility(true);
+            });
+    },
+
     // Tab management
     switchTab: function(tabName) {
         // Hide all tab contents
@@ -392,5 +559,47 @@ window.DashboardUI = {
         if (tabName === 'scenes' && Object.keys(window.DashboardState.scenes()).length === 0) {
             window.DashboardSocket.executeCommand('scene.list', {}, 'list-scenes');
         }
+    }
+};
+
+// Make functions globally available for HTML onclick handlers
+window.switchTab = function(tabName) {
+    window.DashboardUI.switchTab(tabName);
+};
+
+window.clearActivityLog = function() {
+    const { activityLog } = window.DashboardState.getDOMElements();
+    activityLog.innerHTML = '';
+};
+
+window.clearSceneSearch = function() {
+    const searchInput = document.getElementById('scene-search');
+    if (searchInput) {
+        searchInput.value = '';
+        window.DashboardUI.filterScenes();
+    }
+};
+
+window.clearDeviceSearch = function() {
+    const searchInput = document.getElementById('device-search');
+    if (searchInput) {
+        searchInput.value = '';
+        window.DashboardUI.filterDevices();
+    }
+};
+
+window.clearRoomSearch = function() {
+    const searchInput = document.getElementById('room-search');
+    if (searchInput) {
+        searchInput.value = '';
+        window.DashboardUI.filterRooms();
+    }
+};
+
+window.clearScenarioSearch = function() {
+    const searchInput = document.getElementById('scenario-search');
+    if (searchInput) {
+        searchInput.value = '';
+        window.DashboardUI.filterScenarios();
     }
 };

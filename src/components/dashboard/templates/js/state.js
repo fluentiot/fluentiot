@@ -16,6 +16,10 @@ let commandCounter = 0;
 // UI state
 let activeTab = 'scenes';
 
+// Settings state
+let currentSettings = { theme: 'dark', showDebugMessages: true };
+let originalSettings = { theme: 'dark', showDebugMessages: true };
+
 // Command history for up/down arrow navigation
 let commandHistory = [];
 let commandHistoryIndex = -1;
@@ -61,6 +65,12 @@ window.DashboardState = {
     setCommandHistoryIndex: (value) => commandHistoryIndex = value,
     MAX_COMMAND_HISTORY,
     
+    // Settings
+    currentSettings: () => currentSettings,
+    setCurrentSettings: (value) => currentSettings = value,
+    originalSettings: () => originalSettings,
+    setOriginalSettings: (value) => originalSettings = value,
+    
     // Scroll
     userHasScrolledUp: () => userHasScrolledUp,
     setUserHasScrolledUp: (value) => userHasScrolledUp = value,
@@ -70,7 +80,13 @@ window.DashboardState = {
     // DOM elements
     getDOMElements: () => ({
         statusDot, statusText, socketioStatus, activityLog, 
-        commandInput, commandSuggestions, activityPanel, newActivityIndicator
+        commandInput, commandSuggestions, activityPanel, newActivityIndicator,
+        settingsButton: document.getElementById('settings-button'),
+        saveSettingsButton: document.getElementById('save-settings-button'),
+        cancelSettingsButton: document.getElementById('cancel-settings-button'),
+        settingsDialog: document.getElementById('settings-dialog'),
+        themeSelect: document.getElementById('theme-select'),
+        showDebugMessagesCheckbox: document.getElementById('show-debug-messages')
     }),
     setDOMElements: (elements) => {
         statusDot = elements.statusDot;

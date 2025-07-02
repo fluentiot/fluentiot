@@ -55,8 +55,35 @@
                     <button onclick="clearActivityLog()" class="px-2 py-1 bg-github-border text-github-text text-xs rounded hover:bg-github-muted/20">
                         Clear
                     </button>
+                    <button id="settings-button" class="px-2 py-1 bg-github-border text-github-text text-xs rounded hover:bg-github-muted/20">
+                        Settings
+                    </button>
                 </div>
             </header>
+
+            <!-- Settings Dialog -->
+            <div id="settings-dialog" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-github-darker border border-github-border rounded-lg p-6 w-96">
+                    <h2 class="text-lg font-bold mb-4 text-github-text">Settings</h2>
+                    <div class="mb-4">
+                        <label for="theme-select" class="block text-sm font-medium text-github-text mb-2">Theme</label>
+                        <select id="theme-select" class="w-full bg-github-dark border border-github-border text-github-text p-2 rounded focus:border-github-blue focus:outline-none">
+                            <option value="dark">Dark</option>
+                            <option value="light">Light</option>
+                        </select>
+                    </div>
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="show-debug-messages" class="h-4 w-4 text-github-blue bg-github-dark border-github-border rounded focus:ring-github-blue focus:ring-2">
+                            <span class="ml-2 text-sm text-github-text">Show debug messages</span>
+                        </label>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button id="cancel-settings-button" class="px-4 py-2 bg-github-border text-github-text rounded hover:bg-github-muted/20 transition-colors">Cancel</button>
+                        <button id="save-settings-button" class="px-4 py-2 bg-github-blue text-white rounded hover:bg-blue-700 transition-colors">Save</button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Activity Panel -->
             <main class="bg-github-dark overflow-y-auto p-3 scrollbar relative" id="activity-panel">

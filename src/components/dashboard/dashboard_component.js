@@ -1,7 +1,10 @@
 const Component = require('./../component')
 const logger = require('./../../logger')
 const config = require('./../../config')
+const express = require('express')
 const http = require('http')
+const session = require('express-session')
+const cookieParser = require('cookie-parser')
 const path = require('path')
 const fs = require('fs')
 
@@ -22,8 +25,8 @@ class DashboardComponent extends Component {
         super(Fluent)
         
         this.config = config.get('dashboard') || {}
+        this.app = express()
         this.server = null
-        this.socketioComponent = null
         
         // Check if component is enabled
         if (!this.config.enabled) {
@@ -31,8 +34,47 @@ class DashboardComponent extends Component {
             return
         }
         
+        this.setupMiddleware()
+        this.setupRoutes()
+        
         logger.info('Dashboard component initialized', 'dashboard')
     }
+
+    /**
+     * Setup Express middleware
+     */
+    setupMiddleware() {
+        this.app.use(cookieParser());
+        this.app.use(session({
+            secret: 'fluentiot-dashboard-secret',
+            resave: false,
+            saveUninitialized: true,
+            cookie: { secure: false } // Set to true if using HTTPS
+        }));
+        this.app.use(express.json());
+    }
+
+    /**
+     * Setup Express routes
+     */
+    setupRoutes() {
+        // API routes
+        this.app.get('/api/settings', (req, res) => {
+            res.json(req.session.settings || { theme: 'dark', showDebugMessages: true });
+        });
+
+        this.app.post('/api/settings', (req, res) => {
+            req.session.settings = req.body;
+            res.json({ success: true });
+        });
+
+        // Static file routes
+        this.app.get('/', (req, res) => {
+            this.serveTemplate('index.html', res)
+        });
+        this.app.use(express.static(path.join(__dirname, 'templates')));
+    }
+
 
     /**
      * Called after the component is loaded
@@ -52,13 +94,8 @@ class DashboardComponent extends Component {
         }
 
         try {
-            // Get SocketIO component reference
-            this.socketioComponent = this.getComponent('socketio')
-            
-            // Create HTTP server
-            this.server = http.createServer((req, res) => {
-                this.handleRequest(req, res)
-            })
+            // Create HTTP server from Express app
+            this.server = http.createServer(this.app)
 
             // Start listening
             const port = this.config.port || 9003
@@ -74,28 +111,6 @@ class DashboardComponent extends Component {
     }
 
     /**
-     * Handle HTTP requests
-     */
-    handleRequest(req, res) {
-        const url = req.url === '/' ? '/index.html' : req.url
-        
-        if (url === '/index.html') {
-            this.serveTemplate('index.html', res)
-        } else if (url === '/main.css') {
-            this.serveStaticFile('main.css', 'text/css', res)
-        } else if (url === '/dashboard.js') {
-            this.serveStaticFile('dashboard.js', 'application/javascript', res)
-        } else if (url.startsWith('/js/') && url.endsWith('.js')) {
-            // Serve JavaScript module files
-            const fileName = url.substring(4) // Remove '/js/' prefix
-            this.serveStaticFile(`js/${fileName}`, 'application/javascript', res)
-        } else {
-            res.writeHead(404, { 'Content-Type': 'text/plain' })
-            res.end('Not Found')
-        }
-    }
-
-    /**
      * Serve template files
      */
     serveTemplate(templateName, res, contentType = 'text/html') {
@@ -104,8 +119,7 @@ class DashboardComponent extends Component {
         fs.readFile(templatePath, 'utf8', (err, data) => {
             if (err) {
                 logger.error(`Failed to read template ${templateName}: ${err.message}`, 'dashboard')
-                res.writeHead(500, { 'Content-Type': 'text/plain' })
-                res.end('Internal Server Error')
+                res.status(500).send('Internal Server Error')
                 return
             }
 
@@ -128,30 +142,7 @@ class DashboardComponent extends Component {
             let renderedData = data.replace('{{SOCKETIO_URL}}', socketioUrl)
             renderedData = renderedData.replace('{{AUTH_TOKEN}}', authToken)
             
-            res.writeHead(200, { 'Content-Type': contentType })
-            res.end(renderedData)
-        })
-    }
-
-    /**
-     * Serve static files (CSS, JS)
-     */
-    serveStaticFile(fileName, contentType, res) {
-        const filePath = path.join(__dirname, 'templates', fileName)
-        
-        fs.readFile(filePath, 'utf8', (err, data) => {
-            if (err) {
-                logger.error(`Failed to read static file ${fileName}: ${err.message}`, 'dashboard')
-                res.writeHead(404, { 'Content-Type': 'text/plain' })
-                res.end('Not Found')
-                return
-            }
-
-            res.writeHead(200, { 
-                'Content-Type': contentType,
-                'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
-            })
-            res.end(data)
+            res.header('Content-Type', contentType).send(renderedData)
         })
     }
 
