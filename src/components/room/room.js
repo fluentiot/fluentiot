@@ -2,6 +2,7 @@ const dayjs = require('dayjs')
 const logger = require('./../../logger');
 const { datetime } = require('./../../utils')
 const { AttributeDslMixin } = require('./../_mixins/attribute_dsl');
+const LoggingMixin = require('./../_mixins/logging_mixin');
 
 /**
  * Room
@@ -24,6 +25,10 @@ class Room {
 
         // Mixins
         Object.assign(this, AttributeDslMixin(this, 'room'));
+        Object.assign(this, LoggingMixin(this, 'room'));
+
+        // Auto-log room creation
+        logger.info(`Room "${name}" created`, 'room', this);
 
         // Handle vacancyDelay
 
@@ -83,9 +88,11 @@ class Room {
         if (sensorValue) {
             this._sensorLastTime = dayjs();
             if (!this.attribute.get('occupied')) {
-                logger.info(`Room "${this.name}" is now occupied.`, 'room');
+                logger.info(`Room "${this.name}" is now occupied.`, 'room', this);
                 this.attribute.update('occupied', true);
             }
+        } else {
+            logger.debug(`Motion detected in room "${this.name}"`, 'room', this);
         }
 
         // Update the PIR sensor attribute
@@ -147,7 +154,7 @@ class Room {
 
         // Room is now vacant if passed early returns
         this._sensorLastTime = false;
-        logger.info(`Room "${this.name}" is now vacant.`, 'room');
+        logger.info(`Room "${this.name}" is now vacant - no motion for ${this.attribute.get('vacancyDelay')} minutes`, 'room', this);
         this.attribute.update('occupied', false);
     }
 
@@ -217,7 +224,15 @@ class Room {
      */
     describe() {
         const occupied = this.attribute.get('occupied');
-        const occupancyStatus = occupied === true ? 'occupied' : occupied === false ? 'vacant' : 'unknown';
+        let occupancyStatus;
+        if (occupied === true) {
+            occupancyStatus = 'occupied';
+        } else if (occupied === false) {
+            occupancyStatus = 'vacant';
+        } else {
+            occupancyStatus = 'unknown';
+        }
+        
         const description = {
             name: this.name,
             type: 'room',
@@ -225,7 +240,9 @@ class Room {
             attributes: this.attributes,
             occupancyStatus: occupancyStatus,
             deviceCount: this.devices.length,
-            devices: this.devices.map(d => d.name)
+            devices: this.devices.map(d => d.name),
+            recentLogs: this.log.recent(5),
+            logStats: this.log.stats
         }
         
         return description

@@ -1,4 +1,6 @@
 const { AttributeDslMixin } = require('./../_mixins/attribute_dsl')
+const LoggingMixin = require('./../_mixins/logging_mixin')
+const logger = require('./../../logger')
 
 /**
  * Device
@@ -23,6 +25,10 @@ class Device {
 
         // Mixins
         Object.assign(this, AttributeDslMixin(this, 'device'))
+        Object.assign(this, LoggingMixin(this, 'device'))
+
+        // Auto-log device creation
+        logger.info(`Device "${name}" created`, 'device', this, { capabilities: capabilities.length })
 
         // Attributes
         const defaultAttributes = {
@@ -88,7 +94,16 @@ class Device {
                 this.capabilities[method] = callback
 
                 this[method] = (...args) => {
-                    return callback(this, ...args)
+                    // Auto-log capability execution
+                    logger.info(`Device "${this.name}" capability ${method} executed`, 'device', this, { args: args.length });
+                    try {
+                        const result = callback(this, ...args);
+                        logger.debug(`Device "${this.name}" capability ${method} completed successfully`, 'device', this);
+                        return result;
+                    } catch (error) {
+                        logger.error(`Device "${this.name}" capability ${method} failed: ${error.message}`, 'device', this, { error: error.stack });
+                        throw error;
+                    }
                 }
 
                 return true
@@ -106,7 +121,9 @@ class Device {
             name: this.name,
             type: 'device',
             capabilities: Object.keys(this.capabilities),
-            attributes: this.attributes
+            attributes: this.attributes,
+            recentLogs: this.log.recent(5),
+            logStats: this.log.stats
         }
         
         return description

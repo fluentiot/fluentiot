@@ -34,14 +34,25 @@ const setAttribute = (parent, attributeName, attributeValue) => {
 const updateAttribute = (parent, attributeName, attributeValue, name) => {
   // Has the value changed?
   let changed = true;
-  if (parent.attributes[attributeName] === attributeValue) {
+  const oldValue = parent.attributes[attributeName];
+  if (oldValue === attributeValue) {
     changed = false;
   }
 
   // Set it
   parent.attributes[attributeName] = attributeValue;
 
-  logger.info(`Attribute, "${parent.name}" updated "${attributeName}" to "${attributeValue}"`, name);
+  // Use entity-aware logging if available, otherwise use regular logging
+  if (parent.log && changed) {
+    logger.info(`Attribute "${parent.name}" updated "${attributeName}" from "${oldValue}" to "${attributeValue}"`, name, parent, {
+      attribute: attributeName,
+      oldValue: oldValue,
+      newValue: attributeValue
+    });
+  } else {
+    logger.info(`Attribute, "${parent.name}" updated "${attributeName}" to "${attributeValue}"`, name);
+  }
+
   parent.parent.emit(`${name}.${parent.name}.attribute`, {
     name: attributeName,
     value: attributeValue,

@@ -1,5 +1,6 @@
 const { datetime } = require('./utils')
 const logger = require('./logger')
+const LoggingMixin = require('./components/_mixins/logging_mixin')
 
 /**
  * Scenario
@@ -73,7 +74,14 @@ class Scenario {
         //Setup available triggers based on components loaded
         this._buildTriggersDsl()
 
-        logger.info(`Scenario "${description}" loaded`, 'scenario')
+        // Mixins
+        Object.assign(this, LoggingMixin(this, 'scenario'))
+
+        // Auto-log scenario creation
+        logger.info(`Scenario "${description}" loaded`, 'scenario', this, { 
+            description: this.description,
+            properties: this.properties 
+        })
     }
 
     /**
@@ -295,7 +303,7 @@ class Scenario {
             this.suppressUntil !== null &&
             currentTime < this.suppressUntil
         ) {
-            logger.warn(`Scenario "${this.description}" did not trigger because in suppressFor period`, 'scenario');
+            logger.warn(`Scenario "${this.description}" did not trigger because in suppressFor period`, 'scenario', this);
             return false;
         }
 
@@ -328,6 +336,7 @@ class Scenario {
 
         // No callbacks to run
         if (callbacks.length === 0) {
+            logger.debug(`Scenario "${this.description}" constraint not met - scenario not triggered`, 'scenario', this);
             return false
         }
     
@@ -341,14 +350,14 @@ class Scenario {
 
         // Run callbacks
         let ranCallback = true
-        logger.info(`Scenario "${this.description}" triggered`, 'scenario')
+        logger.info(`Scenario "${this.description}" triggered`, 'scenario', this)
 
         callbacks.forEach((callbackItem) => {
             try {
                 callbackItem.callback(this, ...args)
                 ranCallback = true
             } catch(e) {
-                logger.error(`Scenario "${this.description}" has an error with the actions`, 'scenario')
+                logger.error(`Scenario "${this.description}" has an error with the actions: ${e.message}`, 'scenario', this, { error: e.stack })
                 logger.error(e, 'scenario')
                 ranCallback = false
             }
@@ -364,6 +373,7 @@ class Scenario {
     describe() {
         return {
             description: this.description,
+            type: 'scenario',
             runnable: this.runnable,
             testMode: this.testMode,
             properties: this.properties,
@@ -371,7 +381,9 @@ class Scenario {
             lastAssertTime: this.lastAssertTime,
             triggersCount: Object.keys(this.triggers).length,
             callbacksCount: this.callbacks.length,
-            traceCount: this.trace.length
+            traceCount: this.trace.length,
+            recentLogs: this.log.recent(5),
+            logStats: this.log.stats
         };
     }
 }
