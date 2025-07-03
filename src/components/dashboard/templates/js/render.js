@@ -91,7 +91,7 @@ window.DashboardRender = {
         container.innerHTML = sortedRoomNames.map(roomName => {
             const room = rooms[roomName];
             const status = room.occupied === true ? 'OCCUPIED' : room.occupied === false ? 'VACANT' : 'UNKNOWN';
-            const statusColor = room.occupied === true ? 'text-github-yellow' : room.occupied === false ? 'text-github-muted' : 'text-github-blue';
+            const statusColor = room.occupied === true ? 'text-github-green' : room.occupied === false ? 'text-github-blue' : 'text-github-muted';
 
             return `
                 <div class="room-item border-l-2 border-github-yellow text-xs mb-1 bg-github-darker/30 rounded-r">

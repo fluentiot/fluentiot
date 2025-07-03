@@ -30,6 +30,7 @@ window.DashboardSocket = {
         socket.on('log', (data) => window.DashboardUI.addLogEntry(data.level || 'info', data.component || 'system', data.message || data));
         socket.on('activity', this.handleActivity);
         socket.on('device_activity', this.handleDeviceActivity);
+        socket.on('room_activity', this.handleRoomActivity);
         socket.on('scenario_activity', this.handleScenarioActivity);
         socket.on('scene_activity', this.handleSceneActivity);
         socket.on('system_activity', this.handleSystemActivity);
@@ -84,6 +85,11 @@ window.DashboardSocket = {
         window.DashboardUI.updateDeviceData(data);
     },
 
+    handleRoomActivity: function(data) {
+        window.DashboardUI.addLogEntry('info', 'room', data.message || JSON.stringify(data));
+        window.DashboardUI.updateRoomData(data);
+    },
+
     handleScenarioActivity: function(data) {
         window.DashboardUI.addLogEntry('scenario', 'scenario', data.message || JSON.stringify(data));
         window.DashboardUI.updateScenarioData(data);
@@ -109,7 +115,7 @@ window.DashboardSocket = {
                 window.DashboardUI.handleScenesResult(result);
             } else if (data.commandId === 'list-devices') {
                 window.DashboardUI.handleDevicesResult(result);
-            } else if (data.commandId === 'list-rooms') {
+            } else if (data.commandId === 'list-rooms' || data.commandId === 'refresh-rooms') {
                 window.DashboardUI.handleRoomsResult(result);
             } else if (data.commandId === 'list-scenarios') {
                 window.DashboardUI.handleScenariosResult(result);

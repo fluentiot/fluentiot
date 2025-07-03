@@ -212,6 +212,30 @@ window.DashboardUI = {
         }
     },
 
+    updateRoomData: function(data) {
+        // The data comes from room events in the format: room.{roomName}.attribute
+        // with data: { name: attributeName, value: attributeValue, changed: boolean }
+        
+        if (data && data.data) {
+            const eventData = data.data;
+            
+            // Check if this is an occupancy change event
+            if (eventData.name === 'occupied' && eventData.changed) {
+                // We need to find which room this belongs to
+                // The event type would be something like 'room.{roomName}.attribute'
+                // For now, let's update all rooms and re-fetch room data
+                // This is not ideal but ensures consistency
+                
+                // Request fresh room data to get the latest status
+                window.DashboardSocket.executeCommand('room.list', {}, 'refresh-rooms');
+                
+                // Log the room status change
+                const status = eventData.value === true ? 'occupied' : eventData.value === false ? 'vacant' : 'unknown';
+                this.addLogEntry('info', 'room', `Room occupancy changed to ${status}`);
+            }
+        }
+    },
+
     updateScenarioData: function(data) {
         // Update scenario data when we receive scenario activity
         // This could be expanded to update specific scenario status

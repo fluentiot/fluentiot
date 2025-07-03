@@ -98,6 +98,11 @@ class EventBroadcaster {
                     this.broadcastDeviceEvent(data);
                 });
 
+                // Listen for room events
+                this.eventComponent.on('room.*', (data) => {
+                    this.broadcastRoomEvent(data);
+                });
+
                 // Listen for scenario events
                 this.eventComponent.on('scenario.*', (data) => {
                     this.broadcastScenarioEvent(data);
@@ -168,6 +173,31 @@ class EventBroadcaster {
             });
         } catch (error) {
             logger.error(`Failed to broadcast device event: ${error.message}`, 'socketio-events');
+        }
+    }
+
+    /**
+     * Broadcast room event to all connected clients
+     * 
+     * @param {Object} data - Room event data
+     */
+    broadcastRoomEvent(data) {
+        try {
+            const roomEvent = {
+                type: 'room_activity',
+                data: data,
+                timestamp: new Date().toISOString()
+            };
+
+            this.io.emit('room_activity', roomEvent);
+            
+            // Also emit to general activity feed
+            this.io.emit('activity', {
+                category: 'room',
+                ...roomEvent
+            });
+        } catch (error) {
+            logger.error(`Failed to broadcast room event: ${error.message}`, 'socketio-events');
         }
     }
 
